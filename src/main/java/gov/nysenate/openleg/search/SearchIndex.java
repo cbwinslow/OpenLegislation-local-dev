@@ -19,7 +19,7 @@ public enum SearchIndex {
     LAW("laws", LimitOffset.TWENTY_FIVE),
     MEMBER("members", LimitOffset.TWENTY_FIVE),
     NOTIFICATION("notifications", true, LimitOffset.ALL),
-    API_LOG("apilog", true, LimitOffset.FIFTY);
+    API_LOG("apilogs", true, LimitOffset.FIFTY);
 
     private final String indexName;
     private final boolean primaryStore;
