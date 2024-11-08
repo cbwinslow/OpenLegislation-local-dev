@@ -85,11 +85,6 @@ public class SqlTranscriptDataService implements TranscriptDataService {
                 return;
             }
         } catch (EmptyResultDataAccessException ignored) {}
-        final String summary = "The transcript from %s lacks a dayType.".formatted(transcript.getFilename());
-        if (transcript.getDayType() == null) {
-            eventBus.post(new Notification(NotificationType.PROCESS_WARNING, LocalDateTime.now(),
-                    summary, summary + "\nAll floor transcripts should be legislative or session transcripts."));
-        }
         transcriptDao.updateTranscript(transcript);
         if (postUpdateEvent) {
             eventBus.post(new TranscriptUpdateEvent(transcript));
