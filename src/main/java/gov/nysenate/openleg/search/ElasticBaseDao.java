@@ -55,13 +55,6 @@ public abstract class ElasticBaseDao<IdType, DocType extends ViewObject, Content
         createIndex();
     }
 
-    @PreDestroy
-    private void destroy() {
-        if (envUtils.isTest()) {
-            deleteIndex();
-        }
-    }
-
     /* --- Public methods --- */
 
     @Override
@@ -81,8 +74,9 @@ public abstract class ElasticBaseDao<IdType, DocType extends ViewObject, Content
     }
 
     @Override
+    @PreDestroy
     public void deleteIndex() {
-        if (indexType().isPrimaryStore()) {
+        if (!envUtils.isTest() && indexType().isPrimaryStore()) {
             throw new UnsupportedOperationException("Cannot delete a primary index.");
         }
         try {
