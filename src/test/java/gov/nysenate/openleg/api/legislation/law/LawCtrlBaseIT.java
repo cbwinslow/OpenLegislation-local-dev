@@ -27,7 +27,7 @@ public class LawCtrlBaseIT extends ApiTest {
     protected void loadTestData(boolean isInitial, String... fileIds) {
         for (var fileId : fileIds) {
             String filename = isInitial ? "DATABASE.LAW." + fileId : fileId + ".UPDATE";
-            LawFile file = new LawFile(new File(TEST_FILE_PREFIX + filename));
+            LawFile file = new LawFile(new File(TEST_FILE_PREFIX + filename + ".test"));
             testDao.updateLawFile(file);
             testService.processLawFiles(Collections.singletonList(file));
         }
