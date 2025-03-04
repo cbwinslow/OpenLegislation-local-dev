@@ -184,13 +184,13 @@
 <div class="section" id="get-a-single-transcript">
 <h2>Get a single Transcript<a class="headerlink" href="#get-a-single-transcript" title="Permalink to this headline">¶</a></h2>
 <p><strong>Usage</strong></p>
-<p>Retrieve transcript by dateTime and sessionType. The sessionType is only required if two transcripts have the same dateTime</p>
+<p>Retrieve transcript by dateTime and sessionType. The sessionType is only required if two transcripts have the same dateTime:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">GET</span><span class="p">)</span> <span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="mi">3</span><span class="o">/</span><span class="n">transcripts</span><span class="o">/</span><span class="p">{</span><span class="n">dateTime</span><span class="p">}</span>
 <span class="p">(</span><span class="n">GET</span><span class="p">)</span> <span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="mi">3</span><span class="o">/</span><span class="n">transcripts</span><span class="o">/</span><span class="p">{</span><span class="n">dateTime</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">sessionType</span><span class="p">}</span>
 </pre></div>
 </div>
 <p><strong>Examples</strong></p>
-<p>Request transcript 2014-09-03T09:00</p>
+<p>Request transcript 2014-09-03T09:00:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="mi">3</span><span class="o">/</span><span class="n">transcripts</span><span class="o">/</span><span class="mi">2014</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">03</span><span class="n">T09</span><span class="p">:</span><span class="mi">00</span>
 </pre></div>
 </div>
@@ -209,7 +209,7 @@
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>Request the extraordinary session 3 transcript on 2010-12-31T10:00</p>
+<p>Request the extraordinary session 3 transcript on 2010-12-31T10:00:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="mi">3</span><span class="o">/</span><span class="n">transcripts</span><span class="o">/</span><span class="mi">2010</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">31</span><span class="n">T10</span><span class="p">:</span><span class="mi">00</span><span class="o">/</span><span class="n">EXTRAORDINARY</span> <span class="n">SESSION</span> <span class="n">III</span>
 </pre></div>
 </div>
@@ -232,13 +232,13 @@
 <div class="section" id="get-a-transcript-pdf">
 <h2>Get a transcript pdf<a class="headerlink" href="#get-a-transcript-pdf" title="Permalink to this headline">¶</a></h2>
 <p><strong>Usage</strong></p>
-<p>Retrieve transcript pdf by dateTime. The sessionType is only required if two transcripts have the same dateTime</p>
+<p>Retrieve transcript pdf by dateTime. The sessionType is only required if two transcripts have the same dateTime:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">GET</span><span class="p">)</span> <span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="mi">3</span><span class="o">/</span><span class="n">transcripts</span><span class="o">/</span><span class="p">{</span><span class="n">dateTime</span><span class="p">}</span><span class="o">.</span><span class="n">pdf</span>
 <span class="p">(</span><span class="n">GET</span><span class="p">)</span> <span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="mi">3</span><span class="o">/</span><span class="n">transcripts</span><span class="o">/</span><span class="p">{</span><span class="n">dateTime</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">sessionType</span><span class="p">}</span><span class="o">.</span><span class="n">pdf</span>
 </pre></div>
 </div>
 <p><strong>Examples</strong></p>
-<p>Request transcript 2014-09-03T09:00</p>
+<p>Request transcript 2014-09-03T09:00:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="mi">3</span><span class="o">/</span><span class="n">transcripts</span><span class="o">/</span><span class="mi">2014</span><span class="o">-</span><span class="mi">09</span><span class="o">-</span><span class="mi">03</span><span class="n">T09</span><span class="p">:</span><span class="mi">00</span>
 </pre></div>
 </div>
@@ -246,7 +246,7 @@
 <div class="section" id="get-a-list-of-transcripts">
 <h2>Get a list of transcripts<a class="headerlink" href="#get-a-list-of-transcripts" title="Permalink to this headline">¶</a></h2>
 <p><strong>Usage</strong></p>
-<p>List transcripts within a year</p>
+<p>List transcripts within a year:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">GET</span><span class="p">)</span> <span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="mi">3</span><span class="o">/</span><span class="n">transcripts</span><span class="o">/</span><span class="p">{</span><span class="n">year</span><span class="p">}</span>
 </pre></div>
 </div>
@@ -283,15 +283,15 @@
 </tbody>
 </table>
 <p><strong>Examples</strong></p>
-<p>List 50 transcripts from 2014</p>
+<p>List 50 transcripts from 2014:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>/api/3/transcripts/2014?limit=50
 </pre></div>
 </div>
-<p>List 50 complete transcripts starting from 51</p>
+<p>List 50 complete transcripts starting from 51:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>/api/3/transcripts/2014?limit=50%offset=51&amp;full=true
 </pre></div>
 </div>
-<p>List 10 complete transcripts sorted by increasing date</p>
+<p>List 10 complete transcripts sorted by increasing date:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>/api/3/transcripts/2014?limit=10&amp;full=true
 </pre></div>
 </div>

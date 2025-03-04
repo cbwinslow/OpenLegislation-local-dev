@@ -453,11 +453,11 @@ The calendar search index is comprised of full calendar responses
 (i.e. the json response returned when requesting a single calendar) so query and sort strings will be based on that response
 structure.</p>
 <p><strong>Usage</strong></p>
-<p>Search across all session years</p>
+<p>Search across all session years:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(GET) /api/3/calendars/search?term=YOUR_TERM
 </pre></div>
 </div>
-<p>Search within a year</p>
+<p>Search within a year:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(GET) /api/3/calendars/{year}/search?term=YOUR_TERM
 </pre></div>
 </div>
@@ -507,15 +507,15 @@ structure.</p>
 <h2>Get calendar updates<a class="headerlink" href="#get-calendar-updates" title="Permalink to this headline">¶</a></h2>
 <p>To identify which calendars have received updates within a given time period you can use the calendar updates api.</p>
 <p><strong>Usage</strong></p>
-<p>List of calendars updated within the past seven days</p>
+<p>List of calendars updated within the past seven days:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">GET</span><span class="p">)</span> <span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="mi">3</span><span class="o">/</span><span class="n">calendars</span><span class="o">/</span><span class="n">updates</span>
 </pre></div>
 </div>
-<p>List of calendars updated after the given date/time</p>
+<p>List of calendars updated after the given date/time:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">GET</span><span class="p">)</span> <span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="mi">3</span><span class="o">/</span><span class="n">calendars</span><span class="o">/</span><span class="n">updates</span><span class="o">/</span><span class="p">{</span><span class="n">fromDateTime</span><span class="p">}</span>
 </pre></div>
 </div>
-<p>List of calendars updated during the given date/time range</p>
+<p>List of calendars updated during the given date/time range:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">GET</span><span class="p">)</span> <span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="mi">3</span><span class="o">/</span><span class="n">calendars</span><span class="o">/</span><span class="n">updates</span><span class="o">/</span><span class="p">{</span><span class="n">fromDateTime</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">toDateTime</span><span class="p">}</span>
 </pre></div>
 </div>
@@ -550,7 +550,7 @@ The fromDateTime and toDateTime range is exclusive/inclusive respectively.</p>
 </tbody>
 </table>
 <p><strong>Examples</strong></p>
-<p>Calendars that were updated between January 1st and January 20th of 2019</p>
+<p>Calendars that were updated between January 1st and January 20th of 2019:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">GET</span><span class="p">)</span> <span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="mi">3</span><span class="o">/</span><span class="n">calendars</span><span class="o">/</span><span class="n">updates</span><span class="o">/</span><span class="mi">2019</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">01</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="o">/</span><span class="mi">2019</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">20</span><span class="n">T00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
 </pre></div>
 </div>
@@ -588,11 +588,11 @@ The fromDateTime and toDateTime range is exclusive/inclusive respectively.</p>
 <div class="section" id="get-specific-calendar-updates">
 <h2>Get specific calendar updates<a class="headerlink" href="#get-specific-calendar-updates" title="Permalink to this headline">¶</a></h2>
 <p><strong>Usage</strong></p>
-<p>Get updates for a calendar within a datetime range</p>
+<p>Get updates for a calendar within a datetime range:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">GET</span><span class="p">)</span> <span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="mi">3</span><span class="o">/</span><span class="n">calendars</span><span class="o">/</span><span class="p">{</span><span class="n">year</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">calendarNumber</span><span class="p">}</span><span class="o">/</span><span class="n">updates</span><span class="o">/</span><span class="p">{</span><span class="n">fromDateTime</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">toDateTime</span><span class="p">}</span>
 </pre></div>
 </div>
-<p>Get all updates for a calendar</p>
+<p>Get all updates for a calendar:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">GET</span><span class="p">)</span> <span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="mi">3</span><span class="o">/</span><span class="n">calendars</span><span class="o">/</span><span class="p">{</span><span class="n">year</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">calendarNumber</span><span class="p">}</span><span class="o">/</span><span class="n">updates</span>
 </pre></div>
 </div>
@@ -629,7 +629,7 @@ The fromDateTime and toDateTime range is exclusive/inclusive respectively.</p>
 </tbody>
 </table>
 <p><strong>Examples</strong></p>
-<p>Get updates for calendar 54 of 2014 that occurred between 9 AM and 5 PM on June 20th, 2014</p>
+<p>Get updates for calendar 54 of 2014 that occurred between 9 AM and 5 PM on June 20th, 2014:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">GET</span><span class="p">)</span> <span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="mi">3</span><span class="o">/</span><span class="n">calendars</span><span class="o">/</span><span class="mi">2014</span><span class="o">/</span><span class="mi">54</span><span class="o">/</span><span class="n">updates</span><span class="o">/</span><span class="mi">2014</span><span class="o">-</span><span class="mi">06</span><span class="o">-</span><span class="mi">20</span><span class="n">T09</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="o">/</span><span class="mi">2014</span><span class="o">-</span><span class="mi">06</span><span class="o">-</span><span class="mi">20</span><span class="n">T17</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span>
 </pre></div>
 </div>

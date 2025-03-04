@@ -183,7 +183,7 @@ and we aim to provide as much elasticsearch functionality as possible through th
 <span id="search-term"></span><h2>term<a class="headerlink" href="#term" title="Permalink to this headline">¶</a></h2>
 <p>The term parameter takes in an <a class="reference external" href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#_field_names">elasticsearch query string</a>.</p>
 <p>The simplest way to search is to send a general search term.
-For example, to search for legislation pertaining to apples, the following query will do the job.</p>
+For example, to search for legislation pertaining to apples, the following query will do the job:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>/api/3/bills/search?term=apples
 </pre></div>
 </div>
@@ -191,7 +191,7 @@ For example, to search for legislation pertaining to apples, the following query
 with data in the same JSON format as the API responses, so any response field that is nested under “result” is fair game
 for search.  Going back to the previous example, a number of resolutions appear in the results for the apples search query.
 Looking back at the <a class="reference internal" href="bills.html#bill-response"><span class="std std-ref">bill response</span></a>, we see that resolutions are designated by the “resolution” boolean under “billType”.
-In order to filter resolutions out of the search results, a field query can be chained to the original query using “AND”.</p>
+In order to filter resolutions out of the search results, a field query can be chained to the original query using “AND”:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>/api/3/bills/search?term=apples%20AND%20billType.resolution:false
 </pre></div>
 </div>

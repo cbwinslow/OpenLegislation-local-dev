@@ -175,11 +175,10 @@
             
   <div class="section" id="aggregate-updates-api">
 <h1><strong>Aggregate Updates API</strong><a class="headerlink" href="#aggregate-updates-api" title="Permalink to this headline">¶</a></h1>
-<hr class="docutils" />
 <div class="section" id="get-aggregate-updates">
 <h2>Get aggregate updates<a class="headerlink" href="#get-aggregate-updates" title="Permalink to this headline">¶</a></h2>
 <p><strong>Usage</strong></p>
-<p>List of content that was updated during the given date/time range</p>
+<p>List of content that was updated during the given date/time range:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="mi">3</span><span class="o">/</span><span class="n">updates</span><span class="o">/</span><span class="p">{</span><span class="n">fromDateTime</span><span class="p">}</span>
 <span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="mi">3</span><span class="o">/</span><span class="n">updates</span><span class="o">/</span><span class="p">{</span><span class="n">fromDateTime</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">toDateTime</span><span class="p">}</span>
 </pre></div>
@@ -237,21 +236,13 @@ the data which is useful if you are trying to stay synchronized with OpenLeg. Pu
 which data was intended to be published. This can differ from the processed date because OpenLeg can periodically
 reprocess it’s data to fix issues. By default the type is set to published.</p>
 <p><strong>Example</strong></p>
-<p>Get a detailed view of the first 50 agenda, bill, and calendar updates processed on March 17 2015</p>
+<p>Get a detailed view of the first 50 agenda, bill, and calendar updates processed on March 17 2015:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>/api/3/updates/2019-01-17T00:00:00/2019-01-18T00:00:00?type=processed
                 &amp;content-type=AGENDA&amp;content-type=BILL&amp;content-type=CALENDAR
                 &amp;detail=true&amp;fields=true&amp;limit=50
 </pre></div>
 </div>
 <p><strong>Response</strong></p>
-<p>See the following pages for info on the unique updates responses for each content type:</p>
-<div class="line-block">
-<div class="line"><span class="xref std std-ref">agenda update token response</span>, <span class="xref std std-ref">agenda update digest response</span></div>
-<div class="line"><a class="reference internal" href="bills.html#bill-update-token-response"><span class="std std-ref">bill update token response</span></a>, <a class="reference internal" href="bills.html#bill-update-digest-response"><span class="std std-ref">bill update digest response</span></a></div>
-<div class="line"><a class="reference internal" href="calendars.html#calendar-update-token-response"><span class="std std-ref">calendar update token response</span></a>, <a class="reference internal" href="calendars.html#calendar-update-digest-response"><span class="std std-ref">calendar update digest response</span></a></div>
-<div class="line"><span class="xref std std-ref">law update token response</span>, <span class="xref std std-ref">law update digest response</span></div>
-</div>
-<hr class="docutils" />
 <div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
   <span class="s2">&quot;success&quot;</span> <span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
   <span class="s2">&quot;message&quot;</span> <span class="o">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
@@ -289,6 +280,17 @@ reprocess it’s data to fix issues. By default the type is set to published.</p
 <span class="p">}</span>
 </pre></div>
 </div>
+<p>See the following pages for info on the unique update responses for each content type:</p>
+<ul class="simple">
+<li><p><span class="xref std std-ref">agenda update token response</span></p></li>
+<li><p><span class="xref std std-ref">agenda update digest response</span></p></li>
+<li><p><a class="reference internal" href="bills.html#bill-update-token-response"><span class="std std-ref">bill update token response</span></a></p></li>
+<li><p><a class="reference internal" href="bills.html#bill-update-digest-response"><span class="std std-ref">bill update digest response</span></a></p></li>
+<li><p><a class="reference internal" href="calendars.html#calendar-update-token-response"><span class="std std-ref">calendar update token response</span></a></p></li>
+<li><p><a class="reference internal" href="calendars.html#calendar-update-digest-response"><span class="std std-ref">calendar update digest response</span></a></p></li>
+<li><p><a class="reference internal" href="laws.html#law-update-token-response"><span class="std std-ref">law update token response</span></a></p></li>
+<li><p><a class="reference internal" href="laws.html#law-update-digest-response"><span class="std std-ref">law update digest response</span></a></p></li>
+</ul>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>This example uses processed date time. As we reprocess our data periodically, it’s possible this specific api call may not produce the result shown. However, the response you receive will follow the format in the example</p>
