@@ -8,8 +8,8 @@
   <style>
       body {
           font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-          background-color: #2b6a90;
-          color: white;
+          background-color: #e5e7eb;
+          color: black;
           text-align: center;
           padding-top: 40px;
           margin-top: 0px;
@@ -36,7 +36,7 @@
 <body>
 <div>
   <h4>404</h4>
-  <p className="text-2xl">Sorry, the page you requested appears to be missing. Please refer to our documentation <a href="/docs">here.</a></p>
+  <p className="text-2xl">Sorry, the page you requested appears to be missing. Please refer to our documentation <a href="/docs">here</a>.</p>
 </div>
 </body>
 </html>
