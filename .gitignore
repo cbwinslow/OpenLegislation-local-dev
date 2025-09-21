@@ -1,3 +1,13 @@
+# Ignore local environment files
+.env
+
+# IDE/editor files
+.vscode/
+*.iml
+.idea/
+
+# Build artifacts
+/target/
 *.cfg
 *.class
 *.idea
