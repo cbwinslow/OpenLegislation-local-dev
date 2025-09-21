@@ -1,0 +1,8 @@
+{
+  "host": "YOUR_ZEROTIER_IP_HERE",
+  "port": 5433,
+  "database": "openleg",
+  "user": "opendiscourse",
+  "password": "opendiscourse123",
+  "schema": "master"
+}
