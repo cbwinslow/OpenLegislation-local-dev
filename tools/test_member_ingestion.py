@@ -6,11 +6,10 @@ Simple script to test ingesting a few federal members from congress.gov API.
 This demonstrates the member data ingestion capability.
 
 Usage:
-    python3 tools/test_member_ingestion.py --api-key YOUR_API_KEY --db-config tools/db_config.json --limit 5
+    python3 tools/test_member_ingestion.py [--api-key YOUR_API_KEY] [--limit 5]
 """
 
 import argparse
-import json
 import sys
 import time
 from typing import Dict, List, Optional, Any
@@ -19,23 +18,38 @@ import psycopg2
 import psycopg2.extras
 import requests
 
+from settings import settings
+
 
 class TestMemberIngestor:
     """Simple test ingestor for federal member data"""
 
-    def __init__(self, api_key: str, db_config: Dict[str, Any]):
-        self.api_key = api_key
-        self.db_config = db_config
+    def __init__(self, api_key: Optional[str] = None):
+        self.api_key = api_key or settings.congress_api_key
+        if not self.api_key:
+            print("Error: Congress API key not provided. Set CONGRESS_API_KEY in .env or pass --api-key")
+            sys.exit(1)
+
+        self.db_config = settings.db_config
         self.base_url = "https://api.congress.gov/v3"
         self.session = requests.Session()
+        self.error_count = 0
+        self.max_errors = settings.max_errors
 
         # Connect to database
         try:
-            self.conn = psycopg2.connect(**db_config)
+            self.conn = psycopg2.connect(**self.db_config)
             self.cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
             print("✓ Database connection established")
         except Exception as e:
-            print(f"✗ Database connection failed: {e}")
+            self._handle_error(f"Database connection failed: {e}", fatal=True)
+
+    def _handle_error(self, message: str, fatal: bool = False):
+        """Handle an error, increment count, and exit if too many."""
+        self.error_count += 1
+        print(f"✗ {message} (Error {self.error_count}/{self.max_errors})")
+        if fatal or self.error_count >= self.max_errors:
+            print(f"Too many errors ({self.error_count}), exiting.")
             sys.exit(1)
 
     def _api_request(self, endpoint: str, params: Optional[Dict] = None) -> Optional[Dict]:
@@ -46,11 +60,11 @@ class TestMemberIngestor:
             request_params.update(params)
 
         try:
-            response = self.session.get(url, params=request_params, timeout=30)
+            response = self.session.get(url, params=request_params, timeout=settings.request_timeout)
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            print(f"API request failed: {e}")
+            self._handle_error(f"API request failed: {e}")
             return None
 
     def test_api_connection(self) -> bool:
@@ -61,7 +75,7 @@ class TestMemberIngestor:
             print("✓ API connection successful")
             return True
         else:
-            print("✗ API connection failed")
+            self._handle_error("API connection failed")
             return False
 
     def get_sample_members(self, limit: int = 5) -> List[Dict]:
@@ -77,7 +91,7 @@ class TestMemberIngestor:
             print(f"✓ Retrieved {len(members)} members")
             return members
         else:
-            print("✗ Failed to retrieve members")
+            self._handle_error("Failed to retrieve members")
             return []
 
     def create_test_tables(self):
@@ -113,7 +127,7 @@ class TestMemberIngestor:
             self.conn.commit()
             print("✓ Test tables created")
         except Exception as e:
-            print(f"✗ Failed to create test tables: {e}")
+            self._handle_error(f"Failed to create test tables: {e}")
             self.conn.rollback()
 
     def insert_sample_member(self, member_data: Dict) -> bool:
@@ -239,9 +253,9 @@ class TestMemberIngestor:
                 successful += 1
                 print(f"✓ Ingested: {member.get('name', 'Unknown')}")
             else:
-                print(f"✗ Failed: {member.get('name', 'Unknown')}")
+                self._handle_error(f"Failed to ingest: {member.get('name', 'Unknown')}")
 
-            time.sleep(0.5)  # Rate limiting
+            time.sleep(settings.rate_limit_delay)  # Rate limiting
 
         print(f"\nSuccessfully ingested {successful}/{len(members)} members")
 
@@ -262,22 +276,13 @@ class TestMemberIngestor:
 
 def main():
     parser = argparse.ArgumentParser(description='Test federal member data ingestion')
-    parser.add_argument('--api-key', required=True, help='Congress.gov API key')
-    parser.add_argument('--db-config', required=True, help='Database config JSON file')
+    parser.add_argument('--api-key', help='Congress.gov API key (overrides CONGRESS_API_KEY from .env)')
     parser.add_argument('--limit', type=int, default=5, help='Number of members to test (default: 5)')
 
     args = parser.parse_args()
 
-    # Load database config
-    try:
-        with open(args.db_config, 'r') as f:
-            db_config = json.load(f)
-    except Exception as e:
-        print(f"Error loading database config: {e}")
-        sys.exit(1)
-
     # Run test
-    ingestor = TestMemberIngestor(args.api_key, db_config)
+    ingestor = TestMemberIngestor(args.api_key)
     try:
         ingestor.run_test(args.limit)
     finally:

@@ -2,10 +2,10 @@
 # to version control in production; keep sensitive values here for local runs.
 
 postgresdb.host=${PGHOST:172.28.208.142}
-postgresdb.port=${PGPORT:5433}
+postgresdb.port=${PGPORT:5432}
 postgresdb.name=${PGDATABASE:openleg}
 postgresdb.user=${PGUSER:opendiscourse}
 postgresdb.pass=${PGPASSWORD:opendiscourse123}
 
 # JDBC convenience property used by some launchers
-jdbc.url=${JDBC_DATABASE_URL:jdbc:postgresql://172.28.208.142:5433/openleg}
+jdbc.url=${JDBC_DATABASE_URL:jdbc:postgresql://172.28.208.142:5432/openleg}

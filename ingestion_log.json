@@ -1,0 +1,272 @@
+{
+  "batches": [
+    {
+      "batch_num": 1,
+      "successful": 0,
+      "failed": 10
+    },
+    {
+      "batch_num": 2,
+      "successful": 0,
+      "failed": 20
+    },
+    {
+      "batch_num": 3,
+      "successful": 0,
+      "failed": 30
+    },
+    {
+      "batch_num": 4,
+      "successful": 0,
+      "failed": 40
+    },
+    {
+      "batch_num": 5,
+      "successful": 0,
+      "failed": 50
+    },
+    {
+      "batch_num": 6,
+      "successful": 0,
+      "failed": 60
+    },
+    {
+      "batch_num": 7,
+      "successful": 0,
+      "failed": 70
+    },
+    {
+      "batch_num": 8,
+      "successful": 0,
+      "failed": 80
+    },
+    {
+      "batch_num": 9,
+      "successful": 0,
+      "failed": 90
+    },
+    {
+      "batch_num": 10,
+      "successful": 0,
+      "failed": 100
+    },
+    {
+      "batch_num": 11,
+      "successful": 0,
+      "failed": 110
+    },
+    {
+      "batch_num": 12,
+      "successful": 0,
+      "failed": 120
+    },
+    {
+      "batch_num": 13,
+      "successful": 0,
+      "failed": 130
+    },
+    {
+      "batch_num": 14,
+      "successful": 0,
+      "failed": 140
+    },
+    {
+      "batch_num": 15,
+      "successful": 0,
+      "failed": 150
+    },
+    {
+      "batch_num": 16,
+      "successful": 0,
+      "failed": 160
+    },
+    {
+      "batch_num": 17,
+      "successful": 0,
+      "failed": 170
+    },
+    {
+      "batch_num": 18,
+      "successful": 0,
+      "failed": 180
+    },
+    {
+      "batch_num": 19,
+      "successful": 0,
+      "failed": 190
+    },
+    {
+      "batch_num": 20,
+      "successful": 0,
+      "failed": 200
+    },
+    {
+      "batch_num": 21,
+      "successful": 0,
+      "failed": 210
+    },
+    {
+      "batch_num": 22,
+      "successful": 0,
+      "failed": 220
+    },
+    {
+      "batch_num": 23,
+      "successful": 0,
+      "failed": 230
+    },
+    {
+      "batch_num": 24,
+      "successful": 0,
+      "failed": 240
+    },
+    {
+      "batch_num": 25,
+      "successful": 0,
+      "failed": 250
+    },
+    {
+      "batch_num": 26,
+      "successful": 0,
+      "failed": 260
+    },
+    {
+      "batch_num": 27,
+      "successful": 0,
+      "failed": 270
+    },
+    {
+      "batch_num": 28,
+      "successful": 0,
+      "failed": 280
+    },
+    {
+      "batch_num": 29,
+      "successful": 0,
+      "failed": 290
+    },
+    {
+      "batch_num": 30,
+      "successful": 0,
+      "failed": 300
+    },
+    {
+      "batch_num": 31,
+      "successful": 0,
+      "failed": 310
+    },
+    {
+      "batch_num": 32,
+      "successful": 0,
+      "failed": 320
+    },
+    {
+      "batch_num": 33,
+      "successful": 0,
+      "failed": 330
+    },
+    {
+      "batch_num": 34,
+      "successful": 0,
+      "failed": 340
+    },
+    {
+      "batch_num": 35,
+      "successful": 0,
+      "failed": 350
+    },
+    {
+      "batch_num": 36,
+      "successful": 0,
+      "failed": 360
+    },
+    {
+      "batch_num": 37,
+      "successful": 0,
+      "failed": 370
+    },
+    {
+      "batch_num": 38,
+      "successful": 0,
+      "failed": 380
+    },
+    {
+      "batch_num": 39,
+      "successful": 0,
+      "failed": 390
+    },
+    {
+      "batch_num": 40,
+      "successful": 0,
+      "failed": 400
+    },
+    {
+      "batch_num": 41,
+      "successful": 0,
+      "failed": 410
+    },
+    {
+      "batch_num": 42,
+      "successful": 0,
+      "failed": 420
+    },
+    {
+      "batch_num": 43,
+      "successful": 0,
+      "failed": 430
+    },
+    {
+      "batch_num": 44,
+      "successful": 0,
+      "failed": 440
+    },
+    {
+      "batch_num": 45,
+      "successful": 0,
+      "failed": 450
+    },
+    {
+      "batch_num": 46,
+      "successful": 0,
+      "failed": 460
+    },
+    {
+      "batch_num": 47,
+      "successful": 0,
+      "failed": 470
+    },
+    {
+      "batch_num": 48,
+      "successful": 0,
+      "failed": 480
+    },
+    {
+      "batch_num": 49,
+      "successful": 0,
+      "failed": 490
+    },
+    {
+      "batch_num": 50,
+      "successful": 0,
+      "failed": 500
+    },
+    {
+      "batch_num": 51,
+      "successful": 0,
+      "failed": 510
+    },
+    {
+      "batch_num": 52,
+      "successful": 0,
+      "failed": 520
+    },
+    {
+      "batch_num": 53,
+      "successful": 0,
+      "failed": 530
+    }
+  ],
+  "quality": {
+    "error": "current transaction is aborted, commands ignored until end of transaction block\n"
+  }
+}

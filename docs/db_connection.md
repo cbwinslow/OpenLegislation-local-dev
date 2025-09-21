@@ -1,6 +1,6 @@
 # Database Connection & Quick Test Guide
 
-This document describes how to use the example `.env` and `app.properties.local` files added to the repository and how to quickly test connectivity to a Postgres instance (example Zerotier host `172.28.208.142:5433`).
+This document describes how to use the example `.env` and `app.properties.local` files added to the repository and how to quickly test connectivity to a Postgres instance (example Zerotier host `172.28.208.142:5432`).
 
 Files added:
 - `.env` (repo root): contains `PGHOST`, `PGPORT`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`, and `JDBC_DATABASE_URL` for local convenience.
@@ -13,14 +13,14 @@ Quick test commands (run from a developer machine with `psql` installed):
 1) Test TCP reachability with `pg_isready` (if available):
 
 ```bash
-PGHOST=172.28.208.142 PGPORT=5433 pg_isready -h $PGHOST -p $PGPORT
+PGHOST=172.28.208.142 PGPORT=5432 pg_isready -h $PGHOST -p $PGPORT
 ```
 
 2) Test a CLI connection with `psql` using env vars:
 
 ```bash
 export PGHOST=172.28.208.142
-export PGPORT=5433
+export PGPORT=5432
 export PGUSER=opendiscourse
 export PGPASSWORD=opendiscourse123
 export PGDATABASE=openleg
@@ -35,10 +35,10 @@ psql "postgresql://$PGUSER:$PGPASSWORD@$PGHOST:$PGPORT/$PGDATABASE"
 Use the JDBC URL shown in `src/main/resources/app.properties.local` or the `JDBC_DATABASE_URL` from `.env`:
 
 ```bash
-JDBC_DATABASE_URL=jdbc:postgresql://172.28.208.142:5433/openleg
+JDBC_DATABASE_URL=jdbc:postgresql://172.28.208.142:5432/openleg
 
 # Example: run mvn with system property
 mvn -Djdbc.url="$JDBC_DATABASE_URL" test
 ```
 
-If you cannot reach the host, confirm your Zerotier membership and routing to `172.28.208.142` and that the remote machine's firewall allows connections on port `5433`.
+If you cannot reach the host, confirm your Zerotier membership and routing to `172.28.208.142` and that the remote machine's firewall allows connections on port `5432`.
