@@ -115,12 +115,12 @@ postgresdb.host = localhost
 # Example Zerotier/Postgres connection (do not check real secrets into source control)
 # Use these example values to connect to the remote PostgreSQL instance on your home server.
 # Host: 172.28.208.142 (Zerotier IP)
-# Port: 5433
+# Port: 5432
 # User: opendiscourse
 # Password: opendiscourse123
 # Database name: openleg
 # Preferred option: JDBC URL (used by the Java app)
-postgresdb.host = 172.28.208.142:5433
+postgresdb.host = 172.28.208.142:5432
 postgresdb.name = openleg
 postgresdb.user = opendiscourse
 postgresdb.pass = opendiscourse123
@@ -128,27 +128,27 @@ postgresdb.pass = opendiscourse123
 # JDBC connection string example (preferred for Java apps):
 # jdbc:postgresql://<host>:<port>/<database>
 # Example:
-# jdbc:postgresql://172.28.208.142:5433/openleg
+# jdbc:postgresql://172.28.208.142:5432/openleg
 
 # Alternatively, libpq / psql environment variables you can export locally for testing:
 # export PGPASSWORD=opendiscourse123
 # export PGHOST=172.28.208.142
-# export PGPORT=5433
+# export PGPORT=5432
 # export PGUSER=opendiscourse
 # export PGDATABASE=openleg
 
 # --- Quick Connection Strings (added) --------------------------------------
 # JDBC (preferred for Java services):
-# JDBC URL: jdbc:postgresql://172.28.208.142:5433/openleg
+# JDBC URL: jdbc:postgresql://172.28.208.142:5432/openleg
 # Example system property usage:
-#   -Djdbc.url=jdbc:postgresql://172.28.208.142:5433/openleg
+#   -Djdbc.url=jdbc:postgresql://172.28.208.142:5432/openleg
 
 # libpq / psql style (good for CLI tooling):
-#   PGPASSWORD=opendiscourse123 PGHOST=172.28.208.142 PGPORT=5433 \
+#   PGPASSWORD=opendiscourse123 PGHOST=172.28.208.142 PGPORT=5432 \
 #   PGUSER=opendiscourse PGDATABASE=openleg psql
 
 # Generic connection URI (RFC-like):
-#   postgresql://opendiscourse:opendiscourse123@172.28.208.142:5433/openleg
+#   postgresql://opendiscourse:opendiscourse123@172.28.208.142:5432/openleg
 
 
 # The name of the database used for this app.

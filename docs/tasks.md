@@ -12,7 +12,7 @@
 - [x] Implemented a govinfo enumerator script to discover bulkdata collections and subdirectories (`tools/govinfo_enumerate.sh`).
 - [x] Created a pure-stdlib Python fallback parser `tools/govinfo_parse_to_json_fallback.py` to extract title/sponsors/actions from staged BILLS XML fixtures (used when `lxml` is unavailable).
 - [x] Staged sample BILLS XML fixtures under `src/test/resources/processor/govinfo/BILLS/119/` for unit tests and parser validation.
-- [x] Added Postgres example connection values for Zerotier host `172.28.208.142:5433` to `src/main/resources/app.properties.example`.
+- [x] Added Postgres example connection values for Zerotier host `172.28.208.142:5432` to `src/main/resources/app.properties.example`.
 - [x] Added a repository `.env` template and a local `app.properties.local` to centralize DB credentials for development.
 - [x] Created `.gitconfig.example` containing `user.name = cbwinslow` and `user.email = blaine.winslow@gmail.com`.
 

@@ -1,8 +1,7 @@
 {
   "host": "172.28.82.205",
-  "port": 5433,
+  "port": 5432,
   "database": "openleg",
   "user": "opendiscourse",
-  "password": "opendiscourse123",
-  "schema": "master"
+  "password": "opendiscourse123"
 }

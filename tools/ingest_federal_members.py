@@ -5,6 +5,8 @@ Federal Member Data Ingestion from Congress.gov API
 Fetches comprehensive member data from congress.gov and populates federal member tables.
 Includes biographical info, terms served, committees, social media, and contact details.
 
+Now uses the generic ingestion framework with resume capability.
+
 Usage:
     python3 tools/ingest_federal_members.py --api-key YOUR_API_KEY --db-config tools/db_config.json
 
@@ -13,39 +15,160 @@ Requirements:
     - Database with federal member schema applied
 """
 
-import argparse
 import json
-import os
 import sys
-import time
-from datetime import datetime
-from pathlib import Path
 from typing import Dict, List, Optional, Any
 
 import psycopg2
 import psycopg2.extras
 import requests
 
+from settings import settings
+from base_ingestion_process import BaseIngestionProcess, run_ingestion_process
 
-class CongressMemberIngestor:
-    """Ingests federal member data from Congress.gov API"""
 
-    def __init__(self, api_key: str, db_config: Dict[str, Any]):
-        self.api_key = api_key
-        self.db_config = db_config
+class CongressMemberIngestor(BaseIngestionProcess):
+    """Ingests federal member data from Congress.gov API using generic framework"""
+
+    def __init__(self, api_key: Optional[str] = None, **kwargs):
+        super().__init__(**kwargs)
+
+        # Database connection for data insertion
+        self.conn = psycopg2.connect(**self.db_config)
+        self.cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+        # API configuration
+        self.api_key = api_key or settings.congress_api_key
+        if not self.api_key:
+            raise ValueError("Congress API key must be provided via argument or CONGRESS_API_KEY in .env")
+
         self.base_url = "https://api.congress.gov/v3"
         self.session = requests.Session()
 
-        # Connect to database
-        self.conn = psycopg2.connect(**db_config)
-        self.cursor = self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        # Error counting
+        self.error_count = 0
+        self.max_errors = settings.max_errors
 
-        # Rate limiting: 1000 requests/hour, 5000/day
+        # Rate limiting
         self.request_count = 0
-        self.last_request_time = time.time()
+        self.last_request_time = 0
+
+    def get_data_source(self) -> str:
+        """Return data source identifier"""
+        return "congress_api"
+
+    def get_target_table(self) -> str:
+        """Return target table name"""
+        return "master.federal_person"  # Primary table for tracking
+
+    def get_record_id_column(self) -> str:
+        """Return record ID column"""
+        return "bioguide_id"
+
+    def discover_records(self) -> List[Dict[str, Any]]:
+        """Discover all current members from Congress.gov API"""
+        print("Fetching current members from Congress.gov API...")
+
+        members = []
+        offset = 0
+        limit = 250  # Max per request
+
+        while True:
+            params = {
+                'currentMember': 'true',
+                'limit': limit,
+                'offset': offset
+            }
+
+            data = self._api_request('/member', params)
+            if not data or 'members' not in data:
+                break
+
+            batch = data['members']
+            if not batch:
+                break
+
+            # Convert to record format for tracking
+            for member in batch:
+                bioguide_id = member.get('bioguideId')
+                if bioguide_id:
+                    members.append({
+                        'record_id': bioguide_id,
+                        'name': member.get('name', ''),
+                        'chamber': member.get('chamber', '').lower(),
+                        'state': member.get('state'),
+                        'party': member.get('partyName', member.get('party')),
+                        'metadata': member  # Store full member data
+                    })
+
+            offset += len(batch)
+            print(f"Fetched {len(members)} members so far...")
+
+            # Small delay between batches
+            import time
+            time.sleep(settings.rate_limit_delay)
+
+        print(f"Total current members discovered: {len(members)}")
+        return members
+
+    def process_record(self, record: Dict[str, Any]) -> bool:
+        """Process a single member record"""
+        bioguide_id = record['record_id']
+        member_summary = record['metadata']
+
+        print(f"Processing member: {bioguide_id}")
+
+        # Get detailed member info (if not already in metadata)
+        if 'terms' not in member_summary:
+            member_details = self.get_member_details(bioguide_id)
+            if not member_details:
+                self._handle_error(f"Could not fetch details for {bioguide_id}")
+                return False
+        else:
+            member_details = member_summary
+
+        # Insert person
+        person_id = self.insert_person(member_details)
+        if not person_id:
+            self._handle_error(f"Failed to insert person for {bioguide_id}")
+            return False
+
+        # Insert member
+        member_id = self.insert_member(person_id, member_details)
+        if not member_id:
+            self._handle_error(f"Failed to insert member for {bioguide_id}")
+            return False
+
+        # Insert terms
+        terms = member_details.get('terms', [])
+        if terms:
+            self.insert_member_terms(member_id, terms)
+
+        # Insert social media
+        self.insert_social_media(member_id, member_details)
+
+        # Insert contact info (if available)
+        self.insert_contact_info(member_id, member_details)
+
+        return True
+
+    # Keep existing methods for API calls and data insertion
+    def _handle_error(self, message: str, fatal: bool = False):
+        """Increment error count and abort if threshold is reached."""
+        self.error_count += 1
+        print(f"✗ {message} (error {self.error_count}/{self.max_errors})")
+        if fatal or self.error_count >= self.max_errors:
+            print(f"Too many errors ({self.error_count}), aborting ingestion.")
+            try:
+                if hasattr(self, 'conn'):
+                    self.conn.rollback()
+            except Exception:
+                pass
+            sys.exit(1)
 
     def _rate_limit(self):
         """Implement rate limiting"""
+        import time
         self.request_count += 1
 
         # Reset counter hourly
@@ -70,52 +193,18 @@ class CongressMemberIngestor:
             request_params.update(params)
 
         try:
-            response = self.session.get(url, params=request_params, timeout=30)
+            response = self.session.get(url, params=request_params, timeout=settings.request_timeout)
             response.raise_for_status()
 
             data = response.json()
             return data
 
         except requests.exceptions.RequestException as e:
-            print(f"API request failed for {endpoint}: {e}")
+            self._handle_error(f"API request failed for {endpoint}: {e}")
             return None
         except json.JSONDecodeError as e:
-            print(f"JSON decode failed for {endpoint}: {e}")
+            self._handle_error(f"JSON decode failed for {endpoint}: {e}")
             return None
-
-    def get_current_members(self) -> List[Dict]:
-        """Fetch all current members of Congress"""
-        print("Fetching current members...")
-
-        members = []
-        offset = 0
-        limit = 250  # Max per request
-
-        while True:
-            params = {
-                'currentMember': 'true',
-                'limit': limit,
-                'offset': offset
-            }
-
-            data = self._api_request('/member', params)
-            if not data or 'members' not in data:
-                break
-
-            batch = data['members']
-            if not batch:
-                break
-
-            members.extend(batch)
-            offset += len(batch)
-
-            print(f"Fetched {len(members)} members so far...")
-
-            # Small delay between batches
-            time.sleep(0.5)
-
-        print(f"Total current members: {len(members)}")
-        return members
 
     def get_member_details(self, bioguide_id: str) -> Optional[Dict]:
         """Fetch detailed information for a specific member"""
@@ -210,11 +299,38 @@ class CongressMemberIngestor:
         """Insert or update federal member record"""
         try:
             bioguide_id = member_data.get('bioguideId')
-            chamber = member_data.get('chamber', '').lower()
+            # Chamber may not be present at the top level of the detailed member
+            # object returned by the member details endpoint. Prefer an explicit
+            # top-level `chamber`, otherwise derive from the most recent term.
+            chamber = member_data.get('chamber', '')
+            if not chamber:
+                terms = member_data.get('terms', []) or []
+                # choose the most recent term by startYear or by last entry
+                chosen = None
+                try:
+                    # pick term with greatest startYear when available
+                    chosen = max((t for t in terms if t), key=lambda t: int(t.get('startYear') or 0))
+                except Exception:
+                    if terms:
+                        chosen = terms[-1]
+
+                if chosen:
+                    chamber = chosen.get('chamber', '')
+
+            chamber = (chamber or '').lower().strip()
+            # Normalize common variations returned by the API
+            if 'house' in chamber:
+                chamber = 'house'
+            elif 'senate' in chamber:
+                chamber = 'senate'
             state = member_data.get('state')
             district = member_data.get('district')
             party = member_data.get('partyName', member_data.get('party'))
             current_member = member_data.get('currentMember', True)
+
+            if not chamber or chamber not in ['house', 'senate']:
+                print(f"Skipping member {bioguide_id}: invalid chamber '{chamber}'")
+                return None
 
             # Normalize party codes
             if party:
@@ -253,9 +369,14 @@ class CongressMemberIngestor:
                 start_year = term.get('startYear')
                 end_year = term.get('endYear')
                 party = term.get('party')
-                state = term.get('state')
+                # Term objects sometimes use different keys for state
+                state = term.get('state') or term.get('stateCode') or term.get('stateName')
                 district = term.get('district')
-                chamber = term.get('chamber', '').lower()
+                chamber = (term.get('chamber') or '').lower()
+                if 'house' in chamber:
+                    chamber = 'house'
+                elif 'senate' in chamber:
+                    chamber = 'senate'
 
                 if not congress:
                     continue
@@ -289,6 +410,11 @@ class CongressMemberIngestor:
 
             except Exception as e:
                 print(f"Error inserting term for member {member_id}: {e}")
+                try:
+                    if hasattr(self, 'conn'):
+                        self.conn.rollback()
+                except Exception:
+                    pass
 
     def insert_social_media(self, member_id: int, member_data: Dict):
         """Insert social media accounts"""
@@ -337,226 +463,16 @@ class CongressMemberIngestor:
         """Insert contact information"""
         # This would typically come from additional API calls or member detail endpoints
         # For now, we'll store basic info if available
-        pass  # Implementation depends on available contact data structure
-
-    def process_member(self, member_summary: Dict):
-        """Process a single member: fetch details and insert all data"""
-        bioguide_id = member_summary.get('bioguideId')
-        if not bioguide_id:
-            return False
-
-        print(f"Processing member: {bioguide_id}")
-
-        # Get detailed member info
-        member_details = self.get_member_details(bioguide_id)
-        if not member_details:
-            print(f"Could not fetch details for {bioguide_id}")
-            return False
-
-        # Insert person
-        person_id = self.insert_person(member_details)
-        if not person_id:
-            print(f"Failed to insert person for {bioguide_id}")
-            return False
-
-        # Insert member
-        member_id = self.insert_member(person_id, member_details)
-        if not member_id:
-            print(f"Failed to insert member for {bioguide_id}")
-            return False
-
-        # Insert terms
-        terms = member_details.get('terms', [])
-        if terms:
-            self.insert_member_terms(member_id, terms)
-
-        # Insert social media
-        self.insert_social_media(member_id, member_details)
-
-        # Insert contact info (if available)
-        self.insert_contact_info(member_id, member_details)
-
-        return True
-
-    def ingest_all_members(self):
-        """Main ingestion process"""
-        print("Starting federal member data ingestion...")
-
-        # Get all current members
-        current_members = self.get_current_members()
-
-        if not current_members:
-            print("No members found!")
-            return
-
-        successful = 0
-        failed = 0
-        progress_log = {'batches': [], 'quality': {}}
-
-        # Process each member
-        for i, member_summary in enumerate(current_members):
-            try:
-                if self.process_member(member_summary):
-                    successful += 1
-                else:
-                    failed += 1
-
-                # Log progress every 10
-                if (i + 1) % 10 == 0:
-                    self.conn.commit()
-                    batch_progress = {'batch_num': (i // 10) + 1, 'successful': successful, 'failed': failed}
-                    progress_log['batches'].append(batch_progress)
-                    print(f"Progress: {successful} successful, {failed} failed")
-
-                    # Save log
-                    with open('ingestion_log.json', 'w') as log_file:
-                        json.dump(progress_log, log_file, indent=2, default=str)
-
-                # Small delay
-                time.sleep(0.5)
-
-            except Exception as e:
-                print(f"Unexpected error processing member: {e}")
-                failed += 1
-                self.conn.rollback()
-
-        # Quality metrics
-        try:
-            self.cursor.execute("SELECT COUNT(*) as total FROM master.federal_member")
-            total = self.cursor.fetchone()['total']
-
-            self.cursor.execute("SELECT COUNT(*) as complete FROM master.federal_member WHERE full_name IS NOT NULL AND party IS NOT NULL AND state IS NOT NULL")
-            complete = self.cursor.fetchone()['complete']
-            progress_log['quality']['complete_pct'] = (complete / total * 100) if total > 0 else 0
-
-            self.cursor.execute("SELECT COUNT(*) as duplicates FROM master.federal_person WHERE updated_at > now() - interval '1 hour'")
-            dups = self.cursor.fetchone()['duplicates']
-            progress_log['quality']['potential_duplicates'] = dups
-
-        except Exception as e:
-            progress_log['quality']['error'] = str(e)
-
-        with open('ingestion_log.json', 'w') as log_file:
-            json.dump(progress_log, log_file, indent=2, default=str)
-
-        # Example retry decorator for API calls (uncomment and apply to methods as needed)
-        # def retry(max_attempts=3, delay=1):
-        #     def decorator(func):
-        #         def wrapper(*args, **kwargs):
-        #             for attempt in range(max_attempts):
-        #                 try:
-        #                     return func(*args, **kwargs)
-        #                 except Exception as e:
-        #                     if attempt == max_attempts - 1:
-        #                         raise e
-        #                     print(f"Retry {attempt + 1}/{max_attempts} after {delay}s: {e}")
-        #                     time.sleep(delay * (2 ** attempt))
-        #         return wrapper
-        #     return decorator
-        # self._api_request = retry()(self._api_request)
-
-        print("Progress and quality logged to ingestion_log.json")
-
-        # Final commit
-        self.conn.commit()
-
-        print("Ingestion complete!")
-        print(f"Successful: {successful}")
-        print(f"Failed: {failed}")
-        print(f"Total processed: {successful + failed}")
-
-        # Summary statistics
-        self.print_summary_stats()
-
-    def print_summary_stats(self):
-        """Print summary statistics of ingested data"""
-        try:
-            # Count by chamber
-            self.cursor.execute("""
-                SELECT chamber, COUNT(*) as count
-                FROM master.federal_member
-                WHERE current_member = true
-                GROUP BY chamber
-                ORDER BY chamber
-            """)
-            chamber_counts = self.cursor.fetchall()
-
-            print("\n=== INGESTION SUMMARY ===")
-            for row in chamber_counts:
-                print(f"{row['chamber'].title()}: {row['count']}")
-
-            # Count with social media
-            self.cursor.execute("""
-                SELECT COUNT(DISTINCT member_id) as with_social
-                FROM master.federal_member_social_media
-            """)
-            social_count = self.cursor.fetchone()['with_social']
-            print(f"Members with social media: {social_count}")
-
-            # Total terms
-            self.cursor.execute("""
-                SELECT COUNT(*) as term_count
-                FROM master.federal_member_term
-            """)
-            term_count = self.cursor.fetchone()['term_count']
-            print(f"Total terms recorded: {term_count}")
-
-            # Data quality (join person for full_name)
-            self.cursor.execute("""
-                SELECT COUNT(*) as total_members 
-                FROM master.federal_member m 
-                JOIN master.federal_person p ON m.person_id = p.id
-            """)
-            total_members = self.cursor.fetchone()['total_members']
-            self.cursor.execute("""
-                SELECT COUNT(*) as incomplete 
-                FROM master.federal_member m 
-                JOIN master.federal_person p ON m.person_id = p.id 
-                WHERE p.full_name IS NULL OR m.party IS NULL
-            """)
-            incomplete = self.cursor.fetchone()['incomplete']
-            quality_pct = ((total_members - incomplete) / total_members * 100) if total_members > 0 else 0
-            print(f"Data quality (complete profiles): {quality_pct:.1f}%")
-
-        except Exception as e:
-            print(f"Error generating summary: {e}")
+        pass
 
     def close(self):
-        """Clean up database connection"""
-        if self.cursor:
+        """Clean up database connection and tracker"""
+        if hasattr(self, 'cursor') and self.cursor:
             self.cursor.close()
-        if self.conn:
+        if hasattr(self, 'conn') and self.conn:
             self.conn.close()
-
-
-def main():
-    parser = argparse.ArgumentParser(description='Ingest federal member data from Congress.gov API')
-    parser.add_argument('--api-key', required=True, help='Congress.gov API key')
-    parser.add_argument('--db-config', required=True, help='Database config JSON file')
-    parser.add_argument('--limit', type=int, help='Limit number of members to process (for testing)')
-
-    args = parser.parse_args()
-
-    # Load database config
-    try:
-        with open(args.db_config, 'r') as f:
-            db_config = json.load(f)
-    except Exception as e:
-        print(f"Error loading database config: {e}")
-        sys.exit(1)
-
-    # Create ingestor and run
-    ingestor = CongressMemberIngestor(args.api_key, db_config)
-
-    try:
-        ingestor.ingest_all_members()
-    except KeyboardInterrupt:
-        print("\nInterrupted by user")
-    except Exception as e:
-        print(f"Ingestion failed: {e}")
-    finally:
-        ingestor.close()
+        super().close()
 
 
 if __name__ == '__main__':
-    main()
+    run_ingestion_process(CongressMemberIngestor, "Federal Member")
