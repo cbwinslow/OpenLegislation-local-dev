@@ -1,0 +1,66 @@
+---
+- name: Install and configure complete monitoring and analytics stack
+  hosts: all
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      when: ansible_os_family == 'Debian'
+
+    - name: Install required system packages
+      package:
+        name:
+          - curl
+          - wget
+          - git
+          - htop
+          - vim
+          - ufw
+        state: present
+
+  roles:
+    - common
+    - postgresql
+    - opensearch
+    - prometheus
+    - grafana
+    - loki
+    - neo4j
+    - rag_system
+
+  post_tasks:
+    - name: Verify all services are running
+      service:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      loop:
+        - postgresql
+        - opensearch
+        - prometheus
+        - grafana-server
+        - loki
+        - neo4j
+      ignore_errors: true
+
+    - name: Display service status
+      command: systemctl status {{ item }} --no-pager
+      loop:
+        - postgresql
+        - opensearch
+        - prometheus
+        - grafana-server
+        - loki
+        - neo4j
+      register: service_status
+      ignore_errors: true
+
+    - name: Show service status
+      debug:
+        msg: "{{ item.stdout }}"
+      loop: "{{ service_status.results }}"
+      when: item.stdout is defined
