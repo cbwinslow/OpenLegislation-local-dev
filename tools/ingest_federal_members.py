@@ -391,21 +391,28 @@ class CongressMemberIngestor:
 
         successful = 0
         failed = 0
+        progress_log = {'batches': [], 'quality': {}}
 
         # Process each member
-        for member_summary in current_members:
+        for i, member_summary in enumerate(current_members):
             try:
                 if self.process_member(member_summary):
                     successful += 1
                 else:
                     failed += 1
 
-                # Commit every 10 members
-                if (successful + failed) % 10 == 0:
+                # Log progress every 10
+                if (i + 1) % 10 == 0:
                     self.conn.commit()
+                    batch_progress = {'batch_num': (i // 10) + 1, 'successful': successful, 'failed': failed}
+                    progress_log['batches'].append(batch_progress)
                     print(f"Progress: {successful} successful, {failed} failed")
 
-                # Small delay to be respectful to the API
+                    # Save log
+                    with open('ingestion_log.json', 'w') as log_file:
+                        json.dump(progress_log, log_file, indent=2, default=str)
+
+                # Small delay
                 time.sleep(0.5)
 
             except Exception as e:
@@ -413,11 +420,47 @@ class CongressMemberIngestor:
                 failed += 1
                 self.conn.rollback()
 
+        # Quality metrics
+        try:
+            self.cursor.execute("SELECT COUNT(*) as total FROM master.federal_member")
+            total = self.cursor.fetchone()['total']
+
+            self.cursor.execute("SELECT COUNT(*) as complete FROM master.federal_member WHERE full_name IS NOT NULL AND party IS NOT NULL AND state IS NOT NULL")
+            complete = self.cursor.fetchone()['complete']
+            progress_log['quality']['complete_pct'] = (complete / total * 100) if total > 0 else 0
+
+            self.cursor.execute("SELECT COUNT(*) as duplicates FROM master.federal_person WHERE updated_at > now() - interval '1 hour'")
+            dups = self.cursor.fetchone()['duplicates']
+            progress_log['quality']['potential_duplicates'] = dups
+
+        except Exception as e:
+            progress_log['quality']['error'] = str(e)
+
+        with open('ingestion_log.json', 'w') as log_file:
+            json.dump(progress_log, log_file, indent=2, default=str)
+
+        # Example retry decorator for API calls (uncomment and apply to methods as needed)
+        # def retry(max_attempts=3, delay=1):
+        #     def decorator(func):
+        #         def wrapper(*args, **kwargs):
+        #             for attempt in range(max_attempts):
+        #                 try:
+        #                     return func(*args, **kwargs)
+        #                 except Exception as e:
+        #                     if attempt == max_attempts - 1:
+        #                         raise e
+        #                     print(f"Retry {attempt + 1}/{max_attempts} after {delay}s: {e}")
+        #                     time.sleep(delay * (2 ** attempt))
+        #         return wrapper
+        #     return decorator
+        # self._api_request = retry()(self._api_request)
+
+        print("Progress and quality logged to ingestion_log.json")
+
         # Final commit
         self.conn.commit()
 
-        print("
-Ingestion complete!")
+        print("Ingestion complete!")
         print(f"Successful: {successful}")
         print(f"Failed: {failed}")
         print(f"Total processed: {successful + failed}")
@@ -457,6 +500,23 @@ Ingestion complete!")
             """)
             term_count = self.cursor.fetchone()['term_count']
             print(f"Total terms recorded: {term_count}")
+
+            # Data quality (join person for full_name)
+            self.cursor.execute("""
+                SELECT COUNT(*) as total_members 
+                FROM master.federal_member m 
+                JOIN master.federal_person p ON m.person_id = p.id
+            """)
+            total_members = self.cursor.fetchone()['total_members']
+            self.cursor.execute("""
+                SELECT COUNT(*) as incomplete 
+                FROM master.federal_member m 
+                JOIN master.federal_person p ON m.person_id = p.id 
+                WHERE p.full_name IS NULL OR m.party IS NULL
+            """)
+            incomplete = self.cursor.fetchone()['incomplete']
+            quality_pct = ((total_members - incomplete) / total_members * 100) if total_members > 0 else 0
+            print(f"Data quality (complete profiles): {quality_pct:.1f}%")
 
         except Exception as e:
             print(f"Error generating summary: {e}")
