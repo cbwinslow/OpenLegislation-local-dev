@@ -202,7 +202,7 @@ public class IngestionIntegrationIT extends BaseXmlProcessorTest {
 
             // Verify at least the bill was processed
             BillId billId = new BillId("L00001", 2017);
-            Bill bill = searchService.getBill(billId);
+            Bill bill = getBill(billId);
             assertNotNull("Bill should be found after bulk ingestion", bill);
 
             System.out.println("Bulk data ingestion test passed");
@@ -262,7 +262,7 @@ public class IngestionIntegrationIT extends BaseXmlProcessorTest {
 
             // Verify both base bill and fragment were processed
             BillId billId = new BillId("L00002", 2017);
-            Bill bill = searchService.getBill(billId);
+            Bill bill = getBill(billId);
             assertNotNull("Bill with fragments should be found", bill);
 
             System.out.println("Data fragment processing test passed");

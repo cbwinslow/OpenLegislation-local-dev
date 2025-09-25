@@ -24,6 +24,7 @@ import psycopg2.extras
 import requests
 
 from settings import settings
+from member_utils import normalize_chamber, derive_chamber_from_terms, derive_state_from_term
 from base_ingestion_process import BaseIngestionProcess, run_ingestion_process
 
 
@@ -299,30 +300,10 @@ class CongressMemberIngestor(BaseIngestionProcess):
         """Insert or update federal member record"""
         try:
             bioguide_id = member_data.get('bioguideId')
-            # Chamber may not be present at the top level of the detailed member
-            # object returned by the member details endpoint. Prefer an explicit
-            # top-level `chamber`, otherwise derive from the most recent term.
             chamber = member_data.get('chamber', '')
             if not chamber:
-                terms = member_data.get('terms', []) or []
-                # choose the most recent term by startYear or by last entry
-                chosen = None
-                try:
-                    # pick term with greatest startYear when available
-                    chosen = max((t for t in terms if t), key=lambda t: int(t.get('startYear') or 0))
-                except Exception:
-                    if terms:
-                        chosen = terms[-1]
-
-                if chosen:
-                    chamber = chosen.get('chamber', '')
-
-            chamber = (chamber or '').lower().strip()
-            # Normalize common variations returned by the API
-            if 'house' in chamber:
-                chamber = 'house'
-            elif 'senate' in chamber:
-                chamber = 'senate'
+                chamber = derive_chamber_from_terms(member_data.get('terms', []))
+            chamber = normalize_chamber(chamber)
             state = member_data.get('state')
             district = member_data.get('district')
             party = member_data.get('partyName', member_data.get('party'))
@@ -370,7 +351,7 @@ class CongressMemberIngestor(BaseIngestionProcess):
                 end_year = term.get('endYear')
                 party = term.get('party')
                 # Term objects sometimes use different keys for state
-                state = term.get('state') or term.get('stateCode') or term.get('stateName')
+                state = derive_state_from_term(term)
                 district = term.get('district')
                 chamber = (term.get('chamber') or '').lower()
                 if 'house' in chamber:

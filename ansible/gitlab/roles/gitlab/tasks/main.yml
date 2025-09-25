@@ -1,0 +1,79 @@
+---
+- name: Install prerequisite packages
+  apt:
+    name: "{{ additional_packages }}"
+    state: present
+    update_cache: yes
+
+- name: Add GitLab repository
+  apt_repository:
+    repo: "deb https://packages.gitlab.com/gitlab/{{ gitlab_omnibus_package }}/ubuntu/ {{ ansible_distribution_release }} main"
+    state: present
+    filename: gitlab
+  become: yes
+
+- name: Install GPG key for GitLab repo
+  apt_key:
+    url: https://packages.gitlab.com/gpg.key
+    state: present
+
+- name: Update apt cache after adding repo
+  apt:
+    update_cache: yes
+
+- name: Install GitLab Omnibus package
+  apt:
+    name: "{{ gitlab_omnibus_package }}"
+    state: present
+  notify: reconfigure gitlab
+
+- name: Configure GitLab external URL
+  lineinfile:
+    path: /etc/gitlab/gitlab.rb
+    regexp: '^external_url'
+    line: "external_url '{{ gitlab_external_url }}'"
+    backup: yes
+  notify: reconfigure gitlab
+
+- name: Configure GitLab timezone
+  lineinfile:
+    path: /etc/gitlab/gitlab.rb
+    regexp: '^gitlab_rails\[''time_zone''\]'
+    line: "gitlab_rails['time_zone'] = '{{ gitlab_time_zone }}'"
+    backup: yes
+  notify: reconfigure gitlab
+
+- name: Apply additional GitLab RB configurations
+  lineinfile:
+    path: /etc/gitlab/gitlab.rb
+    regexp: '^{{ item.key }}$'
+    line: "{{ item.key }} = {{ item.value | to_json }}"
+    backup: yes
+  loop: "{{ gitlab_rb_config | dict2items }}"
+  when: gitlab_rb_config is defined
+  notify: reconfigure gitlab
+
+- name: Enable HTTPS if configured
+  lineinfile:
+    path: /etc/gitlab/gitlab.rb
+    regexp: '^nginx\[''redirect_http_to_https''\]'
+    line: "nginx['redirect_http_to_https'] = {{ gitlab_https | lower }}"
+    backup: yes
+  notify: reconfigure gitlab
+  when: gitlab_https is defined
+
+- name: Set GitLab root initial password
+  shell: echo -e "yes\n{{ gitlab_root_password }}\n{{ gitlab_root_password }}\n" | /opt/gitlab/bin/gitlab-ctl set-user-gecos root "{{ gitlab_root_email }}" && /opt/gitlab/bin/gitlab-ctl set-user-uid root 0
+  no_log: true  # Hide password
+  when: gitlab_root_password is defined
+
+- name: Reconfigure GitLab (handler)
+  shell: gitlab-ctl reconfigure
+  become: yes
+  listen: reconfigure gitlab
+
+- name: Start and enable GitLab services
+  systemd:
+    name: gitlab-runsvdir
+    state: started
+    enabled: yes

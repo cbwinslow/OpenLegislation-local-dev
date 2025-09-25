@@ -21,7 +21,7 @@ LOG_LEVEL=${LOG_LEVEL:-INFO}
 echo "=== Congress.gov Bulk Data Ingestion Workflow (Universal Database) ==="
 echo "Congress Range: $CONGRESS_RANGE"
 echo "Collections: $COLLECTIONS"
-echo "Sessions: $SESSION"
+echo "Sessions: $SESSIONS"
 echo "Output Directory: $OUTPUT_DIR"
 echo "Full Download: $FULL_DOWNLOAD"
 echo "Batch Size: $BATCH_SIZE"
@@ -44,6 +44,19 @@ if [ "$USE_GPU" = "true" ]; then
     fi
     nvidia-smi --query-gpu=name,memory.total --format=csv,noheader,nounits
 fi
+
+# Step 0: Ingest federal members first (for sponsor mapping)
+echo "Step 0: Ingesting federal member data..."
+if [ "$INGEST_MEMBERS" != "false" ]; then
+    python3 tools/ingest_federal_members.py \
+        --db-config "$DB_CONFIG" \
+        --log-level "$LOG_LEVEL" \
+        ${CONGRESS_API_KEY:+--api-key "$CONGRESS_API_KEY"}
+    echo "Member ingestion complete"
+else
+    echo "Skipping member ingestion (set INGEST_MEMBERS=false to skip)"
+fi
+echo
 
 # Step 1: Download data
 echo "Step 1: Downloading govinfo bulk data..."
@@ -79,11 +92,16 @@ for collection in $COLLECTIONS; do
         echo "Found $xml_count XML files in $collection"
 
         if [ $xml_count -gt 0 ]; then
+            GPU_ARGS=""
+            if [ "$USE_GPU" = "true" ]; then
+                GPU_ARGS="--use-gpu"
+            fi
             python3 tools/govinfo_data_connector.py \
                 --input-dir "$collection_dir" \
                 --db-config "$DB_CONFIG" \
                 --batch-size "$BATCH_SIZE" \
-                --log-level "$LOG_LEVEL"
+                --log-level "$LOG_LEVEL" \
+                $GPU_ARGS
         fi
     else
         echo "Collection directory not found: $collection_dir"
@@ -98,7 +116,6 @@ echo
 # Step 5: Verification
 echo "Step 5: Verifying data ingestion..."
 
-# Check if we can connect to database and run queries
 python3 -c "
 import json
 import psycopg2
@@ -129,17 +146,39 @@ cursor.execute(\"SELECT COUNT(*) as federal_count FROM master.bill WHERE data_so
 federal_result = cursor.fetchone()
 print(f'Total federal bills ingested: {federal_result[\"federal_count\"]}')
 
-# Sample federal bill
+# Check sponsor mappings
 cursor.execute('''
-    SELECT bill_print_no, title, congress, bill_type
-    FROM master.bill
-    WHERE data_source = 'federal'
-    ORDER BY congress DESC, bill_print_no
+    SELECT COUNT(*) as mapped_sponsors
+    FROM master.bill_sponsor bs
+    JOIN master.federal_member fm ON bs.session_member_id = fm.id
+    WHERE bs.data_source = 'federal'
+''')
+mapped_sponsors = cursor.fetchone()['mapped_sponsors']
+print(f'Federal bills with mapped sponsors: {mapped_sponsors}')
+
+cursor.execute('''
+    SELECT COUNT(*) as unmapped_sponsors
+    FROM master.bill_sponsor bs
+    WHERE bs.data_source = 'federal'
+    AND bs.session_member_id NOT IN (SELECT id FROM master.federal_member)
+''')
+unmapped = cursor.fetchone()['unmapped_sponsors']
+print(f'Unmapped sponsors (name fallbacks): {unmapped}')
+
+# Sample federal bill with sponsor
+cursor.execute('''
+    SELECT b.bill_print_no, b.title, bs.session_member_id, fp.full_name as sponsor_name
+    FROM master.bill b
+    JOIN master.bill_sponsor bs ON b.bill_print_no = bs.bill_print_no AND b.bill_session_year = bs.bill_session_year
+    LEFT JOIN master.federal_member fm ON bs.session_member_id = fm.id
+    LEFT JOIN master.federal_person fp ON fm.person_id = fp.id
+    WHERE b.data_source = 'federal' AND bs.sponsor_type = 'sponsor'
+    ORDER BY b.congress DESC, b.bill_print_no
     LIMIT 1
 ''')
-sample_bill = cursor.fetchone()
-if sample_bill:
-    print(f'Sample federal bill: {sample_bill[\"bill_print_no\"]} - {sample_bill[\"title\"][:50]}...')
+sample = cursor.fetchone()
+if sample:
+    print(f'Sample federal bill with sponsor: {sample[\"bill_print_no\"]} - {sample[\"title\"][:50]}... (Sponsor: {sample[\"sponsor_name\"] or sample[\"session_member_id\"]})')
 
 cursor.close()
 conn.close()
