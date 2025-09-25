@@ -9,7 +9,19 @@ import java.util.regex.Pattern;
  */
 public enum SourceType {
     XML(".*\\.XML"),
-    SOBI("SOBI\\.D\\d{6}\\.T\\d{6}\\.TXT");
+    SOBI("SOBI\\.D\\d{6}\\.T\\d{6}\\.TXT"),
+    // Federal collections
+    FEDERAL_BILL_XML("federal_bill.*\\.XML"),
+    FEDERAL_LAW_XML("federal_law.*\\.XML"),
+    FEDERAL_REPORT_XML("federal_report.*\\.XML"),
+    FEDERAL_RECORD_XML("federal_record.*\\.XML"),
+    FEDERAL_HEARING_XML("federal_hearing.*\\.XML"),
+    FEDERAL_CALENDAR_XML("federal_calendar.*\\.XML"),
+    FEDERAL_NOMINATION_XML("federal_nomination.*\\.XML"),
+    FEDERAL_TREATY_XML("federal_treaty.*\\.XML"),
+    FEDERAL_REGISTER_XML("federal_register.*\\.XML"),
+    FEDERAL_CFR_XML("federal_cfr.*\\.XML"),
+    FEDERAL_STATUTE_XML("federal_statute.*\\.XML");
 
     private final Predicate<String> filenameMatcher;
 

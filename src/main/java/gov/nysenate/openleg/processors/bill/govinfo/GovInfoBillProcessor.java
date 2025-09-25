@@ -175,12 +175,14 @@ public class GovInfoBillProcessor extends AbstractBillProcessor {
                 LocalDateTime actionDate = parseDateTime(dateStr);
                 Chamber chamber = parseChamber(chamberStr);
 
+                BillId billId = new BillId(bill.getBaseBillId(), Version.ORIGINAL);
                 BillAction action = new BillAction(
                     actionDate.toLocalDate(),
                     text,
                     chamber,
-                    i + 1, // sequence number
-                    bill.getBaseBillId().withVersion(version)
+                    0, // sequence number
+                    billId,
+                    "UNKNOWN"
                 );
                 actions.add(action);
             }

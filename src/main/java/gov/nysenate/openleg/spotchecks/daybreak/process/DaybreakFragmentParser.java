@@ -75,7 +75,6 @@ public class DaybreakFragmentParser {
      */
     private static void parseActions(DaybreakBill daybreakBill, String[] actionLines){
         List<BillAction> billActions = new ArrayList<>();
-        int sequenceNo = 0; // Sequence no for the action
         for(int i = 0; i<actionLines.length; i++){
             // Check to see if it is a valid action line
             Matcher billActionMatcher = billActionPattern.matcher(actionLines[i]);
@@ -86,8 +85,9 @@ public class DaybreakFragmentParser {
                     String actionText = billActionMatcher.group(2);
                     Chamber actionChamber = StringUtils.isAllUpperCase(actionText.replaceAll("[^a-zA-Z]+", "")) ?
                                                 Chamber.SENATE : Chamber.ASSEMBLY ;
+                    BillId billId = new BillId(daybreakBill.getBaseBillId(), Version.ORIGINAL);
                     billActions.add(
-                            new BillAction(actionDate, actionText, actionChamber, ++sequenceNo, daybreakBill.getBaseBillId())
+                            new BillAction(actionDate, actionText, actionChamber, 0, billId, "UNKNOWN")
                     );
                 } catch (DateTimeParseException ex) {
                     logger.error("Could not parse date " + billActionMatcher.group(1) + " for " + daybreakBill.getDaybreakBillId());

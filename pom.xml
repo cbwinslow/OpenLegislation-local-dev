@@ -1,3 +1,4 @@
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
@@ -31,10 +32,59 @@
           <encoding>utf-8</encoding>
         </configuration>
       </plugin>
+      <!-- JAXB2 Maven Plugin for generating classes from XSD -->
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-war-plugin</artifactId>
-        <version>3.4.0</version>
+          <groupId>org.jvnet.jaxb</groupId>
+          <artifactId>jaxb-maven-plugin</artifactId>
+          <version>2.6.1</version>
+          <executions>
+              <execution>
+                  <id>xjc</id>
+                  <goals>
+                      <goal>xjc</goal>
+                  </goals>
+              </execution>
+          </executions>
+          <configuration>
+              <sources>
+                  <source>src/main/resources/schema/uslm-bill.xsd</source>
+                  <source>src/main/resources/schema/uslm-law.xsd</source>
+              </sources>
+              <packageName>gov.nysenate.openleg.processors.federal.jaxb</packageName>
+              <clearOutputDir>false</clearOutputDir>
+          </configuration>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>jaxb2-maven-plugin</artifactId>
+        <version>3.2.0</version>
+        <executions>
+          <execution>
+            <id>xjc</id>
+            <goals>
+              <goal>xjc</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <sources>
+            <source>src/main/resources/schema/uslm-bill.xsd</source>
+            <source>src/main/resources/schema/uslm-law.xsd</source>
+          </sources>
+          <packageName>gov.nysenate.openleg.processors.federal.jaxb</packageName>
+          <clearOutputDir>false</clearOutputDir>
+          <outputDirectory>${project.build.directory}/generated-sources/xjc</outputDirectory>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-xjc</artifactId>
+            <version>3.0.2</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-war-plugin</artifactId>
+          <version>3.4.0</version>
       </plugin>
       <!-- Surefire Plugin -->
       <plugin>
@@ -106,6 +156,15 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.tomcat.maven</groupId>
+        <artifactId>tomcat7-maven-plugin</artifactId>
+        <version>2.2</version>
+        <configuration>
+          <port>8080</port>
+          <path>/</path>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
@@ -144,6 +203,17 @@
   </properties>
 
   <dependencies>
+      <!-- JAXB for XML binding -->
+      <dependency>
+          <groupId>jakarta.xml.bind</groupId>
+          <artifactId>jakarta.xml.bind-api</artifactId>
+          <version>3.0.1</version>
+      </dependency>
+      <dependency>
+          <groupId>org.glassfish.jaxb</groupId>
+          <artifactId>jaxb-runtime</artifactId>
+          <version>3.0.2</version>
+      </dependency>
     <!-- Spring -->
     <dependency>
       <groupId>org.springframework</groupId>
@@ -317,6 +387,7 @@
       <version>${woodstox.version}</version>
     </dependency>
 
+    <!-- JAXB for XML binding -->
     <dependency>
       <groupId>com.sun.xml.bind</groupId>
       <artifactId>jaxb-impl</artifactId>
@@ -326,7 +397,11 @@
       <groupId>org.glassfish.jaxb</groupId>
       <artifactId>jaxb-runtime</artifactId>
       <version>${javax.xml.bind.version}</version>
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+      <version>3.0.1</version>
     </dependency>
+
     <dependency>
       <groupId>javax.activation</groupId>
       <artifactId>activation</artifactId>
