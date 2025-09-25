@@ -1,0 +1,33 @@
+---
+# Ansible variables for GitLab installation (Omnibus bare metal)
+# Edit these as needed before running the playbook
+
+# GitLab external URL (must be accessible)
+gitlab_external_url: 'http://gitlab.example.com'
+
+# GitLab root account email
+gitlab_root_email: 'admin@example.com'
+
+# GitLab root password (change for production)
+gitlab_root_password: 'SecurePassword123!'
+
+# Timezone
+gitlab_time_zone: 'UTC'
+
+# Enable HTTPS (set to true and configure certs for production)
+gitlab_https: false
+
+# Package manager settings (for Ubuntu/Debian)
+gitlab_omnibus_package: 'gitlab-ee'  # or 'gitlab-ce' for Community Edition
+
+# Additional packages to install (e.g., postfix for email)
+additional_packages:
+  - curl
+  - openssh-server
+  - ca-certificates
+  - tzdata
+
+# GitLab configuration snippets (applied to /etc/gitlab/gitlab.rb)
+gitlab_rb_config:
+  gitlab_rails['gitlab_shell_ssh_port'] = 22
+  # Add more configs as needed, e.g., for SMTP, backups

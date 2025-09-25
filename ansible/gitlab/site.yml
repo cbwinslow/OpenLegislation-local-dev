@@ -1,0 +1,17 @@
+---
+- name: Install and configure GitLab Omnibus
+  hosts: gitlab_servers
+  become: yes  # Run tasks as root
+  gather_facts: yes
+
+  roles:
+    - gitlab
+
+  post_tasks:
+    - name: Display GitLab access info
+      debug:
+        msg:
+          - "GitLab installed successfully!"
+          - "Access at: {{ gitlab_external_url }}"
+          - "Initial root password: {{ gitlab_root_password }}"
+          - "Run 'gitlab-ctl reconfigure' if needed after changes."

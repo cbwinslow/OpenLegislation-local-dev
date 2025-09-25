@@ -44,6 +44,7 @@ import time
 import json
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Any, Union
+import logging
 
 from settings import settings
 from generic_ingestion_tracker import GenericIngestionTracker, IngestionRecord
