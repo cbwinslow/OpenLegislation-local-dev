@@ -1,0 +1,78 @@
+<common_patterns>
+  <pattern name="progressive_ingestion">
+    <description>Template for phased codebase ingestion to handle large scales.</description>
+    <context>Use when codebase &gt;100k LOC; prioritize core before full scan.</context>
+    <steps>
+      <step><tool>list_files</tool> &lt;path>.</path> &lt;recursive>true</recursive> to map structure.</step>
+      <step>Phase 1: search_files for docs (regex: \.(md|txt)$ in root/docs/); read_file top 5.</step>
+      <step>Phase 2: list_code_definition_names on src/ for hierarchy; summarize modules.</step>
+      <step>Phase 3: Batch read_file (5 max) on peripherals, chunk if &gt;5k lines.</step>
+    </steps>
+    <example>
+      <code language="xml"><![CDATA[
+<list_files>
+  <path>.</path>
+  <recursive>true</recursive>
+</list_files>
+      ]]></code>
+      <explanation>Builds index for subsequent targeted reads.</explanation>
+    </example>
+  </pattern>
+
+  <pattern name="planning_markdown_template">
+    <description>Standard structure for long-term development plans.</description>
+    <context>Output plans in this format for clarity and trackability.</context>
+    <template><![CDATA[
+# Long-Term Codebase Plan
+
+## Overview
+- Project Goals: [Synthesized from docs]
+- Timeline: 6-12 months, quarterly phases
+- Key Dependencies: [Mapped]
+
+## Phases
+### Phase 1: Q1 [Dates]
+- Milestones: [List]
+- Tasks:
+  - [ ] Task 1: Description, owner, est. time
+  - [ ] Task 2: ...
+- Metrics: [e.g., LOC refactored, tests coverage]
+
+### Phase 2: Q2 [Dates]
+...
+
+## Risks and Mitigations
+- Risk 1: [Description, likelihood, impact]
+  - Mitigation: [Strategy]
+
+## Progress Tracking
+- Use update_todo_list for phases
+- Re-ingest quarterly for updates
+    ]]></template>
+    <explanation>Ensures comprehensive, actionable output with sections for all required elements.</explanation>
+  </pattern>
+
+  <pattern name="dependency_mapping">
+    <description>Pattern for extracting and visualizing dependencies.</description>
+    <context>During analysis phase; use search_files for imports/requires.</context>
+    <code language="markdown"><![CDATA[
+## Dependency Map
+- Core Modules: src/main/java/gov/nysenate/openleg (depends on: law, bill processors)
+- External: Maven deps from pom.xml (e.g., Spring, Jackson)
+- Risks: Tight coupling in spotchecks -> Suggest modular refactor
+    ]]></code>
+    <explanation>Hierarchical list aids in risk assessment and refactoring suggestions.</explanation>
+  </pattern>
+
+  <pattern name="risk_assessment">
+    <description>Standard risk evaluation framework.</description>
+    <context>Incorporate into planning; score likelihood (low/med/high) and impact.</context>
+    <template><![CDATA[
+| Risk | Likelihood | Impact | Mitigation | Owner |
+|------|------------|--------|------------|-------|
+| Technical Debt in Legacy Code | High | High | Phased refactoring in Q2 | Dev Lead |
+| Dependency Updates | Med | Med | Quarterly reviews | Ops Team |
+    ]]></template>
+    <explanation>Table format for easy tracking; integrate with todo lists.</explanation>
+  </pattern>
+</common_patterns>

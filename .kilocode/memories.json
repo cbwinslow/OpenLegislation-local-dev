@@ -1,0 +1,184 @@
+{
+  "version": "1.0.0",
+  "description": "OpenLegislation project memories and learned patterns",
+  "memories": {
+    "architectural_patterns": {
+      "layered_architecture": {
+        "description": "Standard layered architecture with API, Service, Domain, Repository layers",
+        "usage": "All new services should follow this pattern",
+        "example": "BillService -> BillRepository -> PostgreSQL",
+        "last_updated": "2024-01-15"
+      },
+      "hexagonal_architecture": {
+        "description": "Ports and adapters pattern for external dependencies",
+        "usage": "Use for services with external API integrations",
+        "example": "CongressApiClient implements CongressApiPort",
+        "last_updated": "2024-01-15"
+      },
+      "event_driven_processing": {
+        "description": "Asynchronous processing using Spring events",
+        "usage": "For long-running bill processing operations",
+        "example": "BillProcessingEvent -> BillProcessingEventListener",
+        "last_updated": "2024-01-15"
+      }
+    },
+    "coding_patterns": {
+      "builder_pattern": {
+        "description": "Builder pattern for complex object construction",
+        "usage": "Bill, BillAction, and other domain objects",
+        "example": "Bill.builder().billId(\"S123\").title(\"Test Bill\").build()",
+        "last_updated": "2024-01-15"
+      },
+      "factory_pattern": {
+        "description": "Factory pattern for object creation based on type",
+        "usage": "Creating processors based on SourceType",
+        "example": "BillProcessorFactory.createProcessor(SourceType.STATE)",
+        "last_updated": "2024-01-15"
+      },
+      "strategy_pattern": {
+        "description": "Strategy pattern for different processing approaches",
+        "usage": "Different parsing strategies for different bill formats",
+        "example": "BillParserStrategy interface with implementations",
+        "last_updated": "2024-01-15"
+      }
+    },
+    "error_handling": {
+      "custom_exceptions": {
+        "description": "Custom exception hierarchy for domain-specific errors",
+        "usage": "Always use specific exceptions, not generic ones",
+        "example": "throw new BillProcessingException(\"Invalid bill format\", cause)",
+        "last_updated": "2024-01-15"
+      },
+      "validation_errors": {
+        "description": "Bean Validation with custom validators",
+        "usage": "Validate input DTOs and domain objects",
+        "example": "@Valid @NotNull on controller parameters",
+        "last_updated": "2024-01-15"
+      },
+      "circuit_breaker": {
+        "description": "Circuit breaker pattern for external service calls",
+        "usage": "Protect against cascading failures",
+        "example": "@CircuitBreaker on external API calls",
+        "last_updated": "2024-01-15"
+      }
+    },
+    "performance_optimizations": {
+      "caching_strategy": {
+        "description": "Multi-level caching with Redis and Caffeine",
+        "usage": "Cache frequently accessed data",
+        "example": "@Cacheable on service methods",
+        "last_updated": "2024-01-15"
+      },
+      "batch_processing": {
+        "description": "Batch operations for bulk data processing",
+        "usage": "Use for large data imports and updates",
+        "example": "Batch insert for bill actions",
+        "last_updated": "2024-01-15"
+      },
+      "lazy_loading": {
+        "description": "Lazy loading for large collections",
+        "usage": "For bill text and large attachments",
+        "example": "@Lob @Basic(fetch = FetchType.LAZY)",
+        "last_updated": "2024-01-15"
+      }
+    },
+    "database_patterns": {
+      "optimistic_locking": {
+        "description": "Optimistic locking for concurrent updates",
+        "usage": "Prevent lost updates in concurrent scenarios",
+        "example": "@Version on entity fields",
+        "last_updated": "2024-01-15"
+      },
+      "composite_keys": {
+        "description": "Composite primary keys for complex relationships",
+        "usage": "Bill-sponsor and bill-committee relationships",
+        "example": "@EmbeddedId with @Embeddable key class",
+        "last_updated": "2024-01-15"
+      },
+      "audit_trail": {
+        "description": "Automatic audit trail with JPA listeners",
+        "usage": "Track all data changes",
+        "example": "@EntityListeners(AuditTrailListener.class)",
+        "last_updated": "2024-01-15"
+      }
+    },
+    "testing_patterns": {
+      "test_data_builders": {
+        "description": "Builder pattern for test data creation",
+        "usage": "Consistent test data across test suites",
+        "example": "BillTestDataBuilder.createValidBill()",
+        "last_updated": "2024-01-15"
+      },
+      "contract_testing": {
+        "description": "API contract testing with Spring Cloud Contract",
+        "usage": "Ensure API compatibility",
+        "example": "Contract tests for REST endpoints",
+        "last_updated": "2024-01-15"
+      },
+      "mutation_testing": {
+        "description": "Mutation testing to verify test quality",
+        "usage": "Identify weak test suites",
+        "example": "PIT mutation testing plugin",
+        "last_updated": "2024-01-15"
+      }
+    },
+    "security_patterns": {
+      "input_sanitization": {
+        "description": "Comprehensive input validation and sanitization",
+        "usage": "All user inputs and external data",
+        "example": "OWASP HTML sanitizer for bill text",
+        "last_updated": "2024-01-15"
+      },
+      "api_key_rotation": {
+        "description": "Regular rotation of API keys and secrets",
+        "usage": "External service integrations",
+        "example": "Automated key rotation scripts",
+        "last_updated": "2024-01-15"
+      },
+      "rate_limiting": {
+        "description": "Rate limiting to prevent abuse",
+        "usage": "Public API endpoints",
+        "example": "Bucket4j rate limiting",
+        "last_updated": "2024-01-15"
+      }
+    }
+  },
+  "learned_lessons": {
+    "federal_data_integration": {
+      "lesson": "Federal APIs have complex rate limiting and require careful error handling",
+      "impact": "Implemented exponential backoff and circuit breaker patterns",
+      "date": "2024-01-10"
+    },
+    "database_performance": {
+      "lesson": "Complex queries on large datasets need careful indexing",
+      "impact": "Added composite indexes and query optimization",
+      "date": "2024-01-08"
+    },
+    "memory_management": {
+      "lesson": "Large XML processing requires streaming parsers",
+      "impact": "Replaced DOM parsing with StAX for large files",
+      "date": "2024-01-05"
+    }
+  },
+  "deprecated_patterns": {
+    "xml_dom_parsing": {
+      "reason": "High memory usage for large XML files",
+      "replacement": "StAX streaming parser",
+      "deprecated_date": "2024-01-05"
+    },
+    "synchronous_external_calls": {
+      "reason": "Blocking calls cause performance issues",
+      "replacement": "Asynchronous calls with CompletableFuture",
+      "deprecated_date": "2024-01-03"
+    }
+  },
+  "project_constants": {
+    "max_bill_text_length": 10485760,
+    "default_page_size": 50,
+    "max_page_size": 1000,
+    "api_timeout_seconds": 30,
+    "cache_ttl_hours": 24,
+    "max_retry_attempts": 3,
+    "rate_limit_requests_per_minute": 60
+  }
+}

@@ -1,0 +1,79 @@
+<best_practices>
+  <general_principles>
+    <principle priority="high">
+      <name>Token and Resource Efficiency</name>
+      <description>Always prioritize efficient use of tokens and system resources, especially for large codebases. Estimate usage before ingestion and warn users.</description>
+      <rationale>Large-scale operations can exceed limits, causing interruptions; proactive management ensures smooth execution.</rationale>
+      <example>
+        <scenario>Before ingesting a 1M+ LOC repo</scenario>
+        <good>Estimate: "Core docs: 5k tokens; full scan: 100k+"; adjust chunk size to 5k/line summaries.</good>
+        <bad>Load entire files without summarization, risking timeout.</bad>
+      </example>
+    </principle>
+    
+    <principle priority="high">
+      <name>Progressive and Hierarchical Ingestion</name>
+      <description>Ingest in phases: core first, then expand; use hierarchical summaries (e.g., module overviews before details).</description>
+      <rationale>Enables handling 10x+ scale without overwhelming context; maintains retention for planning.</rationale>
+      <example>
+        <scenario>Large Java project like this workspace</scenario>
+        <good>Phase 1: Read README.md, ROADMAP.md; Phase 2: list_code_definition_names on src/; Phase 3: Selective read_file.</good>
+        <bad>Recursive list_files on entire dir without prioritization.</bad>
+      </example>
+    </principle>
+    
+    <principle priority="medium">
+      <name>Structured Planning Outputs</name>
+      <description>Plans must be multi-phase (quarterly), with risks, deps, metrics; use Markdown for clarity.</description>
+      <rationale>Facilitates long-term tracking and updates; aligns with user objectives.</rationale>
+      <example>
+        <scenario>6-month roadmap</scenario>
+        <good># Overview\n## Phase 1 (Q1): Goals...\n### Tasks: - [ ] Item\n## Risks: High-impact deps...</good>
+        <bad>Unstructured bullet list without timelines.</bad>
+      </example>
+    </principle>
+  </general_principles>
+
+  <guidelines category="ingestion">
+    <guideline priority="high">
+      <rule>Chunk large files; summarize non-essential code (e.g., extract classes/functions).</rule>
+      <rationale>Reduces token load while retaining architecture.</rationale>
+      <exceptions>Full read for critical docs like ROADMAP.md.</exceptions>
+    </guideline>
+    <guideline priority="medium">
+      <rule>Use MCP memory tools for context retention across sessions.</rule>
+      <rationale>Supports iterative planning over time.</rationale>
+    </guideline>
+  </guidelines>
+
+  <common_pitfalls>
+    <pitfall>
+      <description>Ignoring codebase scale during estimation.</description>
+      <why_problematic>Leads to failed ingestions or incomplete analysis.</why_problematic>
+      <correct_approach>Always run list_files recursive first; calculate LOC approx (e.g., via execute_command 'find . -name "*.java" | xargs wc -l').</correct_approach>
+    </pitfall>
+    <pitfall>
+      <description>Overlooking backward compatibility.</description>
+      <why_problematic>Breaks smaller projects.</why_problematic>
+      <correct_approach>Detect size (&lt;50k lines: use defaults); confirm with user.</correct_approach>
+    </pitfall>
+  </common_pitfalls>
+
+  <quality_checklist>
+    <category name="before_starting">
+      <item>Confirm user activation and warn on tokens</item>
+      <item>Estimate and adjust resources (timeouts 5x)</item>
+      <item>Prioritize core docs ingestion</item>
+    </category>
+    <category name="during_planning">
+      <item>Align plan with extracted goals/architecture</item>
+      <item>Include risks, metrics, iterative tracking</item>
+      <item>Use update_todo_list for phases</item>
+    </category>
+    <category name="before_completion">
+      <item>Validate plan structure and completeness</item>
+      <item>Offer updates mechanism</item>
+      <item>Ensure seamless handoff to other modes</item>
+    </category>
+  </quality_checklist>
+</best_practices>
