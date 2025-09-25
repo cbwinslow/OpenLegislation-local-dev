@@ -1,0 +1,64 @@
+<examples>
+  <example name="full_large_codebase_planning">
+    <description>Complete workflow for ingesting and planning a 500k+ LOC Java project like OpenLegislation.</description>
+    <context>User requests "Create 12-month roadmap for scaling the legislation processor." Mode activates after confirmation.</context>
+    <workflow>
+      <step1_initialization>
+        <action>ask_followup_question: "Confirm high-token ingestion for large codebase?" User: Yes.</action>
+        <action>list_files recursive on . to estimate: ~300k LOC, warn "Est. 80k tokens". Adjust timeouts 5x.</action>
+      </step1_initialization>
+      <step2_ingestion>
+        <action>search_files path="." regex="ROADMAP|README|CONTRIBUTING" file_pattern="*.md" → Finds key docs.</action>
+        <action>read_file batch: README.md, ROADMAP.md, docs/agents.md → Synthesize goals: "Process NY legislation data efficiently".</action>
+        <action>list_code_definition_names path="src/" → Maps classes like BillProcessor, LawTree.</action>
+        <action>Progressive: read_file on src/main/java/... in batches; chunk summaries for deps.</action>
+        <action>use_mcp_tool memory create_entities: Entities for "Bill Module", observations from reads.</action>
+      </step2_ingestion>
+      <step3_analysis>
+        <action>Extract: Architecture (processors, spotchecks), Deps (Maven, SQL), Objectives (federal integration from docs).</action>
+        <action>Risks: Legacy SOBI parsing → High impact, suggest refactor.</action>
+      </step3_analysis>
+      <step4_planning>
+        <action>ask_followup_question: "Prioritize federal bills or transcripts?" User: Both.</action>
+        <action>Generate Markdown plan using template: Phases Q1-Q4, tasks, risks table.</action>
+        <action>update_todo_list with phases: [x] Ingest complete, [-] Q1 tasks...</action>
+      </step4_planning>
+    </workflow>
+    <output_sample>
+      # 12-Month Roadmap for OpenLegislation Scaling
+      ## Overview
+      Goals: Enhance federal integration, refactor legacy...
+      ## Phase 1: Q1 (Jan-Mar)
+      - [ ] Migrate SOBI to modern parser
+      Metrics: 80% test coverage
+      ## Risks
+      | Risk | Likelihood | Impact | Mitigation |
+      | Legacy Debt | High | High | Phased refactor |
+    </output_sample>
+    <explanation>Demonstrates end-to-end: confirmation, phased ingestion, analysis, structured plan with tracking.</explanation>
+  </example>
+
+  <example name="small_project_fallback">
+    <description>Handling smaller codebases with backward compatibility.</description>
+    <context>User on 20k LOC repo; mode detects scale and uses defaults.</context>
+    <workflow>
+      <step1>list_files: Detect &lt;50k lines → "Small project; using standard ingestion." No full warning.</step>
+      <step2>read_file core docs; full read on src/ without chunking.</step>
+      <step3>Quick analysis; 3-month plan instead of 12.</step>
+      <step4>Output simplified Markdown; suggest switch to Code mode for impl.</step>
+    </workflow>
+    <explanation>Ensures compatibility; avoids overkill for small tasks.</explanation>
+  </example>
+
+  <example name="ongoing_update">
+    <description>Quarterly plan revision after changes.</description>
+    <context>User: "Update roadmap after Q1 refactor."</context>
+    <workflow>
+      <step1>Re-ingest changed files via search_files for diffs.</step>
+      <step2>Load prior plan from memory MCP; assess progress via update_todo_list status.</step>
+      <step3>Adjust phases: Mark Q1 [x], advance Q2; re-assess risks.</step>
+      <step4>Output updated Markdown; new todos.</step>
+    </workflow>
+    <explanation>Supports iterative long-term use with minimal re-ingestion.</explanation>
+  </example>
+</examples>

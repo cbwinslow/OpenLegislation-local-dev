@@ -1,0 +1,73 @@
+<workflow_instructions>
+  <mode_overview>
+    The Long-Term Codebase Planning Agent is designed for extensive, large-scale codebases over prolonged timelines. It maximizes context retention through intelligent ingestion, manages resources efficiently, analyzes documentation for strategic insights, and generates comprehensive multi-phase development plans. Activation requires explicit user confirmation to ensure suitability for the project's scale.
+  </mode_overview>
+
+  <prerequisites>
+    <prerequisite>Explicit user confirmation before full activation</prerequisite>
+    <prerequisite>Assessment of codebase size to estimate token usage</prerequisite>
+    <prerequisite>Dynamic adjustment of timeouts and context windows for large operations</prerequisite>
+  </prerequisites>
+
+  <initialization_steps>
+    <step number="1">
+      <title>User Confirmation and Resource Warning</title>
+      <description>Verify user intent and warn about high resource consumption.</description>
+      <actions>
+        <action>Use ask_followup_question to confirm activation, providing options for proceeding or switching modes.</action>
+        <action>Estimate codebase size using list_files (recursive) and search_files to count lines/tokens; warn if &gt;500k lines (e.g., "This codebase may consume 50k+ tokens; proceed?").</action>
+        <action>If confirmed, adjust parameters: increase context window to max (128k+), enable full-file embedding, set timeouts to 5x default.</action>
+      </actions>
+      <validation>User responds with confirmation; abort if declined and suggest smaller-scale modes.</validation>
+    </step>
+    
+    <step number="2">
+      <title>UI and Configuration Setup</title>
+      <description>Optimize interface for large-scale operations.</description>
+      <actions>
+        <action>Reset sliders: max context window, full embedding for key modules (e.g., src/main, docs/), depth-first scanning.</action>
+        <action>Provide mode-specific dashboard options via user guidance for fine-tuning (e.g., ingestion phases).</action>
+      </actions>
+      <validation>Confirm setup in response; ensure backward compatibility by detecting small codebases (&lt;10k lines) and using defaults.</validation>
+    </step>
+  </initialization_steps>
+
+  <main_workflow>
+    <phase name="ingestion">
+      <description>Expanded, progressive ingestion of the codebase to handle large scales efficiently.</description>
+      <steps>
+        <step>Phase 1 - Core Documentation: Prioritize root/docs/ .md/.txt files (README.md, agents.md, CONTRIBUTING.md, ROADMAP.md) using search_files (regex: \.(md|txt)$ in docs/ or root) and read_file (up to 5 at once, sequential for more).</step>
+        <step>Phase 2 - Hierarchical Indexing: Use list_code_definition_names on key dirs (src/, docs/) for structure; chunk large files (e.g., &gt;10k lines) into summaries with hierarchical tags.</step>
+        <step>Phase 3 - Full Codebase: Progressive load peripherals (tests, configs) using list_files recursive, read_file in batches; apply 10x ingestion limit via summarization (e.g., extract functions, deps).</step>
+        <step>Retention: Build internal index of goals, architecture, deps using memory MCP tools if available.</step>
+      </steps>
+    </phase>
+
+    <phase name="analysis">
+      <description>Extract and synthesize high-level insights from ingested context.</description>
+      <steps>
+        <step>NLP on Docs: Parse extracted docs for goals (e.g., project objectives), architecture (components, layers), dependencies (external/internal), strategic objectives (roadmaps, priorities).</step>
+        <step>Codebase Mapping: Use search_files for patterns (e.g., imports, configs) to identify modules, risks (e.g., tight coupling), refactoring opportunities.</step>
+        <step>Scale Assessment: Quantify size/complexity (LOC, modules); identify bottlenecks for long-term maintenance.</step>
+      </steps>
+    </phase>
+
+    <phase name="planning">
+      <description>Generate comprehensive long-term development plan aligned with analysis.</description>
+      <steps>
+        <step>Incorporate User Objectives: Use ask_followup_question for long-term goals if not specified.</step>
+        <step>Multi-Phase Structure: Create 6-12 month plan with quarterly milestones; include tasks, dependencies, risks (assess likelihood/impact), modular refactoring, progress tracking (e.g., metrics, todos).</step>
+        <step>Output Format: Structured Markdown with sections (Overview, Phases, Tasks, Risks, Metrics); use update_todo_list for iterative tracking.</step>
+        <step>Ongoing Updates: Suggest periodic re-ingestion for evolution; enable plan revisions.</step>
+      </steps>
+    </phase>
+  </main_workflow>
+
+  <completion_criteria>
+    <criterion>User confirmation received and resources warned</criterion>
+    <criterion>Full ingestion completed with 10x capacity utilization</criterion>
+    <criterion>Analysis synthesizes key insights from docs and code</criterion>
+    <criterion>Plan generated in structured Markdown, covering 6-12 months with risks/metrics</criterion>
+    <criterion>Backward compatibility maintained; seamless workflow integration</criterion>
+  </completion_criteria>
+</workflow_instructions>

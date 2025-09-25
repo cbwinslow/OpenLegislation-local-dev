@@ -1,0 +1,165 @@
+name: Federal Data Ingestion
+
+on:
+  schedule:
+    - cron: '0 3 * * *'  # Daily at 3 AM UTC
+  workflow_dispatch:
+    inputs:
+      congress:
+        description: 'Congress number (e.g., 119)'
+        required: false
+        default: '119'
+      session:
+        description: 'Session number (1 or 2)'
+        required: false
+        default: '1'
+      collection:
+        description: 'Data collection (BILLS, CREC, etc.)'
+        required: false
+        default: 'BILLS'
+      limit:
+        description: 'Limit number of items to process'
+        required: false
+        default: '100'
+
+env:
+  CONGRESS: ${{ github.event.inputs.congress || '119' }}
+  SESSION: ${{ github.event.inputs.session || '1' }}
+  COLLECTION: ${{ github.event.inputs.collection || 'BILLS' }}
+  LIMIT: ${{ github.event.inputs.limit || '100' }}
+
+jobs:
+  fetch-federal-data:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        cd tools
+        pip install -r requirements.txt
+
+    - name: Configure database
+      run: |
+        cd tools
+        cp db_config_template.json db_config.json
+        # Configure test database settings
+        sed -i 's/"database": "openleg"/"database": "openleg_test"/g' db_config.json
+
+    - name: Download sample federal data
+      run: |
+        cd tools
+        python fetch_govinfo_bulk.py \
+          --collection $COLLECTION \
+          --congress $CONGRESS \
+          --session $SESSION \
+          --limit $LIMIT \
+          --output /tmp/federal-data
+
+    - name: Process federal data
+      run: |
+        cd tools
+        python govinfo_data_connector.py \
+          --input-dir /tmp/federal-data \
+          --db-config db_config.json \
+          --congress $CONGRESS
+
+    - name: Run federal data validation
+      run: |
+        cd tools
+        python -m pytest test_federal_data.py -v
+
+    - name: Generate processing report
+      run: |
+        echo "# Federal Data Processing Report" > federal-report.md
+        echo "Generated on: $(date)" >> federal-report.md
+        echo "Congress: $CONGRESS" >> federal-report.md
+        echo "Session: $SESSION" >> federal-report.md
+        echo "Collection: $COLLECTION" >> federal-report.md
+        echo "" >> federal-report.md
+        echo "## Processing Results" >> federal-report.md
+        echo "- Files processed: $(find /tmp/federal-data -name "*.xml" | wc -l)" >> federal-report.md
+        echo "- Database records created: $(psql -h localhost -U postgres -d openleg_test -c "SELECT COUNT(*) FROM master.bill WHERE data_source = 'federal';" -t)" >> federal-report.md
+
+    - name: Upload processing report
+      uses: actions/upload-artifact@v3
+      with:
+        name: federal-data-report
+        path: federal-report.md
+
+    - name: Upload sample processed data
+      uses: actions/upload-artifact@v3
+      with:
+        name: processed-federal-data
+        path: /tmp/federal-data/
+        retention-days: 7
+
+  validate-federal-integration:
+    runs-on: ubuntu-latest
+    needs: fetch-federal-data
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Run federal integration tests
+      run: mvn test -Dtest="*Federal*" -Dspring.profiles.active=test
+
+    - name: Run API integration tests
+      run: |
+        # Start test application
+        mvn spring-boot:run -Dspring-boot.run.profiles=test &
+        sleep 30
+
+        # Run API tests
+        curl -f http://localhost:8080/api/3/bills?limit=5 || exit 1
+
+        # Stop application
+        pkill -f spring-boot
+
+  notify-on-failure:
+    runs-on: ubuntu-latest
+    needs: [fetch-federal-data, validate-federal-integration]
+    if: failure()
+
+    steps:
+    - name: Create issue on failure
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: 'Federal Data Ingestion Failed',
+            body: `Federal data ingestion failed for Congress ${{ env.CONGRESS }}, Session ${{ env.SESSION }}, Collection ${{ env.COLLECTION }}.
+
+            Please check the workflow logs and processing report for details.`,
+            labels: ['federal-data', 'bug', 'urgent']
+          })
+
+  cleanup:
+    runs-on: ubuntu-latest
+    needs: [fetch-federal-data, validate-federal-integration]
+    if: always()
+
+    steps:
+    - name: Clean up test database
+      run: |
+        psql -h localhost -U postgres -d openleg_test -c "
+          DELETE FROM master.bill WHERE data_source = 'federal' AND created_at > NOW() - INTERVAL '1 day';
+          DELETE FROM master.bill_sponsor WHERE created_at > NOW() - INTERVAL '1 day';
+        "

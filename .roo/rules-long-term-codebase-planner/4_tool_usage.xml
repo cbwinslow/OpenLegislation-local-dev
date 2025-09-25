@@ -1,0 +1,226 @@
+<tool_usage_guide>
+  <tool_priorities>
+    <priority level="1">
+      <tool>list_files</tool>
+      <when>Initial codebase mapping and size estimation</when>
+      <why>Provides structure overview without full read; essential for progressive ingestion.</why>
+    </priority>
+    <priority level="2">
+      <tool>search_files</tool>
+      <when>Targeted doc/code discovery (e.g., regex for .md files)</when>
+      <why>Context-rich results for analysis without reading everything.</why>
+    </priority>
+    <priority level="3">
+      <tool>read_file</tool>
+      <when>After search/list; batch up to 5 files</when>
+      <why>Full content for core docs/modules; chunk large files.</why>
+    </priority>
+    <priority level="4">
+      <tool>ask_followup_question</tool>
+      <when>Confirmation, objectives clarification</when>
+      <why>Ensures explicit activation and alignment.</why>
+    </priority>
+    <priority level="5">
+      <tool>update_todo_list</tool>
+      <when>Plan generation and tracking</when>
+      <why>Manages multi-phase progress iteratively.</why>
+    </priority>
+  </tool_priorities>
+
+  <tool_specific_guidance>
+    <tool name="list_files">
+      <purpose>List directory contents recursively for structure/size assessment.</purpose>
+      <when_to_use>Start of ingestion; estimate LOC for token warnings.</when_to_use>
+      <syntax>
+        <command><list_files><path>.</path><recursive>true</recursive></list_files></command>
+        <parameters>
+          <parameter name="path" required="true">
+            <description>Directory to list (relative to workspace)</description>
+            <type>string</type>
+            <example>.</example>
+          </parameter>
+          <parameter name="recursive" required="false">
+            <description>True for full tree</description>
+            <type>boolean</type>
+            <example>true</example>
+          </parameter>
+        </parameters>
+      </syntax>
+      <examples>
+        <example scenario="codebase_size_estimate">
+          <code><![CDATA[
+<list_files>
+  <path>.</path>
+  <recursive>true</recursive>
+</list_files>
+          ]]></code>
+          <output>Full file tree; count .java files for LOC approx.</output>
+        </example>
+      </examples>
+      <best_practices>
+        <practice>Use recursive=true initially; follow with non-recursive on subdirs for phases.</practice>
+        <practice>Combine with execute_command 'wc -l' for precise LOC if needed.</practice>
+      </best_practices>
+    </tool>
+
+    <tool name="search_files">
+      <purpose>Regex search across dirs for patterns/docs.</purpose>
+      <when_to_use>Locate specific files (e.g., ROADMAP.md) or code patterns.</when_to_use>
+      <syntax>
+        <command><search_files><path>docs/</path><regex>.*ROADMAP.*</regex><file_pattern>*.md</file_pattern></search_files></command>
+        <parameters>
+          <parameter name="path" required="true">
+            <description>Dir to search recursively</description>
+            <type>string</type>
+            <example>docs/</example>
+          </parameter>
+          <parameter name="regex" required="true">
+            <description>Rust regex pattern</description>
+            <type>string</type>
+            <example>\.(md|txt)$</example>
+          </parameter>
+          <parameter name="file_pattern" required="false">
+            <description>Glob filter</description>
+            <type>string</type>
+            <example>*.md</example>
+          </parameter>
+        </parameters>
+      </syntax>
+      <examples>
+        <example scenario="doc_extraction">
+          <code><![CDATA[
+<search_files>
+  <path>.</path>
+  <regex>ROADMAP|agents|CONTRIBUTING</regex>
+  <file_pattern>*.md</file_pattern>
+</search_files>
+          ]]></code>
+          <output>Matches with context; follow with read_file.</output>
+        </example>
+      </examples>
+      <best_practices>
+        <practice>Start broad, refine regex; use for phased prioritization.</practice>
+        <practice>Analyze context lines for quick insights before full read.</practice>
+      </best_practices>
+    </tool>
+
+    <tool name="read_file">
+      <purpose>Read up to 5 file contents with line numbers.</purpose>
+      <when_to_use>After search/list; core docs first.</when_to_use>
+      <syntax>
+        <command><read_file><args><file><path>docs/README.md</path></file>...</args></read_file></command>
+        <parameters>
+          <parameter name="args" required="true">
+            <description>List of file elements</description>
+            <type>array</type>
+            <example><file><path>README.md</path></file></example>
+          </parameter>
+        </parameters>
+      </syntax>
+      <examples>
+        <example scenario="core_docs_batch">
+          <code><![CDATA[
+<read_file>
+  <args>
+    <file><path>README.md</path></file>
+    <file><path>ROADMAP.md</path></file>
+    <file><path>docs/agents.md</path></file>
+  </args>
+</read_file>
+          ]]></code>
+          <output>Line-numbered content for synthesis.</output>
+        </example>
+      </examples>
+      <best_practices>
+        <practice>Max 5 files/request; sequential for more; chunk large outputs.</practice>
+        <practice>Efficient strategy: Read related files together.</practice>
+      </best_practices>
+    </tool>
+
+    <tool name="ask_followup_question">
+      <purpose>Gather confirmation or details from user.</purpose>
+      <when_to_use>Activation, objectives, fine-tuning.</when_to_use>
+      <syntax>
+        <command><ask_followup_question><question>Confirm large-scale planning?</question><follow_up><suggest>Yes, proceed with ingestion</suggest>...</follow_up></ask_followup_question></command>
+        <parameters>
+          <parameter name="question" required="true">
+            <description>Clear question</description>
+            <type>string</type>
+            <example>Proceed with full ingestion (high tokens)?</example>
+          </parameter>
+          <parameter name="follow_up" required="true">
+            <description>2-4 <suggest> tags</description>
+            <type>array</type>
+            <example><suggest>Yes</suggest><suggest>No, use smaller mode</suggest></example>
+          </parameter>
+        </parameters>
+      </syntax>
+      <examples>
+        <example scenario="activation_confirmation">
+          <code><![CDATA[
+<ask_followup_question>
+  <question>This mode handles large codebases with high token use. Confirm?</question>
+  <follow_up>
+    <suggest>Yes, estimate tokens and proceed</suggest>
+    <suggest>No, switch to Architect mode</suggest>
+    <suggest mode="architect">Use Architect for planning without full ingestion</suggest>
+  </follow_up>
+</ask_followup_question>
+          ]]></code>
+          <output>User selects; abort if no.</output>
+        </example>
+      </examples>
+      <best_practices>
+        <practice>2-4 actionable suggests; include mode switches.</practice>
+        <practice>Use for objectives: "What are 12-month goals?"</practice>
+      </best_practices>
+    </tool>
+
+    <tool name="update_todo_list">
+      <purpose>Manage phased plan as checklist.</purpose>
+      <when_to_use>After plan generation; mark progress.</when_to_use>
+      <syntax>
+        <command><update_todo_list><todos>[x] Phase 1...</todos></update_todo_list></command>
+        <parameters>
+          <parameter name="todos" required="true">
+            <description>Markdown checklist (full list)</description>
+            <type>string</type>
+            <example>[ ] Q1 Milestone\n[-] In progress task</example>
+          </parameter>
+        </parameters>
+      </syntax>
+      <examples>
+        <example scenario="plan_tracking">
+          <code><![CDATA[
+<update_todo_list>
+  <todos>
+[x] Ingest core docs
+[-] Analyze architecture
+[ ] Generate Q1 plan
+[ ] Risk assessment
+  </todos>
+</update_todo_list>
+          ]]></code>
+          <output>Updated checklist for iterative use.</output>
+        </example>
+      </examples>
+      <best_practices>
+        <practice>Full list always; mark [x] completed, [-] in_progress.</practice>
+        <practice>Align with phases; update after each milestone.</practice>
+      </best_practices>
+    </tool>
+
+    <tool name="use_mcp_tool" server="memory">
+      <purpose>Retain context via knowledge graph.</purpose>
+      <when_to_use>Post-ingestion for long-term memory.</when_to_use>
+      <syntax>
+        <command><use_mcp_tool><server_name>memory</server_name><tool_name>create_entities</tool_name><arguments>{entities: [...] }</arguments></use_mcp_tool></command>
+        <parameters>See MCP schema for memory tools (create_entities, add_observations, etc.).</parameters>
+      </syntax>
+      <best_practices>
+        <practice>Create entities for modules/goals; add observations from reads.</practice>
+        <practice>Use for dependency relations; query via search_nodes for planning.</practice>
+      </best_practices>
+    </tool>
+  </tool_specific_guidance>
+</tool_usage_guide>
