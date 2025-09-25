@@ -33,6 +33,9 @@ public class BillAction implements Serializable, Comparable<BillAction>
     /** The text of this action. */
     private String text = "";
 
+    /** The type of the action (e.g., federal, state, etc.) */
+    private String type;
+
     /** --- Constructors --- */
 
     public BillAction() {
@@ -47,14 +50,16 @@ public class BillAction implements Serializable, Comparable<BillAction>
      * @param chamber Chamber - The chamber this bill action occurred in
      * @param sequenceNo int - Indicates the ordering of this action
      * @param billId BillId - The id of the bill the action was performed on
+     * @param type String - The type of the action
      */
-    public BillAction(LocalDate date, String text, Chamber chamber, int sequenceNo, BillId billId) {
+    public BillAction(LocalDate date, String text, Chamber chamber, int sequenceNo, BillId billId, String type) {
         super();
         this.setDate(date);
         this.setText(text);
         this.setBillId(billId);
         this.setChamber(chamber);
         this.setSequenceNo(sequenceNo);
+        this.setType(type);
     }
 
     /** --- Overrides --- */
@@ -148,5 +153,13 @@ public class BillAction implements Serializable, Comparable<BillAction>
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

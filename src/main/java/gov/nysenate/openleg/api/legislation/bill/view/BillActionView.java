@@ -49,7 +49,7 @@ public class BillActionView implements ViewObject {
             billId = Optional.ofNullable(this.billId)
                     .map(BillIdView::toBillId).orElse(null);
         } catch (IllegalArgumentException | NullPointerException ignored) {}
-        return new BillAction( date, text, chamber, sequenceNo, billId);
+        return new BillAction( date, text, chamber, 0, billId, "UNKNOWN");
     }
 
     public BillIdView getBillId() {

@@ -309,6 +309,38 @@ public class IngestionIntegrationIT extends BaseXmlProcessorTest {
         }
     }
 
+    @Test
+    public void testFederalBillIngestionPipeline() throws IOException, InterruptedException {
+        createTestStagingDirectory();
+
+        // Copy sample federal bill XML to staging
+        String sampleXml = new String(Files.readAllBytes(Paths.get("src/test/resources/federal-samples/bills/BILLS-119th-HR1.xml")));
+        Path federalFile = Paths.get(TEST_XML_DIR, "BILLS-119thCongress-HR1.xml");
+        Files.write(federalFile, sampleXml.getBytes());
+
+        try {
+            // Process the federal XML file (filename routes to federal processor)
+            processXmlFile("BILLS-119thCongress-HR1.xml");
+
+            // Wait for processing
+            Thread.sleep(2000);
+
+            // Verify bill ingested
+            BaseBillId baseBillId = new BaseBillId("1", 2025, BillType.HR);
+            Bill bill = getBill(baseBillId);
+            assertNotNull("Federal bill should be found", bill);
+            assertEquals("Federal bill title should match", "To provide for the establishment of a White House Conference on Rural Health.", bill.getTitle());
+            assertEquals("Sponsors size", 1, bill.getSponsors().size());
+            assertEquals("Actions size", 1, bill.getActions().size());
+            assertNotNull("BillText should exist", bill.getText());
+
+            System.out.println("Federal bill ingestion pipeline test passed");
+
+        } finally {
+            cleanupTestStagingDirectory();
+        }
+    }
+
     // Helper methods
 
     private void createTestStagingDirectory() throws IOException {

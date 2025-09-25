@@ -103,6 +103,12 @@ public class Bill extends BaseLegislativeContent implements Serializable, Compar
     /** Year this bill was signed into law. */
     protected Integer chapterYear;
 
+    /** Federal Congress number for federal bills. */
+    protected Integer federalCongress;
+
+    /** Source of federal data (e.g., 'govinfo', 'congress.gov'). */
+    protected String federalSource;
+
     /** --- Constructors --- */
 
     public Bill() {}
@@ -526,6 +532,39 @@ public class Bill extends BaseLegislativeContent implements Serializable, Compar
 
     public void setChapterYear(Integer chapterYear) {
         this.chapterYear = chapterYear;
+    }
+
+    public Integer getFederalCongress() {
+        return federalCongress;
+    }
+
+    public void setFederalCongress(Integer federalCongress) {
+        this.federalCongress = federalCongress;
+    }
+
+    public String getFederalSource() {
+        return federalSource;
+    }
+
+    public void setFederalSource(String federalSource) {
+        this.federalSource = federalSource;
+    }
+
+    /**
+     * Static method to map federal congress number to session year.
+     * For federal bills, session year is the starting year of the congress.
+     * e.g., 118th Congress: 2023.
+     */
+    public static int congressToSessionYear(int congress) {
+        if (congress >= 1 && congress <= 117) {
+            // Historical approximation: 1789 + (congress - 1) * 2
+            return 1789 + (congress - 1) * 2;
+        } else if (congress == 118) {
+            return 2023;
+        } else if (congress == 119) {
+            return 2025;
+        }
+        throw new IllegalArgumentException("Unsupported congress number: " + congress);
     }
 
     public void setReprintOf(BillId reprintOf) {
