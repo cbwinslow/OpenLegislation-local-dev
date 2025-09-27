@@ -566,4 +566,69 @@ JOIN pg_tables ON pg_stat_user_tables.relname = pg_tables.tablename
 WHERE schemaname = 'master';
 ```
 
+## Audit Logging
+
+### Audit Log Table
+
+#### `master.audit_log`
+Tracks changes to key tables for compliance and troubleshooting.
+
+| Field | Type | Description | Constraints |
+|-------|------|-------------|-------------|
+| `id` | BIGSERIAL | Audit ID | Primary Key |
+| `table_name` | TEXT | Affected table | Not Null |
+| `operation` | TEXT | Operation type | Check ('INSERT', 'UPDATE', 'DELETE') |
+| `row_id` | TEXT | Row identifier (JSON string) | |
+| `old_values` | JSONB | Previous values | |
+| `new_values` | JSONB | New values | |
+| `changed_by` | TEXT | User who made change | Default current_user |
+| `changed_at` | TIMESTAMP | Change timestamp | Default now() |
+
+### Triggers
+Automatic triggers on INSERT/UPDATE/DELETE for tables: bill, federal_person, federal_member, federal_member_term, bill_amendment_action, bill_sponsor. Uses PL/pgSQL function master.audit_trigger() to log JSON diffs.
+
+### Updated At Triggers
+BEFORE UPDATE triggers on federal_person, federal_member, bill to auto-set updated_at = now().
+
+## Views
+
+### Key Views
+
+#### `master.v_federal_member_details`
+Joins federal_person, federal_member, terms, and social media for member overview.
+
+Fields: person_id, bioguide_id, full_name, chamber, state, district, party, current_member, congresses (array), social_media (string).
+
+#### `master.v_bill_summary`
+Aggregates bill with action count, sponsors, committees.
+
+Fields: bill_print_no, bill_session_year, title, status, action_count, sponsors (array), committees (string).
+
+#### `master.v_recent_audits`
+Recent 7 days of audit logs, ordered by changed_at DESC.
+
+## PL/pgSQL Functions
+
+### `master.fn_get_current_terms(member_id INTEGER)`
+Returns TABLE(congress, start_year, end_year) for active terms (end_year null or current year).
+
+## Example Queries
+
+Common queries using new views:
+
+```sql
+-- Get current federal members
+SELECT * FROM master.v_federal_member_details WHERE current_member = true;
+
+-- Bill summaries for federal congress
+SELECT * FROM master.v_bill_summary WHERE bill_session_year >= 118;
+
+-- Recent changes
+SELECT * FROM master.v_recent_audits LIMIT 10;
+```
+
+## Complete Setup Verification with Maven Flyway
+
+Run `mvn flyway:validate` to check new migrations; `mvn flyway:migrate` to apply.
+
 This comprehensive schema documentation provides the foundation for understanding and maintaining the OpenLegislation database system.

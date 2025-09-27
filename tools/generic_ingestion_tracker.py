@@ -43,31 +43,39 @@ from settings import settings
 @dataclass
 class IngestionRecord:
     """Represents a record to be ingested"""
+
     record_id: str  # Unique identifier for the record
     metadata: Dict[str, Any] = None  # Additional data about the record
-    source: str = 'unknown'  # Data source (api, file, etc.)
+    source: str = "unknown"  # Data source (api, file, etc.)
     priority: int = 0  # Processing priority (higher = more important)
 
 
 @dataclass
 class IngestionStats:
     """Statistics for ingestion progress"""
+
     total_records: int = 0
     completed: int = 0
     failed: int = 0
     in_progress: int = 0
     pending: int = 0
     success_rate: float = 0.0
-    source: str = 'unknown'
-    table_name: str = 'unknown'
+    source: str = "unknown"
+    table_name: str = "unknown"
 
 
 class GenericIngestionTracker:
     """Generic tracker for any type of data ingestion"""
 
-    def __init__(self, db_config: Dict[str, Any], table_name: str,
-                 record_id_column: Union[str, List[str]], source: str = 'unknown',
-                 session_id: Optional[str] = None, max_retry_attempts: int = 3):
+    def __init__(
+        self,
+        db_config: Dict[str, Any],
+        table_name: str,
+        record_id_column: Union[str, List[str]],
+        source: str = "unknown",
+        session_id: Optional[str] = None,
+        max_retry_attempts: int = 3,
+    ):
         """
         Initialize tracker for a specific table and data source
 
@@ -81,7 +89,11 @@ class GenericIngestionTracker:
         """
         self.db_config = db_config
         self.table_name = table_name
-        self.record_id_column = record_id_column if isinstance(record_id_column, list) else [record_id_column]
+        self.record_id_column = (
+            record_id_column
+            if isinstance(record_id_column, list)
+            else [record_id_column]
+        )
         self.source = source
         self.session_id = session_id or str(uuid.uuid4())
         self.max_retry_attempts = max_retry_attempts
@@ -101,12 +113,15 @@ class GenericIngestionTracker:
 
             # Ensure master schema exists so table creation succeeds
             print("[tracker] Creating schema if not exists")
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE SCHEMA IF NOT EXISTS master
-            """)
+            """
+            )
             print("[tracker] Schema ensured")
 
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS master.ingestion_status (
                     id BIGSERIAL PRIMARY KEY,
                     table_name TEXT NOT NULL,
@@ -124,30 +139,40 @@ class GenericIngestionTracker:
                     ingestion_session_id TEXT,
                     UNIQUE(table_name, record_id, source)
                 )
-            """)
+            """
+            )
 
             # Indexes
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_ingestion_status_table_record
                 ON master.ingestion_status(table_name, record_id, source)
-            """)
-            cursor.execute("""
+            """
+            )
+            cursor.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_ingestion_status_status
                 ON master.ingestion_status(ingestion_status)
-            """)
-            cursor.execute("""
+            """
+            )
+            cursor.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_ingestion_status_session
                 ON master.ingestion_status(ingestion_session_id)
-            """)
-            cursor.execute("""
+            """
+            )
+            cursor.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_ingestion_status_source
                 ON master.ingestion_status(source)
-            """)
+            """
+            )
 
             # Triggers - use DO block to create trigger if it doesn't exist (Postgres doesn't support
             # CREATE TRIGGER IF NOT EXISTS on all versions)
             try:
-                cursor.execute("""
+                cursor.execute(
+                    """
                     DO $$
                     BEGIN
                         IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'log_ingestion_updates_to_change_log') THEN
@@ -155,7 +180,8 @@ class GenericIngestionTracker:
                         END IF;
                     END
                     $$;
-                """)
+                """
+                )
             except Exception as e:
                 # Trigger creation may fail if helper function does not exist in DB migrations.
                 # Log warning and continue - tracking table still usable without trigger.
@@ -163,7 +189,9 @@ class GenericIngestionTracker:
 
             conn.commit()
             try:
-                cursor.execute("SELECT current_database(), current_user, inet_client_addr()")
+                cursor.execute(
+                    "SELECT current_database(), current_user, inet_client_addr()"
+                )
                 dbinfo = cursor.fetchone()
             except Exception:
                 dbinfo = None
@@ -178,7 +206,9 @@ class GenericIngestionTracker:
             except Exception:
                 reg = None
 
-            print(f"[tracker] Table creation/commit complete; dbinfo={dbinfo}, search_path={search_path}, to_regclass={reg}")
+            print(
+                f"[tracker] Table creation/commit complete; dbinfo={dbinfo}, search_path={search_path}, to_regclass={reg}"
+            )
 
         except Exception as e:
             if conn:
@@ -192,7 +222,9 @@ class GenericIngestionTracker:
         """Get database connection with proper cursor"""
         if not self._db_connection or self._db_connection.closed:
             self._db_connection = psycopg2.connect(**self.db_config)
-            self._db_cursor = self._db_connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            self._db_cursor = self._db_connection.cursor(
+                cursor_factory=psycopg2.extras.RealDictCursor
+            )
         return self._db_connection, self._db_cursor
 
     def _table_exists(self, schema_table: str) -> bool:
@@ -223,8 +255,11 @@ class GenericIngestionTracker:
         if self._db_connection:
             self._db_connection.commit()
 
-    def initialize_records(self, records: List[Union[IngestionRecord, Dict, str]],
-                          reset_existing: bool = False):
+    def initialize_records(
+        self,
+        records: List[Union[IngestionRecord, Dict, str]],
+        reset_existing: bool = False,
+    ):
         """
         Initialize ingestion status for a list of records
 
@@ -238,18 +273,19 @@ class GenericIngestionTracker:
             if isinstance(record, IngestionRecord):
                 ingestion_records.append(record)
             elif isinstance(record, dict):
-                record_id = record.get('record_id') or record.get('id') or str(record)
-                metadata = {k: v for k, v in record.items() if k not in ['record_id', 'id']}
-                ingestion_records.append(IngestionRecord(
-                    record_id=record_id,
-                    metadata=metadata,
-                    source=self.source
-                ))
+                record_id = record.get("record_id") or record.get("id") or str(record)
+                metadata = {
+                    k: v for k, v in record.items() if k not in ["record_id", "id"]
+                }
+                ingestion_records.append(
+                    IngestionRecord(
+                        record_id=record_id, metadata=metadata, source=self.source
+                    )
+                )
             else:
-                ingestion_records.append(IngestionRecord(
-                    record_id=str(record),
-                    source=self.source
-                ))
+                ingestion_records.append(
+                    IngestionRecord(record_id=str(record), source=self.source)
+                )
 
         if not ingestion_records:
             return
@@ -257,17 +293,19 @@ class GenericIngestionTracker:
         # Prepare data for bulk insert
         values = []
         for record in ingestion_records:
-            values.append((
-                self.table_name,
-                record.record_id,
-                self.source,
-                self.session_id,
-                psycopg2.extras.Json(record.metadata or {}),
-                record.priority,
-                'pending'
-            ))
+            values.append(
+                (
+                    self.table_name,
+                    record.record_id,
+                    self.source,
+                    self.session_id,
+                    psycopg2.extras.Json(record.metadata or {}),
+                    record.priority,
+                    "pending",
+                )
+            )
 
-        value_placeholders = ','.join(['(%s, %s, %s, %s, %s, %s, %s)'] * len(values))
+        value_placeholders = ",".join(["(%s, %s, %s, %s, %s, %s, %s)"] * len(values))
         flattened_values = [item for sublist in values for item in sublist]
 
         query = f"""
@@ -278,8 +316,10 @@ class GenericIngestionTracker:
         """
 
         # Ensure table exists before attempting insert (some DBs may not have schema applied)
-        if not self._table_exists('master.ingestion_status'):
-            print('[tracker] master.ingestion_status missing at insert time, attempting to ensure table')
+        if not self._table_exists("master.ingestion_status"):
+            print(
+                "[tracker] master.ingestion_status missing at insert time, attempting to ensure table"
+            )
             self._ensure_tracking_table()
 
         self._execute_query(query, tuple(flattened_values))
@@ -340,10 +380,16 @@ class GenericIngestionTracker:
                 updated_at = now()
             WHERE table_name = %s AND record_id = %s AND source = %s
         """
-        self._execute_query(query, (
-            self.max_retry_attempts, failure_reason,
-            self.table_name, record_id, self.source
-        ))
+        self._execute_query(
+            query,
+            (
+                self.max_retry_attempts,
+                failure_reason,
+                self.table_name,
+                record_id,
+                self.source,
+            ),
+        )
         self._commit()
 
     def get_record_status(self, record_id: str) -> Optional[Dict[str, Any]]:
@@ -352,7 +398,9 @@ class GenericIngestionTracker:
             SELECT * FROM master.ingestion_status
             WHERE table_name = %s AND record_id = %s AND source = %s
         """
-        results = self._execute_query(query, (self.table_name, record_id, self.source), fetch=True)
+        results = self._execute_query(
+            query, (self.table_name, record_id, self.source), fetch=True
+        )
         return dict(results[0]) if results else None
 
     def get_pending_records(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
@@ -390,19 +438,19 @@ class GenericIngestionTracker:
         if not status:
             return True  # New record, should process
 
-        current_status = status['ingestion_status']
-        retry_count = status.get('retry_count', 0)
+        current_status = status["ingestion_status"]
+        retry_count = status.get("retry_count", 0)
 
         # Don't process if completed
-        if current_status == 'completed':
+        if current_status == "completed":
             return False
 
         # Don't process if failed and exceeded max retries
-        if current_status == 'failed' and retry_count >= self.max_retry_attempts:
+        if current_status == "failed" and retry_count >= self.max_retry_attempts:
             return False
 
         # Process if pending or in_progress (allow retry of in_progress)
-        return current_status in ('pending', 'in_progress')
+        return current_status in ("pending", "in_progress")
 
     def get_ingestion_stats(self) -> IngestionStats:
         """Get comprehensive ingestion statistics"""
@@ -416,25 +464,27 @@ class GenericIngestionTracker:
             FROM master.ingestion_status
             WHERE table_name = %s AND source = %s AND ingestion_session_id = %s
         """
-        results = self._execute_query(query, (self.table_name, self.source, self.session_id), fetch=True)
+        results = self._execute_query(
+            query, (self.table_name, self.source, self.session_id), fetch=True
+        )
         if not results:
             return IngestionStats(source=self.source, table_name=self.table_name)
 
         stats = results[0]
-        total = stats['total_records']
-        completed = stats['completed']
+        total = stats["total_records"]
+        completed = stats["completed"]
 
         success_rate = (completed / total * 100) if total > 0 else 0.0
 
         return IngestionStats(
             total_records=total,
             completed=completed,
-            failed=stats['failed'],
-            in_progress=stats['in_progress'],
-            pending=stats['pending'],
+            failed=stats["failed"],
+            in_progress=stats["in_progress"],
+            pending=stats["pending"],
             success_rate=success_rate,
             source=self.source,
-            table_name=self.table_name
+            table_name=self.table_name,
         )
 
     def reset_session(self, session_id: Optional[str] = None):
@@ -474,20 +524,32 @@ class GenericIngestionTracker:
 
 
 # Utility functions for CLI usage
-def get_ingestion_status(db_config: Dict[str, Any], table_name: str, source: str,
-                        session_id: Optional[str] = None) -> IngestionStats:
+def get_ingestion_status(
+    db_config: Dict[str, Any],
+    table_name: str,
+    source: str,
+    session_id: Optional[str] = None,
+) -> IngestionStats:
     """Get ingestion status for a specific table/source"""
-    tracker = GenericIngestionTracker(db_config, table_name, 'record_id', source, session_id)
+    tracker = GenericIngestionTracker(
+        db_config, table_name, "record_id", source, session_id
+    )
     try:
         return tracker.get_ingestion_stats()
     finally:
         tracker.close()
 
 
-def reset_ingestion_status(db_config: Dict[str, Any], table_name: str, source: str,
-                          session_id: Optional[str] = None):
+def reset_ingestion_status(
+    db_config: Dict[str, Any],
+    table_name: str,
+    source: str,
+    session_id: Optional[str] = None,
+):
     """Reset ingestion status for a table/source"""
-    tracker = GenericIngestionTracker(db_config, table_name, 'record_id', source, session_id)
+    tracker = GenericIngestionTracker(
+        db_config, table_name, "record_id", source, session_id
+    )
     try:
         tracker.reset_session(session_id)
         print(f"Reset ingestion status for {table_name} ({source})")
@@ -495,10 +557,11 @@ def reset_ingestion_status(db_config: Dict[str, Any], table_name: str, source: s
         tracker.close()
 
 
-def cleanup_old_ingestion_state(db_config: Dict[str, Any], table_name: str, source: str,
-                               days_old: int = 30):
+def cleanup_old_ingestion_state(
+    db_config: Dict[str, Any], table_name: str, source: str, days_old: int = 30
+):
     """Clean up old ingestion state for a table/source"""
-    tracker = GenericIngestionTracker(db_config, table_name, 'record_id', source)
+    tracker = GenericIngestionTracker(db_config, table_name, "record_id", source)
     try:
         tracker.cleanup_old_sessions(days_old)
         print(f"Cleaned up {table_name} ({source}) entries older than {days_old} days")

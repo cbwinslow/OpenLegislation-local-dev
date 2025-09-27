@@ -50,8 +50,8 @@ public class GovInfoBill {
     public void setSponsor(GovInfoBillSponsor sponsor) { this.sponsor = sponsor; }
 
     public List<GovInfoBillCosponsor> getCosponsors() { return cosponsors; }
-    public void setCosponsors(List<GovInfoBillCosponsor> cosponsors) { 
-        this.cosponsors = cosponsors; 
+    public void setCosponsors(List<GovInfoBillCosponsor> cosponsors) {
+        this.cosponsors = cosponsors;
         if (cosponsors != null) {
             // Link personIds via dedup lookup (in processor/DAO)
             for (GovInfoBillCosponsor cosponsor : cosponsors) {

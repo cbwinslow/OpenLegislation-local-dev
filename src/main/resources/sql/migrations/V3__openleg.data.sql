@@ -515,7 +515,7 @@ COPY person (id, full_name, first_name, middle_name, last_name, email, prefix, s
 488	Anthony H. Palumbo	Anthony	H.	Palumbo	\N	Assemblymember		t	666_anthony_h._palumbo.jpg
 734	Diana Richardson	Diana	\N	Richardson	\N	Assembly Member	\N	t	\N
 463	Raymond Walter	Raymond	\N	Walter	\N	Assembly Member	\N	t	641_raymond_walter.jpg
-736	Roxanne J Persaud	Roxanne	J	Persaud	persaud@nysenate.gov			t	
+736	Roxanne J Persaud	Roxanne	J	Persaud	persaud@nysenate.gov			t
 240	Ruben Diaz	Ruben	\N	Diaz	diaz@nysenate.gov	Senator	Sr	t	421_ruben_diaz.jpg
 720	Rodneyse Bichotte	Rodneyse	\N	Bichotte	\N	\N	\N	t	898_rodneyse_bichotte.jpg
 723	Kimberly Jean-Pierre	Kimberly	\N	Jean-Pierre	\N	Assembly Member	\N	t	901_jean-pierre.jpg
@@ -588,7 +588,7 @@ COPY person (id, full_name, first_name, middle_name, last_name, email, prefix, s
 222	Diane J. Savino	Diane	J.	Savino	savino@senate.state.ny.us	Senator	\N	t	403_diane_j._savino.jpg
 350	Brian Kavanagh	Brian	\N	Kavanagh	\N	Assembly Member	\N	t	526_brian_kavanagh.jpg
 478	David DiPietro	David		DiPietro	\N	Assembly Member		t	656_david_dipietro.jpg
-735	Fredrick J Akshar II	Fredrick	J	Akshar	akshar@nysenate.gov		II	t	
+735	Fredrick J Akshar II	Fredrick	J	Akshar	akshar@nysenate.gov		II	t
 225	Michael H. Ranzenhofer	Michael	H.	Ranzenhofer	ranz@senate.state.ny.us	Senator	\N	t	406_michael_h._ranzenhofer.jpg
 358	Michael Benedetto	Michael	\N	Benedetto	\N	Assembly Member	\N	t	534_michael_benedetto.jpg
 361	Marcos Crespo	Marcos	\N	Crespo	\N	Assembly Member	\N	t	537_marcos_crespo.jpg
@@ -698,7 +698,7 @@ COPY member (id, person_id, chamber, incumbent, full_name) FROM stdin;
 541	365	assembly	f	Robert Castelli
 543	368	assembly	f	Richard Brodsky
 544	369	assembly	f	Mike Spano
-580	406	assembly	f	Joseph Errigo 
+580	406	assembly	f	Joseph Errigo
 547	372	assembly	f	Nancy Calhoun
 548	373	assembly	f	Ann Rabbitt
 535	359	assembly	f	Carl Heastie
@@ -998,7 +998,7 @@ COPY member (id, person_id, chamber, incumbent, full_name) FROM stdin;
 546	371	assembly	t	Ellen C. Jaffee
 675	497	assembly	t	Phil Steck
 549	374	assembly	t	Aileen Gunther
-550	376	assembly	t	Frank Skartados 
+550	376	assembly	t	Frank Skartados
 422	241	senate	t	Martin J. Golden
 423	242	senate	t	Patty Ritchie
 551	377	assembly	t	Kevin Cahill
@@ -3122,4 +3122,3 @@ SELECT pg_catalog.setval('session_member_id_seq', 1145, true);
 --
 -- PostgreSQL database dump complete
 --
-

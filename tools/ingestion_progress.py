@@ -41,6 +41,7 @@ from typing import Callable, List, Optional, Any
 @dataclass
 class ProgressEvent:
     """Event data for progress updates"""
+
     current_item: int
     total_items: int
     percentage: float
@@ -101,9 +102,14 @@ class IngestionProgressEvent:
         """Check if the process has been cancelled"""
         return self._cancelled
 
-    def update(self, current_item: Optional[int] = None, status: str = "",
-               member_name: Optional[str] = None, bioguide_id: Optional[str] = None,
-               success: Optional[bool] = None):
+    def update(
+        self,
+        current_item: Optional[int] = None,
+        status: str = "",
+        member_name: Optional[str] = None,
+        bioguide_id: Optional[str] = None,
+        success: Optional[bool] = None,
+    ):
         """Update progress and fire progress event
 
         Args:
@@ -127,25 +133,38 @@ class IngestionProgressEvent:
 
             self._fire_event("progress", status, member_name, bioguide_id)
 
-    def _fire_event(self, event_type: str, status: str,
-                   member_name: Optional[str] = None, bioguide_id: Optional[str] = None):
+    def _fire_event(
+        self,
+        event_type: str,
+        status: str,
+        member_name: Optional[str] = None,
+        bioguide_id: Optional[str] = None,
+    ):
         """Fire progress event to all callbacks"""
         if not self._callbacks:
             return
 
         elapsed = (datetime.now() - self.start_time).total_seconds()
-        percentage = (self.current_item / self.total_items * 100) if self.total_items > 0 else 0
+        percentage = (
+            (self.current_item / self.total_items * 100) if self.total_items > 0 else 0
+        )
 
         # Calculate items per second
         items_per_second = self.current_item / elapsed if elapsed > 0 else 0
 
         # Estimate time remaining
         remaining_items = self.total_items - self.current_item
-        estimated_time_remaining = remaining_items / items_per_second if items_per_second > 0 else None
+        estimated_time_remaining = (
+            remaining_items / items_per_second if items_per_second > 0 else None
+        )
 
         # Calculate success rate
         total_processed = self.successful_items + self.failed_items
-        success_rate = (self.successful_items / total_processed * 100) if total_processed > 0 else 0
+        success_rate = (
+            (self.successful_items / total_processed * 100)
+            if total_processed > 0
+            else 0
+        )
 
         event = ProgressEvent(
             current_item=self.current_item,
@@ -161,7 +180,7 @@ class IngestionProgressEvent:
             success_rate=success_rate,
             member_name=member_name,
             bioguide_id=bioguide_id,
-            event_type=event_type
+            event_type=event_type,
         )
 
         # Call all callbacks
@@ -182,15 +201,23 @@ class IngestionProgressEvent:
         total_processed = self.successful_items + self.failed_items
 
         return {
-            'total_items': self.total_items,
-            'current_item': self.current_item,
-            'successful': self.successful_items,
-            'failed': self.failed_items,
-            'pending': self.total_items - total_processed,
-            'success_rate': (self.successful_items / total_processed * 100) if total_processed > 0 else 0,
-            'elapsed_time': elapsed,
-            'cancelled': self._cancelled,
-            'completion_percentage': (self.current_item / self.total_items * 100) if self.total_items > 0 else 0
+            "total_items": self.total_items,
+            "current_item": self.current_item,
+            "successful": self.successful_items,
+            "failed": self.failed_items,
+            "pending": self.total_items - total_processed,
+            "success_rate": (
+                (self.successful_items / total_processed * 100)
+                if total_processed > 0
+                else 0
+            ),
+            "elapsed_time": elapsed,
+            "cancelled": self._cancelled,
+            "completion_percentage": (
+                (self.current_item / self.total_items * 100)
+                if self.total_items > 0
+                else 0
+            ),
         }
 
 
@@ -209,12 +236,18 @@ def console_progress_callback(event: ProgressEvent):
         elif event.bioguide_id:
             member_info = f" - {event.bioguide_id}"
 
-        print(f"[{event.current_item:3d}/{event.total_items:3d}] "
-              f"{event.percentage:5.1f}% {event.status}{member_info}{eta_str}")
+        print(
+            f"[{event.current_item:3d}/{event.total_items:3d}] "
+            f"{event.percentage:5.1f}% {event.status}{member_info}{eta_str}"
+        )
 
     elif event.event_type == "completed":
         total_processed = event.successful_items + event.failed_items
-        success_rate = (event.successful_items / total_processed * 100) if total_processed > 0 else 0
+        success_rate = (
+            (event.successful_items / total_processed * 100)
+            if total_processed > 0
+            else 0
+        )
         elapsed = timedelta(seconds=int(event.elapsed_time))
 
         print(f"\n✓ {event.status}")
@@ -226,11 +259,15 @@ def console_progress_callback(event: ProgressEvent):
 
     elif event.event_type == "cancelled":
         print(f"\n⚠ {event.status}")
-        print(f"  Processed: {event.current_item}/{event.total_items} before cancellation")
+        print(
+            f"  Processed: {event.current_item}/{event.total_items} before cancellation"
+        )
 
 
 # Utility function to create progress tracker with console output
-def create_progress_tracker(total_items: int, description: str = "Processing") -> IngestionProgressEvent:
+def create_progress_tracker(
+    total_items: int, description: str = "Processing"
+) -> IngestionProgressEvent:
     """Create a progress tracker with default console output"""
     progress = IngestionProgressEvent(total_items, description)
     progress.add_callback(console_progress_callback)

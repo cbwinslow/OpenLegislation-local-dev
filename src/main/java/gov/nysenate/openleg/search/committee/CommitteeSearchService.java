@@ -21,4 +21,3 @@ public interface CommitteeSearchService {
      */
     void handleCommitteeUpdateEvent(CommitteeUpdateEvent committeeUpdateEvent);
 }
-

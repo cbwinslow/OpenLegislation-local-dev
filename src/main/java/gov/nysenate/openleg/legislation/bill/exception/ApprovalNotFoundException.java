@@ -41,4 +41,3 @@ public class ApprovalNotFoundException extends RuntimeException {
         return baseBillId;
     }
 }
-

@@ -27,7 +27,7 @@ General installation instructions for Ubuntu.
     * You want the Core tar.gz distribution.
 2. `mkdir ~/tomcat9`
 3. `tar -xzvf ~/Downloads/<<downloaded file>> -C ~/tomcat9`
-4. If you need to run tomcat as a non-root user, e.g. in IntelliJ.  
+4. If you need to run tomcat as a non-root user, e.g. in IntelliJ.
 Make sure the contents of the tomcat directory are readable an executable for all users.
 e.g. `chmod -R +rx ~/tomcat9`
 
@@ -74,7 +74,7 @@ Log into psql as the postgres user.
 
 In psql, create a user with the same name as you linux user.
 
-1. Create a new role in postgres. 
+1. Create a new role in postgres.
    `CREATE USER <<linux_username>> WITH LOGIN SUPERUSER PASSWORD '<<password>>';`
 
 ### Create Open Legislation Database
@@ -99,7 +99,7 @@ These are properties that need to be modified for a typical installation.  This 
 #### API authentication
 
 Set `api.auth.enable = false` if you do not want to deal with API authentication.
-   
+
 Alternatively, modify the regexp `api.auth.ip.whitelist` to not enforce API authentication on matched hosts/ips.
 
 #### Admin Settings
@@ -136,7 +136,7 @@ Point the `mail.smtp` properties at an smtp server to enable email sending.  Thi
 
 #### Domain Configuration
 
-Set `domain.url` to the hostname and context path you will be using.  This affects urls for automated emails sent by 
+Set `domain.url` to the hostname and context path you will be using.  This affects urls for automated emails sent by
 
 ### `flyway.conf` Configuration
 
@@ -151,7 +151,7 @@ Set `flyway.password` to the database user password.
 ### Test Configuration
 
 `cp src/main/resources/log4j2.xml src/test/resources/test.log4j2.xml`
- 
+
 Set `admin.email.regex` in `app.properties` to match your user email address and fit any other admin users you would want to add.
 
 ## Building

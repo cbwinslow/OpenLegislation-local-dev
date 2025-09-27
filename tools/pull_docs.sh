@@ -43,21 +43,21 @@ cd "$KB_BASE"
 for tool_info in "${TOOLS[@]}"; do
     tool=$(echo "$tool_info" | cut -d: -f1)
     repo=$(echo "$tool_info" | cut -d: -f2)
-    
+
     echo "Cloning docs for $tool from $repo..."
     subdir="$KB_BASE/$tool"
     mkdir -p "$subdir"
     cd "$subdir"
-    
+
     if [ -d ".git" ]; then
         echo "$tool docs already cloned. Pulling latest..."
         git pull origin main  # Assume main branch
     else
         git clone "$repo" .
     fi
-    
+
     cd "$KB_BASE"
-    
+
     echo "Docs for $tool saved in $subdir"
     echo "Note: Check README or specific subdirs (e.g., docs/, sources/) for Markdown files."
 done

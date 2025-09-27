@@ -20,10 +20,10 @@ CREATE OR REPLACE FUNCTION master.log_audit_insert()
 RETURNS TRIGGER AS $$
 BEGIN
     INSERT INTO master.audit_log (table_name, record_id, operation, new_row, changed_by)
-    VALUES (TG_TABLE_NAME, 
-            (SELECT row_to_json(t)::jsonb FROM (SELECT NEW.*) t), 
-            'INSERT', 
-            row_to_json(NEW)::jsonb, 
+    VALUES (TG_TABLE_NAME,
+            (SELECT row_to_json(t)::jsonb FROM (SELECT NEW.*) t),
+            'INSERT',
+            row_to_json(NEW)::jsonb,
             coalesce(current_setting('openleg.session_id', true), 'unknown'));
     RETURN NEW;
 END;
@@ -34,11 +34,11 @@ CREATE OR REPLACE FUNCTION master.log_audit_update()
 RETURNS TRIGGER AS $$
 BEGIN
     INSERT INTO master.audit_log (table_name, record_id, operation, old_row, new_row, changed_by)
-    VALUES (TG_TABLE_NAME, 
-            (SELECT row_to_json(t)::jsonb FROM (SELECT NEW.*) t), 
-            'UPDATE', 
-            row_to_json(OLD)::jsonb, 
-            row_to_json(NEW)::jsonb, 
+    VALUES (TG_TABLE_NAME,
+            (SELECT row_to_json(t)::jsonb FROM (SELECT NEW.*) t),
+            'UPDATE',
+            row_to_json(OLD)::jsonb,
+            row_to_json(NEW)::jsonb,
             coalesce(current_setting('openleg.session_id', true), 'unknown'));
     RETURN NEW;
 END;
@@ -49,10 +49,10 @@ CREATE OR REPLACE FUNCTION master.log_audit_delete()
 RETURNS TRIGGER AS $$
 BEGIN
     INSERT INTO master.audit_log (table_name, record_id, operation, old_row, changed_by)
-    VALUES (TG_TABLE_NAME, 
-            row_to_json(OLD)::jsonb, 
-            'DELETE', 
-            row_to_json(OLD)::jsonb, 
+    VALUES (TG_TABLE_NAME,
+            row_to_json(OLD)::jsonb,
+            'DELETE',
+            row_to_json(OLD)::jsonb,
             coalesce(current_setting('openleg.session_id', true), 'unknown'));
     RETURN OLD;
 END;
@@ -91,7 +91,7 @@ CREATE TRIGGER audit_federal_member_social_media_delete AFTER DELETE ON master.f
 
 -- Optional: View to query audits by table/operation
 CREATE VIEW master.audit_view AS
-SELECT * FROM master.audit_log 
+SELECT * FROM master.audit_log
 ORDER BY changed_at DESC;
 
 -- Grant permissions (assuming openleg_ingest user)

@@ -49,3 +49,4 @@ node_modules/**
 
 src/test/java/gov/nysenate/openleg/SillyTests.java
 
+.env

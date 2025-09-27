@@ -347,7 +347,7 @@ COPY public.person (id, full_name, first_name, middle_name, last_name, email, pr
 350	Brian Kavanagh	Brian		Kavanagh	kavanagh@nysenate.gov	Senator		t	526_brian_kavanagh.jpg
 256	Kathleen A. Marchione	Kathleen	A.	Marchione	marchione@nysenate.gov	Senator	\N	t	435_kathleen_a._marchione.jpg
 393	Marc Butler	Marc	\N	Butler	\N	Assembly Member	\N	t	567_marc_butler.jpg
-736	Roxanne J Persaud	Roxanne	J	Persaud	persaud@nysenate.gov			t	
+736	Roxanne J Persaud	Roxanne	J	Persaud	persaud@nysenate.gov			t
 494	James Skoufis	James		Skoufis	\N	Assemblymember		t	672_james_skoufis.jpg
 402	Donna Lupardo	Donna	\N	Lupardo	\N	Assembly Member	\N	t	576_donna_lupardo.jpg
 405	Brian Kolb	Brian	Kolb	Kolb	\N	Assembly Member	\N	t	579_brian_kolb.jpg
@@ -390,7 +390,7 @@ COPY public.person (id, full_name, first_name, middle_name, last_name, email, pr
 732	Dean Murray	Dean	\N	Murray	\N	\N	\N	t	910_dean_murray.jpg
 222	Diane J. Savino	Diane	J.	Savino	savino@senate.state.ny.us	Senator	\N	t	403_diane_j._savino.jpg
 478	David DiPietro	David		DiPietro	\N	Assembly Member		t	656_david_dipietro.jpg
-735	Fredrick J Akshar II	Fredrick	J	Akshar	akshar@nysenate.gov		II	t	
+735	Fredrick J Akshar II	Fredrick	J	Akshar	akshar@nysenate.gov		II	t
 225	Michael H. Ranzenhofer	Michael	H.	Ranzenhofer	ranz@senate.state.ny.us	Senator	\N	t	406_michael_h._ranzenhofer.jpg
 358	Michael Benedetto	Michael	\N	Benedetto	\N	Assembly Member	\N	t	534_michael_benedetto.jpg
 361	Marcos Crespo	Marcos	\N	Crespo	\N	Assembly Member	\N	t	537_marcos_crespo.jpg
@@ -472,11 +472,11 @@ COPY public.person (id, full_name, first_name, middle_name, last_name, email, pr
 1068	Robert Smullen	Robert		Smullen		Assembly Member		t	no_image.jpg
 1043	Kevin Thomas	Kevin		Thomas		Senator		t	no_image.jpg
 1067	Mark Walczyk	Mark		Walczyk		Assembly Member		t	no_image.jpg
-971	Jake Ashby	Jake		Ashby		Assembly Member		t	
-969	Erik T. Bohen	Erik	T.	Bohen		Assembly Member		t	
-970	John K. Mikulin	John	K.	Mikulin	mikulinj@nyassembly.gov	Assembly Member		t	
-968	Doug Smith	Doug		Smith		Assembly Member		t	
-972	Chris Tague	Chris		Tague		Assembly Member		t	
+971	Jake Ashby	Jake		Ashby		Assembly Member		t
+969	Erik T. Bohen	Erik	T.	Bohen		Assembly Member		t
+970	John K. Mikulin	John	K.	Mikulin	mikulinj@nyassembly.gov	Assembly Member		t
+968	Doug Smith	Doug		Smith		Assembly Member		t
+972	Chris Tague	Chris		Tague		Assembly Member		t
 377	Kevin Cahill	Kevin	\N	Cahill	\N	Assembly Member	\N	t	551_kevin_cahill.jpg
 371	Ellen C. Jaffee	Ellen	C.	Jaffee	\N	Assembly Member	\N	t	546_ellen_c._jaffee.jpg
 1060	Taylor Darling	Taylor		Darling		Assembly Member		t	no_image.jpg
@@ -563,7 +563,7 @@ COPY public.member (id, person_id, chamber, incumbent, full_name) FROM stdin;
 541	365	assembly	f	Robert Castelli
 543	368	assembly	f	Richard Brodsky
 544	369	assembly	f	Mike Spano
-580	406	assembly	f	Joseph Errigo 
+580	406	assembly	f	Joseph Errigo
 547	372	assembly	f	Nancy Calhoun
 548	373	assembly	f	Ann Rabbitt
 535	359	assembly	f	Carl Heastie
@@ -822,7 +822,7 @@ COPY public.member (id, person_id, chamber, incumbent, full_name) FROM stdin;
 540	364	assembly	t	Amy Paulin
 415	234	senate	t	Thomas F. O'Mara
 675	497	assembly	t	Phil Steck
-550	376	assembly	t	Frank Skartados 
+550	376	assembly	t	Frank Skartados
 422	241	senate	t	Martin J. Golden
 423	242	senate	t	Patty Ritchie
 426	245	senate	t	Martin Malavé Dilan

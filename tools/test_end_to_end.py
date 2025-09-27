@@ -24,12 +24,14 @@ from tools.fetch_congress_members import fetch_all_members, map_to_entity
 import psycopg2
 from tools.db_config import get_connection_params
 
+
 def create_table_if_not_exists():
     """Create federal_members table on remote DB if missing."""
     params = get_connection_params()
     conn = psycopg2.connect(**params)
     cur = conn.cursor()
-    cur.execute("""
+    cur.execute(
+        """
         CREATE TABLE IF NOT EXISTS federal_members (
             guid VARCHAR PRIMARY KEY,
             fullName VARCHAR(255),
@@ -38,11 +40,13 @@ def create_table_if_not_exists():
             state VARCHAR(50),
             json_data JSONB
         );
-    """)
+    """
+    )
     conn.commit()
     cur.close()
     conn.close()
     print("Table federal_members ensured.")
+
 
 def insert_sample(entities):
     """Insert entities to DB."""
@@ -50,18 +54,28 @@ def insert_sample(entities):
     params = get_connection_params()
     conn = psycopg2.connect(**params)
     cur = conn.cursor()
-    
+
     inserted = 0
     for entity in entities:
-        guid = entity['guid']
-        json_data = json.dumps({k: v for k, v in entity.items() if k not in ['guid']})
-        cur.execute("""
+        guid = entity["guid"]
+        json_data = json.dumps({k: v for k, v in entity.items() if k not in ["guid"]})
+        cur.execute(
+            """
             INSERT INTO federal_members (guid, fullName, chamber, party, state, json_data)
             VALUES (%s, %s, %s, %s, %s, %s)
             ON CONFLICT (guid) DO UPDATE SET json_data = EXCLUDED.json_data
-        """, (guid, entity.get('fullName'), entity.get('chamber'), entity.get('party'), entity.get('state'), json_data))
+        """,
+            (
+                guid,
+                entity.get("fullName"),
+                entity.get("chamber"),
+                entity.get("party"),
+                entity.get("state"),
+                json_data,
+            ),
+        )
         inserted += 1
-    
+
     conn.commit()
     cur.execute("SELECT COUNT(*) FROM federal_members;")
     count = cur.fetchone()[0]
@@ -69,19 +83,24 @@ def insert_sample(entities):
     conn.close()
     print(f"Inserted/updated {inserted} members. Total in DB: {count}")
 
+
 def main():
-    parser = argparse.ArgumentParser(description="End-to-end test for members ingestion")
-    parser.add_argument('--api_key', required=True, help='Congress.gov API key')
-    parser.add_argument('--insert', action='store_true', help='Insert to remote DB')
-    parser.add_argument('--congress', type=int, default=118, help='Congress number')
-    parser.add_argument('--limit', type=int, default=5, help='Sample size (default 5)')
+    parser = argparse.ArgumentParser(
+        description="End-to-end test for members ingestion"
+    )
+    parser.add_argument("--api_key", required=True, help="Congress.gov API key")
+    parser.add_argument("--insert", action="store_true", help="Insert to remote DB")
+    parser.add_argument("--congress", type=int, default=118, help="Congress number")
+    parser.add_argument("--limit", type=int, default=5, help="Sample size (default 5)")
 
     args = parser.parse_args()
 
     print("Step 1: Fetching sample members...")
     # Modify fetch to limit (hack: set LIMIT in script or here)
-    with patch.dict('tools.fetch_congress_members.__dict__', {'LIMIT': args.limit}):
-        members = fetch_all_members(args.congress, chamber='senate', api_key=args.api_key)
+    with patch.dict("tools.fetch_congress_members.__dict__", {"LIMIT": args.limit}):
+        members = fetch_all_members(
+            args.congress, chamber="senate", api_key=args.api_key
+        )
 
     if not members:
         print("No members fetched. Check API key/network.")
@@ -93,7 +112,7 @@ def main():
     entities = []
     for member in members:
         # Basic map (add details if needed)
-        basic_data = {'basic': member}
+        basic_data = {"basic": member}
         entity = map_to_entity(basic_data)
         entities.append(entity)
 
@@ -111,6 +130,7 @@ def main():
             print("Check Tailscale connection, DB creds, table schema.")
     else:
         print("End-to-end test complete (fetch/map). Run with --insert for DB.")
+
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,43 @@
+name: Federal Data Ingestion
+
+on:
+  schedule:
+    - cron: '0 2 * * 1'  # Weekly on Mondays at 2 AM
+  workflow_dispatch:  # Manual trigger
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        pip install -r tools/requirements.txt  # Assume requirements.txt exists; add if needed
+
+    - name: Run GovInfo bulk fetch
+      run: python tools/fetch_govinfo_bulk.py --collection BILLS --congress 119
+      env:
+        GOVINFO_API_KEY: ${{ secrets.GOVINFO_API_KEY }}
+
+    - name: Process ingested files
+      run: |
+        # Trigger Java processing (e.g., via Maven exec or script)
+        mvn exec:java -Dexec.mainClass="gov.nysenate.openleg.processors.federal.FederalIngestionProcessor"
+      env:
+        DB_URL: ${{ secrets.DB_URL }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASS: ${{ secrets.DB_PASS }}
+
+    - name: Notify on failure
+      if: failure()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: failure
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

@@ -100,7 +100,7 @@ bill.actions.add(action);
 ```java
 @Test
 public void testMapToBill() throws Exception {
-    // ... 
+    // ...
     assertEquals(BillActionType.INTRODUCED_HOUSE, bill.getActions().get(0).getType());
 }
 ```

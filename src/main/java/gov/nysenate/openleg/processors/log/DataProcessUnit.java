@@ -75,7 +75,7 @@ public class DataProcessUnit
         errors.add(errorMessage);
         logger.error(errorMessage);
     }
-    
+
     /** --- Functional Getters / Setters --- */
 
     public StringBuilder getErrorsBuilder() {

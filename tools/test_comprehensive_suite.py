@@ -40,9 +40,9 @@ class TestDatabaseConnectivity(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Load database configuration"""
-        config_path = Path('tools/db_config.json')
+        config_path = Path("tools/db_config.json")
         if config_path.exists():
-            with open(config_path, 'r') as f:
+            with open(config_path, "r") as f:
                 cls.db_config = json.load(f)
         else:
             cls.db_config = None
@@ -75,24 +75,27 @@ class TestDatabaseConnectivity(unittest.TestCase):
             self.skipTest("Database config not found")
 
         required_tables = [
-            'master.bill',
-            'master.federal_person',
-            'master.federal_member',
-            'master.federal_member_term',
-            'master.federal_bill_subject',
-            'master.federal_bill_text'
+            "master.bill",
+            "master.federal_person",
+            "master.federal_member",
+            "master.federal_member_term",
+            "master.federal_bill_subject",
+            "master.federal_bill_text",
         ]
 
         conn = psycopg2.connect(**self.db_config)
         cursor = conn.cursor()
 
         for table in required_tables:
-            cursor.execute("""
+            cursor.execute(
+                """
                 SELECT EXISTS (
                     SELECT 1 FROM information_schema.tables
                     WHERE table_schema = %s AND table_name = %s
                 )
-            """, table.split('.'))
+            """,
+                table.split("."),
+            )
 
             exists = cursor.fetchone()[0]
             self.assertTrue(exists, f"Table {table} does not exist")
@@ -120,7 +123,9 @@ class TestDatabaseConnectivity(unittest.TestCase):
 
         cursor.close()
         conn.close()
-        print(f"✓ Database performance OK (bill count: {count}, query time: {query_time:.2f}s)")
+        print(
+            f"✓ Database performance OK (bill count: {count}, query time: {query_time:.2f}s)"
+        )
 
 
 class TestAPIIntegration(unittest.TestCase):
@@ -128,7 +133,7 @@ class TestAPIIntegration(unittest.TestCase):
 
     def setUp(self):
         """Load API keys from environment"""
-        self.congress_api_key = os.getenv('CONGRESS_API_KEY')
+        self.congress_api_key = os.getenv("CONGRESS_API_KEY")
         self.skip_if_no_api_key = not bool(self.congress_api_key)
 
     def test_congress_api_connectivity(self):
@@ -138,20 +143,20 @@ class TestAPIIntegration(unittest.TestCase):
 
         try:
             response = requests.get(
-                'https://api.congress.gov/v3/member',
+                "https://api.congress.gov/v3/member",
                 params={
-                    'api_key': self.congress_api_key,
-                    'currentMember': 'true',
-                    'limit': 1
+                    "api_key": self.congress_api_key,
+                    "currentMember": "true",
+                    "limit": 1,
                 },
-                timeout=10
+                timeout=10,
             )
 
             self.assertEqual(response.status_code, 200)
 
             data = response.json()
-            self.assertIn('members', data)
-            self.assertGreater(len(data['members']), 0)
+            self.assertIn("members", data)
+            self.assertGreater(len(data["members"]), 0)
 
             print("✓ Congress.gov API connection successful")
 
@@ -167,14 +172,14 @@ class TestAPIIntegration(unittest.TestCase):
         for i in range(3):
             try:
                 response = requests.get(
-                    'https://api.congress.gov/v3/member',
+                    "https://api.congress.gov/v3/member",
                     params={
-                        'api_key': self.congress_api_key,
-                        'currentMember': 'true',
-                        'limit': 1,
-                        'offset': i
+                        "api_key": self.congress_api_key,
+                        "currentMember": "true",
+                        "limit": 1,
+                        "offset": i,
                     },
-                    timeout=10
+                    timeout=10,
                 )
 
                 self.assertIn(response.status_code, [200, 429])  # 429 = rate limited
@@ -193,8 +198,7 @@ class TestAPIIntegration(unittest.TestCase):
         try:
             # Test directory listing access
             response = requests.get(
-                'https://www.govinfo.gov/bulkdata/BILLS/119/1/',
-                timeout=10
+                "https://www.govinfo.gov/bulkdata/BILLS/119/1/", timeout=10
             )
 
             # Should get some response (may be HTML error page, but accessible)
@@ -211,13 +215,13 @@ class TestDataIngestion(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Set up test environment"""
-        cls.test_dir = Path('test_output')
+        cls.test_dir = Path("test_output")
         cls.test_dir.mkdir(exist_ok=True)
 
         # Load configs
-        config_path = Path('tools/db_config.json')
+        config_path = Path("tools/db_config.json")
         if config_path.exists():
-            with open(config_path, 'r') as f:
+            with open(config_path, "r") as f:
                 cls.db_config = json.load(f)
         else:
             cls.db_config = None
@@ -232,11 +236,11 @@ class TestDataIngestion(unittest.TestCase):
         """Test downloading sample govinfo data"""
         try:
             # Import the fetch script
-            sys.path.append('tools')
+            sys.path.append("tools")
             from fetch_govinfo_bulk import crawl_collection
 
             # Test with minimal download
-            test_output = self.test_dir / 'sample_download'
+            test_output = self.test_dir / "sample_download"
             test_output.mkdir(exist_ok=True)
 
             # This would normally download, but we'll mock it for testing
@@ -255,14 +259,14 @@ class TestDataIngestion(unittest.TestCase):
 
         try:
             # Test basic data connector functionality
-            sys.path.append('tools')
+            sys.path.append("tools")
             from govinfo_data_connector import GovInfoDataConnector
 
             connector = GovInfoDataConnector(self.db_config)
             connector.connect_db()
 
             # Test with empty directory (should handle gracefully)
-            empty_dir = self.test_dir / 'empty'
+            empty_dir = self.test_dir / "empty"
             empty_dir.mkdir(exist_ok=True)
 
             # This should not fail
@@ -292,21 +296,26 @@ class TestDataIngestion(unittest.TestCase):
 
             # If we have members, validate data integrity
             if member_count > 0:
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT COUNT(*) FROM master.federal_member
                     WHERE person_id IS NOT NULL
                     AND chamber IN ('house', 'senate')
                     AND state IS NOT NULL
-                """)
+                """
+                )
                 valid_members = cursor.fetchone()[0]
 
-                self.assertEqual(valid_members, member_count,
-                    "Some members have invalid data")
+                self.assertEqual(
+                    valid_members, member_count, "Some members have invalid data"
+                )
 
             cursor.close()
             conn.close()
 
-            print(f"✓ Member ingestion validation OK (persons: {person_count}, members: {member_count})")
+            print(
+                f"✓ Member ingestion validation OK (persons: {person_count}, members: {member_count})"
+            )
 
         except Exception as e:
             self.fail(f"Member validation test failed: {e}")
@@ -318,13 +327,16 @@ class TestSystemHealth(unittest.TestCase):
     def test_disk_space(self):
         """Test available disk space for data storage"""
         try:
-            stat = os.statvfs('/')
+            stat = os.statvfs("/")
             # Available space in GB
             available_gb = (stat.f_bavail * stat.f_frsize) / (1024**3)
 
             # Should have at least 10GB free
-            self.assertGreater(available_gb, 10.0,
-                f"Insufficient disk space: {available_gb:.1f}GB available")
+            self.assertGreater(
+                available_gb,
+                10.0,
+                f"Insufficient disk space: {available_gb:.1f}GB available",
+            )
 
             print(f"✓ Disk space OK ({available_gb:.1f}GB available)")
 
@@ -334,22 +346,25 @@ class TestSystemHealth(unittest.TestCase):
     def test_memory_usage(self):
         """Test system memory availability"""
         try:
-            with open('/proc/meminfo', 'r') as f:
+            with open("/proc/meminfo", "r") as f:
                 mem_info = {}
                 for line in f:
-                    if ':' in line:
-                        key, value = line.split(':', 1)
+                    if ":" in line:
+                        key, value = line.split(":", 1)
                         # Convert KB to GB
-                        if value.strip().endswith(' kB'):
+                        if value.strip().endswith(" kB"):
                             mem_info[key] = int(value.strip()[:-3]) / (1024**2)
                         else:
                             mem_info[key] = value.strip()
 
-            available_gb = mem_info.get('MemAvailable', 0)
+            available_gb = mem_info.get("MemAvailable", 0)
 
             # Should have at least 2GB available
-            self.assertGreater(available_gb, 2.0,
-                f"Insufficient memory: {available_gb:.1f}GB available")
+            self.assertGreater(
+                available_gb,
+                2.0,
+                f"Insufficient memory: {available_gb:.1f}GB available",
+            )
 
             print(f"✓ Memory OK ({available_gb:.1f}GB available)")
 
@@ -359,16 +374,19 @@ class TestSystemHealth(unittest.TestCase):
     def test_network_connectivity(self):
         """Test network connectivity to required services"""
         test_urls = [
-            'https://api.congress.gov',
-            'https://www.govinfo.gov',
-            'https://www.google.com'  # General connectivity
+            "https://api.congress.gov",
+            "https://www.govinfo.gov",
+            "https://www.google.com",  # General connectivity
         ]
 
         for url in test_urls:
             try:
                 response = requests.get(url, timeout=5)
-                self.assertIn(response.status_code, [200, 301, 302],
-                    f"Bad response from {url}: {response.status_code}")
+                self.assertIn(
+                    response.status_code,
+                    [200, 301, 302],
+                    f"Bad response from {url}: {response.status_code}",
+                )
 
             except Exception as e:
                 self.fail(f"Network test failed for {url}: {e}")
@@ -381,6 +399,7 @@ class TestProgressReporting(unittest.TestCase):
 
     def test_progress_calculation(self):
         """Test progress calculation logic"""
+
         # Test progress percentage calculation
         def calculate_progress(current: int, total: int) -> float:
             if total == 0:
@@ -400,19 +419,21 @@ class TestProgressReporting(unittest.TestCase):
         """Test download progress tracking"""
         # Mock download tracking
         download_stats = {
-            'total_files': 1000,
-            'downloaded': 0,
-            'failed': 0,
-            'bytes_downloaded': 0,
-            'start_time': time.time()
+            "total_files": 1000,
+            "downloaded": 0,
+            "failed": 0,
+            "bytes_downloaded": 0,
+            "start_time": time.time(),
         }
 
         # Simulate progress updates
         for i in range(10):
-            download_stats['downloaded'] += 100
-            download_stats['bytes_downloaded'] += 1024 * 1024  # 1MB each
+            download_stats["downloaded"] += 100
+            download_stats["bytes_downloaded"] += 1024 * 1024  # 1MB each
 
-            progress = (download_stats['downloaded'] / download_stats['total_files']) * 100
+            progress = (
+                download_stats["downloaded"] / download_stats["total_files"]
+            ) * 100
             self.assertGreaterEqual(progress, 0.0)
             self.assertLessEqual(progress, 100.0)
 
@@ -423,15 +444,15 @@ def run_specific_tests(component: str):
     """Run tests for a specific component"""
     suite = unittest.TestSuite()
 
-    if component == 'database':
+    if component == "database":
         suite.addTest(TestDatabaseConnectivity())
-    elif component == 'api':
+    elif component == "api":
         suite.addTest(TestAPIIntegration())
-    elif component == 'ingestion':
+    elif component == "ingestion":
         suite.addTest(TestDataIngestion())
-    elif component == 'health':
+    elif component == "health":
         suite.addTest(TestSystemHealth())
-    elif component == 'progress':
+    elif component == "progress":
         suite.addTest(TestProgressReporting())
     else:
         print(f"Unknown component: {component}")
@@ -442,11 +463,16 @@ def run_specific_tests(component: str):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Comprehensive OpenLegislation Test Suite')
-    parser.add_argument('--component', choices=['database', 'api', 'ingestion', 'health', 'progress'],
-                       help='Run tests for specific component only')
-    parser.add_argument('--verbose', '-v', action='store_true', help='Verbose output')
-    parser.add_argument('--output', help='Output results to file')
+    parser = argparse.ArgumentParser(
+        description="Comprehensive OpenLegislation Test Suite"
+    )
+    parser.add_argument(
+        "--component",
+        choices=["database", "api", "ingestion", "health", "progress"],
+        help="Run tests for specific component only",
+    )
+    parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
+    parser.add_argument("--output", help="Output results to file")
 
     args = parser.parse_args()
 
@@ -470,7 +496,7 @@ def main():
     runner = unittest.TextTestRunner(verbosity=verbosity)
 
     if args.output:
-        with open(args.output, 'w') as f:
+        with open(args.output, "w") as f:
             runner = unittest.TextTestRunner(stream=f, verbosity=verbosity)
 
     result = runner.run(suite)
@@ -501,5 +527,5 @@ def main():
         return 1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

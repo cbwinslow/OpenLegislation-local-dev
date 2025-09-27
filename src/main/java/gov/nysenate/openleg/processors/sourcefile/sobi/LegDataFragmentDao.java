@@ -25,7 +25,7 @@ public interface LegDataFragmentDao {
      * @throws DataAccessException - If there was an error while retrieving the LegDataFragment file.
      */
     LegDataFragment getLegDataFragment(String fileName) throws DataAccessException;
-    
+
     /**
      * Retrieve the LegDataFragments associated with a given Source file.
      *
@@ -45,7 +45,7 @@ public interface LegDataFragmentDao {
      * @return List<LegDataFragment>
      */
     List<LegDataFragment> getPendingLegDataFragments(SortOrder pubDateOrder, LimitOffset limOff);
-    
+
     /**
      * Retrieves the SobiFragments that are awaiting processing and belong to one of the types
      * in the given 'restrict' set.
@@ -58,7 +58,7 @@ public interface LegDataFragmentDao {
      */
     List<LegDataFragment> getPendingLegDataFragments(ImmutableSet<LegDataFragmentType> restrict, SortOrder pubDateOrder,
                                                      LimitOffset limOff);
-    
+
     /**
      * Persist the sobi fragment into the backing store. The parent SobiFile must be recorded in
      * the backing store prior to invoking this method.

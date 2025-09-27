@@ -10,10 +10,10 @@ public class ApprovalId implements Serializable, Comparable<ApprovalId>{
 
     /** The year in which the approval was signed */
     private int year;
-    
+
     /** The number id for the approval */
     private int approvalNumber;
-    
+
     /** --- Constructors --- */
 
     public ApprovalId(int year, int approvalNumber) {

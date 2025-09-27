@@ -45,7 +45,7 @@ public class HtmlDiffFormatterTest {
     public void givenWhitespaceOptionNORMALIZE_WHITESPACE_trimAllWhitespace() {
         String expected = """
                 Assembly Resolution No. 459
-                                
+
                 CONCURRENT RESOLUTION OF THE SENATE AND ASSEMBLY
                 relative to the adjournment
                 """;
@@ -57,7 +57,7 @@ public class HtmlDiffFormatterTest {
     public void givenWhitespaceOptionREMOVE_WHITESPACE_removeAllNonAlphaNumeric() {
         String expected = """
                 AssemblyResolutionNo.459
-                                
+
                 CONCURRENTRESOLUTIONOFTHESENATEANDASSEMBLY
                 relativetotheadjournment
                 """;

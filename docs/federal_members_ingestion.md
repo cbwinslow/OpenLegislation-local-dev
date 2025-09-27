@@ -63,7 +63,7 @@ def insert_members_to_db(entities, table='federal_members'):
     params = get_connection_params()
     conn = psycopg2.connect(**params)
     cur = conn.cursor()
-    
+
     # Assume table schema: guid (PK), fullName, chamber, party, state, json_data
     for entity in entities:
         guid = entity['guid']
@@ -73,7 +73,7 @@ def insert_members_to_db(entities, table='federal_members'):
             VALUES (%s, %s, %s, %s, %s, %s)
             ON CONFLICT (guid) DO UPDATE SET json_data = EXCLUDED.json_data
         """, (table, guid, entity.get('fullName'), entity.get('chamber'), entity.get('party'), entity.get('state'), json_data))
-    
+
     conn.commit()
     cur.close()
     conn.close()

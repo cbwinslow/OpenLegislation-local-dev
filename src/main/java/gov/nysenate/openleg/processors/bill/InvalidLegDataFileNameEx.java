@@ -17,4 +17,3 @@ public class InvalidLegDataFileNameEx extends RuntimeException {
         return fileName;
     }
 }
-

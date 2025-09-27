@@ -62,7 +62,7 @@ def apply_migration():
     try:
         conn = psycopg2.connect(**cfg)
         cur = conn.cursor()
-        print("Applying tracker migration to database:", cfg.get('database'))
+        print("Applying tracker migration to database:", cfg.get("database"))
 
         # Execute blocks separately to avoid multi-statement parsing edge cases
         cur.execute(SCHEMA_SQL)
@@ -87,5 +87,5 @@ def apply_migration():
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     apply_migration()

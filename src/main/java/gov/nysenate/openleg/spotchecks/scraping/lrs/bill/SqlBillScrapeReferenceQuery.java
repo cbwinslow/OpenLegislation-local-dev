@@ -105,12 +105,3 @@ public enum SqlBillScrapeReferenceQuery implements BasicSqlQuery {
         return this.sql;
     }
 }
-
-
-
-
-
-
-
-
-

@@ -54,8 +54,12 @@ from ingestion_progress import create_progress_tracker
 class BaseIngestionProcess(ABC):
     """Base class for data ingestion processes with resume capability"""
 
-    def __init__(self, db_config: Optional[Dict[str, Any]] = None,
-                 session_id: Optional[str] = None, enable_progress: bool = True):
+    def __init__(
+        self,
+        db_config: Optional[Dict[str, Any]] = None,
+        session_id: Optional[str] = None,
+        enable_progress: bool = True,
+    ):
         self.db_config = db_config or settings.db_config
         self.session_id = session_id
         self.enable_progress = enable_progress
@@ -132,11 +136,14 @@ class BaseIngestionProcess(ABC):
             record_id_column=self.get_record_id_column(),
             source=self.get_data_source(),
             session_id=self.session_id,
-            max_retry_attempts=self.get_max_retries()
+            max_retry_attempts=self.get_max_retries(),
         )
 
-    def prepare_records(self, records: List[Union[IngestionRecord, Dict, str]],
-                       reset_existing: bool = False) -> List[Dict[str, Any]]:
+    def prepare_records(
+        self,
+        records: List[Union[IngestionRecord, Dict, str]],
+        reset_existing: bool = False,
+    ) -> List[Dict[str, Any]]:
         """Prepare records for processing and initialize tracking
 
         Returns:
@@ -150,17 +157,17 @@ class BaseIngestionProcess(ABC):
         for record in records:
             if isinstance(record, IngestionRecord):
                 record_dict = {
-                    'record_id': record.record_id,
-                    'metadata': record.metadata or {},
-                    'source': record.source,
-                    'priority': record.priority
+                    "record_id": record.record_id,
+                    "metadata": record.metadata or {},
+                    "source": record.source,
+                    "priority": record.priority,
                 }
             elif isinstance(record, dict):
                 record_dict = record.copy()
-                if 'record_id' not in record_dict and 'id' in record_dict:
-                    record_dict['record_id'] = record_dict['id']
+                if "record_id" not in record_dict and "id" in record_dict:
+                    record_dict["record_id"] = record_dict["id"]
             else:
-                record_dict = {'record_id': str(record)}
+                record_dict = {"record_id": str(record)}
 
             record_dicts.append(record_dict)
 
@@ -174,7 +181,9 @@ class BaseIngestionProcess(ABC):
         pending = self.tracker.get_pending_records()
         return pending
 
-    def run(self, resume: bool = True, reset: bool = False, limit: Optional[int] = None):
+    def run(
+        self, resume: bool = True, reset: bool = False, limit: Optional[int] = None
+    ):
         """Run the complete ingestion process
 
         Args:
@@ -217,7 +226,9 @@ class BaseIngestionProcess(ABC):
 
         # Initialize progress tracking
         if self.enable_progress:
-            self.progress = create_progress_tracker(len(records_to_process), f"{self.get_data_source()} Ingestion")
+            self.progress = create_progress_tracker(
+                len(records_to_process), f"{self.get_data_source()} Ingestion"
+            )
             self.progress.total_items = len(records_to_process)
 
         # Process records
@@ -235,7 +246,7 @@ class BaseIngestionProcess(ABC):
                 break
 
             processed_count += 1
-            record_id = record['record_id']
+            record_id = record["record_id"]
 
             try:
                 # Mark as in progress
@@ -246,7 +257,7 @@ class BaseIngestionProcess(ABC):
                     self.progress.update(
                         current_item=processed_count,
                         status=f"Processing {record_id}",
-                        bioguide_id=record_id
+                        bioguide_id=record_id,
                     )
 
                 # Process the record
@@ -309,13 +320,19 @@ class BaseIngestionProcess(ABC):
 
 def create_cli_parser(process_name: str) -> argparse.ArgumentParser:
     """Create a standard CLI parser for ingestion processes"""
-    parser = argparse.ArgumentParser(description=f'Ingest {process_name} data')
-    parser.add_argument('--db-config', help='Database config JSON file')
-    parser.add_argument('--session-id', help='Custom session ID for tracking')
-    parser.add_argument('--limit', type=int, help='Limit number of records to process')
-    parser.add_argument('--no-resume', action='store_true', help='Start fresh instead of resuming')
-    parser.add_argument('--reset', action='store_true', help='Reset all records to pending')
-    parser.add_argument('--no-progress', action='store_true', help='Disable progress reporting')
+    parser = argparse.ArgumentParser(description=f"Ingest {process_name} data")
+    parser.add_argument("--db-config", help="Database config JSON file")
+    parser.add_argument("--session-id", help="Custom session ID for tracking")
+    parser.add_argument("--limit", type=int, help="Limit number of records to process")
+    parser.add_argument(
+        "--no-resume", action="store_true", help="Start fresh instead of resuming"
+    )
+    parser.add_argument(
+        "--reset", action="store_true", help="Reset all records to pending"
+    )
+    parser.add_argument(
+        "--no-progress", action="store_true", help="Disable progress reporting"
+    )
     return parser
 
 
@@ -328,7 +345,7 @@ def run_ingestion_process(process_class, process_name: str):
     db_config = None
     if args.db_config:
         try:
-            with open(args.db_config, 'r') as f:
+            with open(args.db_config, "r") as f:
                 db_config = json.load(f)
         except Exception as e:
             print(f"Error loading database config: {e}")
@@ -338,7 +355,7 @@ def run_ingestion_process(process_class, process_name: str):
     process = process_class(
         db_config=db_config,
         session_id=args.session_id,
-        enable_progress=not args.no_progress
+        enable_progress=not args.no_progress,
     )
 
     try:

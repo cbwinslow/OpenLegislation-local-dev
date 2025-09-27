@@ -484,7 +484,7 @@ class GovInfoDataConnector:
         collection_type = input_dir.name.lower()
         is_billstatus = 'billstatus' in collection_type
         is_billsum = 'billsum' in collection_type
-        
+
         xml_files = list(input_dir.glob('**/*.xml'))
         logger.info(f"Found {len(xml_files)} XML files to process ({'BILLSTATUS' if is_billstatus else 'BILLSUM' if is_billsum else 'BILLS'} mode)")
 
@@ -510,7 +510,7 @@ class GovInfoDataConnector:
                     bill_data = self.parse_govinfo_xml(xml_file)
                     if bill_data:
                         batch.append(bill_data)
-                        
+
                 if len(batch) >= batch_size:
                     success_count = self._process_batch(batch)
                     processed += success_count
@@ -536,7 +536,7 @@ class GovInfoDataConnector:
         try:
             tree = ET.parse(xml_file)
             root = tree.getroot()
-            
+
             congress = self._extract_congress(root)
             if not congress:
                 logger.warning(f"No congress found in {xml_file}")
@@ -556,7 +556,7 @@ class GovInfoDataConnector:
                     'actions': self._extract_actions_from_status(bill_elem),
                     'data_source': 'govinfo_billstatus'
                 }
-                
+
                 # Only add if we have a valid bill number
                 if bill_data['bill_number']:
                     bills.append(bill_data)
@@ -662,7 +662,7 @@ class GovInfoDataConnector:
         try:
             tree = ET.parse(xml_file)
             root = tree.getroot()
-            
+
             congress = self._extract_congress(root)
             if not congress:
                 logger.warning(f"No congress found in {xml_file}")
@@ -681,7 +681,7 @@ class GovInfoDataConnector:
                     'legislative_history': self._extract_legislative_history(summary_elem),
                     'data_source': 'govinfo_billsum'
                 }
-                
+
                 # Only add if we have a valid bill number and summary text
                 if summary_data['bill_number'] and summary_data['summary_text']:
                     summaries.append(summary_data)
@@ -918,7 +918,7 @@ class GovInfoDataConnector:
         collection_type = input_dir.name.lower()
         is_billstatus = 'billstatus' in collection_type
         is_billsum = 'billsum' in collection_type
-        
+
         xml_files = list(input_dir.glob('**/*.xml'))
         logger.info(f"Found {len(xml_files)} XML files to process ({'BILLSTATUS' if is_billstatus else 'BILLSUM' if is_billsum else 'BILLS'} mode)")
 
@@ -944,7 +944,7 @@ class GovInfoDataConnector:
                     bill_data = self.parse_govinfo_xml(xml_file)
                     if bill_data:
                         batch.append(bill_data)
-                        
+
                 if len(batch) >= batch_size:
                     success_count = self._process_batch(batch)
                     processed += success_count
@@ -970,7 +970,7 @@ class GovInfoDataConnector:
         try:
             tree = ET.parse(xml_file)
             root = tree.getroot()
-            
+
             congress = self._extract_congress(root)
             if not congress:
                 logger.warning(f"No congress found in {xml_file}")
@@ -990,7 +990,7 @@ class GovInfoDataConnector:
                     'actions': self._extract_actions_from_status(bill_elem),
                     'data_source': 'govinfo_billstatus'
                 }
-                
+
                 # Only add if we have a valid bill number
                 if bill_data['bill_number']:
                     bills.append(bill_data)
@@ -1096,7 +1096,7 @@ class GovInfoDataConnector:
         try:
             tree = ET.parse(xml_file)
             root = tree.getroot()
-            
+
             congress = self._extract_congress(root)
             if not congress:
                 logger.warning(f"No congress found in {xml_file}")
@@ -1115,7 +1115,7 @@ class GovInfoDataConnector:
                     'legislative_history': self._extract_legislative_history(summary_elem),
                     'data_source': 'govinfo_billsum'
                 }
-                
+
                 # Only add if we have a valid bill number and summary text
                 if summary_data['bill_number'] and summary_data['summary_text']:
                     summaries.append(summary_data)
@@ -1352,7 +1352,7 @@ class GovInfoDataConnector:
         collection_type = input_dir.name.lower()
         is_billstatus = 'billstatus' in collection_type
         is_billsum = 'billsum' in collection_type
-        
+
         xml_files = list(input_dir.glob('**/*.xml'))
         logger.info(f"Found {len(xml_files)} XML files to process ({'BILLSTATUS' if is_billstatus else 'BILLSUM' if is_billsum else 'BILLS'} mode)")
 
@@ -1378,7 +1378,7 @@ class GovInfoDataConnector:
                     bill_data = self.parse_govinfo_xml(xml_file)
                     if bill_data:
                         batch.append(bill_data)
-                        
+
                 if len(batch) >= batch_size:
                     success_count = self._process_batch(batch)
                     processed += success_count
@@ -1404,7 +1404,7 @@ class GovInfoDataConnector:
         try:
             tree = ET.parse(xml_file)
             root = tree.getroot()
-            
+
             congress = self._extract_congress(root)
             if not congress:
                 logger.warning(f"No congress found in {xml_file}")
@@ -1424,7 +1424,7 @@ class GovInfoDataConnector:
                     'actions': self._extract_actions_from_status(bill_elem),
                     'data_source': 'govinfo_billstatus'
                 }
-                
+
                 # Only add if we have a valid bill number
                 if bill_data['bill_number']:
                     bills.append(bill_data)
@@ -1691,7 +1691,7 @@ class GovInfoDataConnector:
         collection_type = input_dir.name.lower()
         is_billstatus = 'billstatus' in collection_type
         is_billsum = 'billsum' in collection_type
-        
+
         xml_files = list(input_dir.glob('**/*.xml'))
         logger.info(f"Found {len(xml_files)} XML files to process ({'BILLSTATUS' if is_billstatus else 'BILLSUM' if is_billsum else 'BILLS'} mode)")
 
@@ -1717,7 +1717,7 @@ class GovInfoDataConnector:
                     bill_data = self.parse_govinfo_xml(xml_file)
                     if bill_data:
                         batch.append(bill_data)
-                        
+
                 if len(batch) >= batch_size:
                     success_count = self._process_batch(batch)
                     processed += success_count
@@ -1743,7 +1743,7 @@ class GovInfoDataConnector:
         try:
             tree = ET.parse(xml_file)
             root = tree.getroot()
-            
+
             congress = self._extract_congress(root)
             if not congress:
                 logger.warning(f"No congress found in {xml_file}")
@@ -1763,7 +1763,7 @@ class GovInfoDataConnector:
                     'actions': self._extract_actions_from_status(bill_elem),
                     'data_source': 'govinfo_billstatus'
                 }
-                
+
                 # Only add if we have a valid bill number
                 if bill_data['bill_number']:
                     bills.append(bill_data)

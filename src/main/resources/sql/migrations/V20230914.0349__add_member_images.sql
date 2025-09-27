@@ -19,4 +19,3 @@ UPDATE public.person SET img_name = '1067_Mark_Walczyk.jpg' WHERE id = 1067;
 UPDATE public.person SET img_name = '1332_Lea_Webb.jpg' WHERE id = 1332;
 
 UPDATE public.person SET img_name = '1335_William_Weber.jpg' WHERE id = 1335;
-

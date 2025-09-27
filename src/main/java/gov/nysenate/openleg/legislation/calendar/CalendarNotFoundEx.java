@@ -9,7 +9,7 @@ public class CalendarNotFoundEx extends RuntimeException
     public CalendarNotFoundEx(CalendarId calendarId) {
         this(calendarId, null);
     }
-    
+
     public CalendarNotFoundEx(CalendarId calendarId, Throwable cause) {
         super("Calendar with " + calendarId + " could not be retrieved.", cause);
         this.calendarId = calendarId;

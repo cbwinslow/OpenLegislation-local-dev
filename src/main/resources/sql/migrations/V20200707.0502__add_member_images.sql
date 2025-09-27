@@ -39,4 +39,3 @@ UPDATE public.person SET img_name = '493_Luis_Sepúlveda.jpg' WHERE id = 493;
 UPDATE public.person SET img_name = '925_James_Tedisco.jpg' WHERE id = 925;
 
 UPDATE public.person SET img_name = '1043_Kevin_Thomas.jpg' WHERE id = 1043;
-

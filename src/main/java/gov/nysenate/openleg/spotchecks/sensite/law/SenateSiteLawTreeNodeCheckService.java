@@ -156,4 +156,3 @@ public class SenateSiteLawTreeNodeCheckService implements SpotCheckService<LawSp
         spotCheckUtils.checkString(contentToSection, ref.getToSection(), obs, LAW_DOC_TO_SECTION);
     }
 }
-

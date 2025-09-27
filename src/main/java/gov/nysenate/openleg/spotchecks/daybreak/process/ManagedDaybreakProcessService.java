@@ -152,8 +152,8 @@ public class ManagedDaybreakProcessService implements DaybreakProcessService{
             daybreakDao.setProcessed(fragmentId);
         }
     }
-    
-    
+
+
 
     /** --- Helper methods --- */
 

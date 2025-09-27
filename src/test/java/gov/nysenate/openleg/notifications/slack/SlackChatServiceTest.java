@@ -59,7 +59,7 @@ public class SlackChatServiceTest extends BaseTests {
     /* --- Tests --- */
 
     /**
-     * Should post a message to the default channel configured 
+     * Should post a message to the default channel configured
      * within the slack webhook integration
      */
     @Test
@@ -68,7 +68,7 @@ public class SlackChatServiceTest extends BaseTests {
     }
 
     /**
-     * Should post a message to the default channel configured 
+     * Should post a message to the default channel configured
      * within the slack webhook integration
      * Will mention users in 'slackers' list except for the blank strings
      */
@@ -111,4 +111,3 @@ public class SlackChatServiceTest extends BaseTests {
                 frame.getClassName(), frame.getMethodName(), frame.getLineNumber());
     }
 }
-

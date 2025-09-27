@@ -22,25 +22,25 @@ public abstract class BaseSourceFile implements SourceFile {
      */
     private static final String DEFAULT_ENCODING = "CP850";
     private static final Logger logger = LoggerFactory.getLogger(BaseSourceFile.class);
-    
+
     /** Reference to the actual file. */
     private File file;
-    
+
     /** The encoding this file was written in. */
     private String encoding;
-    
+
     /** The datetime when the Sobi or XML files was recorded into the backing store. */
     private LocalDateTime stagedDateTime;
-    
+
     /** Indicates if the underlying 'file' reference has been moved into an archive directory. */
     private boolean archived;
 
     /** --- Constructors --- */
-    
+
     public BaseSourceFile(File sobiFile) throws IOException, LegDataFileNotFoundEx {
         this(sobiFile, DEFAULT_ENCODING);
     }
-    
+
     public BaseSourceFile(File infile, String encoding) throws IOException, LegDataFileNotFoundEx {
         if(infile.exists()) {
             this.file = infile;
@@ -53,7 +53,7 @@ public abstract class BaseSourceFile implements SourceFile {
             throw new FileNotFoundException(infile.getAbsolutePath());
         }
     }
-    
+
     /** --- Functional Getters/Setters --- */
 
     /** The file name serves as the unique identifier for the Sobi or XML files. */
@@ -61,7 +61,7 @@ public abstract class BaseSourceFile implements SourceFile {
     public String getFileName(){
         return file.getName();
     }
-    
+
     /**
      * Retrieves the text contained within the file. The text is not saved due to the
      * added memory overhead when retaining references to Sobi or XML files.
@@ -76,14 +76,14 @@ public abstract class BaseSourceFile implements SourceFile {
             throw new UnreadableLegDataEx(this, e);
         }
     }
-    
+
     @Override
     public LocalDateTime getPublishedDateTime() throws InvalidLegDataFileNameEx {
         return null;
     }
-    
+
     /** --- Override Methods --- */
-    
+
     @Override
     public String toString(){
         return MoreObjects.toStringHelper(this)
@@ -93,33 +93,33 @@ public abstract class BaseSourceFile implements SourceFile {
                 .add("archived", archived)
                 .toString();
     }
-    
+
     /** --- Basic Getters/Setters --- */
-    
+
     public File getFile(){
         return file;
     }
-    
+
     public void setFile(File file){
         this.file = file;
     }
-    
+
     public String getEncoding(){
         return encoding;
     }
-    
+
     public LocalDateTime getStagedDateTime(){
         return stagedDateTime;
     }
-    
+
     public void setStagedDateTime(LocalDateTime stagedDateTime){
         this.stagedDateTime = stagedDateTime;
     }
-    
+
     public boolean isArchived(){
         return archived;
     }
-    
+
     public void setArchived(boolean archived){
         this.archived = archived;
     }

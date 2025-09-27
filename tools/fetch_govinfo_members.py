@@ -26,6 +26,7 @@ from typing import List, Dict
 BASE_URL = "https://www.govinfo.gov/bulkdata"
 OUTPUT_DIR = "output"
 
+
 def download_bulk_zip(congress: int) -> str:
     """
     Download the Congressional Directory ZIP for the given congress.
@@ -43,15 +44,16 @@ def download_bulk_zip(congress: int) -> str:
     # Extract in memory
     with zipfile.ZipFile(io.BytesIO(response.content)) as z:
         xml_filename = z.namelist()[0]  # Assume single XML file
-        xml_content = z.read(xml_filename).decode('utf-8')
+        xml_content = z.read(xml_filename).decode("utf-8")
 
     # Save extracted XML temporarily
     xml_path = f"/tmp/{xml_filename.replace('.zip', '')}"
-    with open(xml_path, 'w', encoding='utf-8') as f:
+    with open(xml_path, "w", encoding="utf-8") as f:
         f.write(xml_content)
 
     print(f"Extracted to {xml_path}")
     return xml_path
+
 
 def parse_members_xml(xml_path: str) -> List[Dict]:
     """
@@ -62,34 +64,89 @@ def parse_members_xml(xml_path: str) -> List[Dict]:
     root = tree.getroot()
 
     members = []
-    for member_elem in root.findall('.//member'):
+    for member_elem in root.findall(".//member"):
         member_data = {
-            'name': member_elem.find('name').text if member_elem.find('name') is not None else None,
-            'title': member_elem.find('title').text if member_elem.find('title') is not None else None,
-            'party': member_elem.find('party').text if member_elem.find('party') is not None else None,
-            'state': member_elem.find('state').text if member_elem.find('state') is not None else None,
-            'district': member_elem.find('district').text if member_elem.find('district') is not None else None,
-            'chamber': member_elem.find('chamber').text if member_elem.find('chamber') is not None else None,
-            'office': {
-                'address': member_elem.find('.//address').text if member_elem.find('.//address') is not None else None,
-                'phone': member_elem.find('.//phone').text if member_elem.find('.//phone') is not None else None,
-                'fax': member_elem.find('.//fax').text if member_elem.find('.//fax') is not None else None,
-                'email': member_elem.find('.//email').text if member_elem.find('.//email') is not None else None
+            "name": (
+                member_elem.find("name").text
+                if member_elem.find("name") is not None
+                else None
+            ),
+            "title": (
+                member_elem.find("title").text
+                if member_elem.find("title") is not None
+                else None
+            ),
+            "party": (
+                member_elem.find("party").text
+                if member_elem.find("party") is not None
+                else None
+            ),
+            "state": (
+                member_elem.find("state").text
+                if member_elem.find("state") is not None
+                else None
+            ),
+            "district": (
+                member_elem.find("district").text
+                if member_elem.find("district") is not None
+                else None
+            ),
+            "chamber": (
+                member_elem.find("chamber").text
+                if member_elem.find("chamber") is not None
+                else None
+            ),
+            "office": {
+                "address": (
+                    member_elem.find(".//address").text
+                    if member_elem.find(".//address") is not None
+                    else None
+                ),
+                "phone": (
+                    member_elem.find(".//phone").text
+                    if member_elem.find(".//phone") is not None
+                    else None
+                ),
+                "fax": (
+                    member_elem.find(".//fax").text
+                    if member_elem.find(".//fax") is not None
+                    else None
+                ),
+                "email": (
+                    member_elem.find(".//email").text
+                    if member_elem.find(".//email") is not None
+                    else None
+                ),
             },
-            'committees': [
+            "committees": [
                 {
-                    'name': comm.find('name').text if comm.find('name') is not None else None,
-                    'role': comm.find('role').text if comm.find('role') is not None else None
+                    "name": (
+                        comm.find("name").text
+                        if comm.find("name") is not None
+                        else None
+                    ),
+                    "role": (
+                        comm.find("role").text
+                        if comm.find("role") is not None
+                        else None
+                    ),
                 }
-                for comm in member_elem.findall('.//committee')
+                for comm in member_elem.findall(".//committee")
             ],
-            'biography': member_elem.find('biography').text if member_elem.find('biography') is not None else None
+            "biography": (
+                member_elem.find("biography").text
+                if member_elem.find("biography") is not None
+                else None
+            ),
         }
         # Assign GUID: Use name + state as fallback if no id
-        member_data['guid'] = member_elem.get('id') or f"{member_data['name']}_{member_data['state']}"
+        member_data["guid"] = (
+            member_elem.get("id") or f"{member_data['name']}_{member_data['state']}"
+        )
         members.append(member_data)
 
     return members
+
 
 def map_to_entity(member_data: Dict) -> Dict:
     """
@@ -97,26 +154,35 @@ def map_to_entity(member_data: Dict) -> Dict:
     Similar structure to congress.gov mapping.
     """
     entity = {
-        'guid': member_data.get('guid'),
-        'fullName': f"{member_data.get('title', '')} {member_data.get('name', '')}".strip(),
-        'chamber': member_data.get('chamber'),
-        'party': member_data.get('party'),
-        'state': member_data.get('state'),
-        'district': member_data.get('district', 'N/A'),
-        'office': member_data.get('office', {}),
-        'committees': member_data.get('committees', []),
-        'biography': member_data.get('biography'),
-        'source': 'govinfo.gov',
-        'lastUpdated': 'From bulk download'  # No timestamp in XML
+        "guid": member_data.get("guid"),
+        "fullName": f"{member_data.get('title', '')} {member_data.get('name', '')}".strip(),
+        "chamber": member_data.get("chamber"),
+        "party": member_data.get("party"),
+        "state": member_data.get("state"),
+        "district": member_data.get("district", "N/A"),
+        "office": member_data.get("office", {}),
+        "committees": member_data.get("committees", []),
+        "biography": member_data.get("biography"),
+        "source": "govinfo.gov",
+        "lastUpdated": "From bulk download",  # No timestamp in XML
     }
 
     # Clean up None values
-    return {k: v for k, v in entity.items() if v is not None and v != 'N/A'}
+    return {k: v for k, v in entity.items() if v is not None and v != "N/A"}
+
 
 def main():
-    parser = argparse.ArgumentParser(description="Fetch and map GovInfo bulk members data")
-    parser.add_argument('--congress', type=int, default=118, help='Congress number (default: 118)')
-    parser.add_argument('--output', default=None, help='Output JSON file (default: members_govinfo_{congress}.json)')
+    parser = argparse.ArgumentParser(
+        description="Fetch and map GovInfo bulk members data"
+    )
+    parser.add_argument(
+        "--congress", type=int, default=118, help="Congress number (default: 118)"
+    )
+    parser.add_argument(
+        "--output",
+        default=None,
+        help="Output JSON file (default: members_govinfo_{congress}.json)",
+    )
 
     args = parser.parse_args()
 
@@ -136,7 +202,7 @@ def main():
         if not args.output:
             args.output = f"{OUTPUT_DIR}/members_govinfo_{args.congress}.json"
 
-        with open(args.output, 'w') as f:
+        with open(args.output, "w") as f:
             json.dump(entities, f, indent=2)
 
         print(f"Mapped {len(entities)} members to {args.output}")
@@ -148,6 +214,7 @@ def main():
         if os.path.exists(xml_path):
             os.remove(xml_path)
             print(f"Cleaned up {xml_path}")
+
 
 if __name__ == "__main__":
     main()

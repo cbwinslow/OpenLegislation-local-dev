@@ -35,8 +35,7 @@ from typing import Dict, List, Optional, Set, Any
 class DownloadResumeManager:
     """Manages download state and resume capability"""
 
-    def __init__(self, state_file: str = ".download_state.pkl",
-                 max_age_days: int = 30):
+    def __init__(self, state_file: str = ".download_state.pkl", max_age_days: int = 30):
         self.state_file = Path(state_file)
         self.max_age_days = max_age_days
         self.lock = Lock()
@@ -46,7 +45,7 @@ class DownloadResumeManager:
         """Load persistent state from disk"""
         if self.state_file.exists():
             try:
-                with open(self.state_file, 'rb') as f:
+                with open(self.state_file, "rb") as f:
                     state = pickle.load(f)
 
                 # Clean old entries
@@ -62,20 +61,20 @@ class DownloadResumeManager:
     def _create_empty_state(self) -> Dict[str, Any]:
         """Create empty state structure"""
         return {
-            'version': '1.0',
-            'created': datetime.now(),
-            'collections': defaultdict(dict),
-            'completed_files': set(),
-            'failed_files': set(),
-            'in_progress_files': set(),
-            'file_hashes': {},  # For deduplication
-            'last_updated': datetime.now(),
-            'stats': {
-                'total_downloads': 0,
-                'total_failures': 0,
-                'total_bytes': 0,
-                'start_time': datetime.now()
-            }
+            "version": "1.0",
+            "created": datetime.now(),
+            "collections": defaultdict(dict),
+            "completed_files": set(),
+            "failed_files": set(),
+            "in_progress_files": set(),
+            "file_hashes": {},  # For deduplication
+            "last_updated": datetime.now(),
+            "stats": {
+                "total_downloads": 0,
+                "total_failures": 0,
+                "total_bytes": 0,
+                "start_time": datetime.now(),
+            },
         }
 
     def _clean_old_entries(self, state: Dict[str, Any]):
@@ -83,30 +82,30 @@ class DownloadResumeManager:
         cutoff_date = datetime.now() - timedelta(days=self.max_age_days)
 
         # Clean completed files older than cutoff
-        if 'completed_files_timestamps' in state:
-            timestamps = state['completed_files_timestamps']
+        if "completed_files_timestamps" in state:
+            timestamps = state["completed_files_timestamps"]
             to_remove = []
             for file_path, timestamp in timestamps.items():
                 if timestamp < cutoff_date:
                     to_remove.append(file_path)
 
             for file_path in to_remove:
-                state['completed_files'].discard(file_path)
+                state["completed_files"].discard(file_path)
                 del timestamps[file_path]
 
     def _save_state(self):
         """Save current state to disk"""
         with self.lock:
-            self.state['last_updated'] = datetime.now()
+            self.state["last_updated"] = datetime.now()
 
             # Convert sets to lists for JSON serialization
             state_copy = self.state.copy()
-            state_copy['completed_files'] = list(self.state['completed_files'])
-            state_copy['failed_files'] = list(self.state['failed_files'])
-            state_copy['in_progress_files'] = list(self.state['in_progress_files'])
+            state_copy["completed_files"] = list(self.state["completed_files"])
+            state_copy["failed_files"] = list(self.state["failed_files"])
+            state_copy["in_progress_files"] = list(self.state["in_progress_files"])
 
             try:
-                with open(self.state_file, 'wb') as f:
+                with open(self.state_file, "wb") as f:
                     pickle.dump(state_copy, f)
             except Exception as e:
                 print(f"Warning: Could not save state: {e}")
@@ -115,7 +114,7 @@ class DownloadResumeManager:
         """Calculate hash of file for deduplication"""
         try:
             hash_md5 = hashlib.md5()
-            with open(file_path, 'rb') as f:
+            with open(file_path, "rb") as f:
                 for chunk in iter(lambda: f.read(4096), b""):
                     hash_md5.update(chunk)
             return hash_md5.hexdigest()
@@ -128,21 +127,21 @@ class DownloadResumeManager:
         if not file_hash:
             return False
 
-        return file_hash in self.state['file_hashes']
+        return file_hash in self.state["file_hashes"]
 
     def should_download(self, file_url: str, file_path: str = None) -> bool:
         """Check if a file should be downloaded"""
         with self.lock:
             # Check if already completed
-            if file_url in self.state['completed_files']:
+            if file_url in self.state["completed_files"]:
                 return False
 
             # Check if currently in progress
-            if file_url in self.state['in_progress_files']:
+            if file_url in self.state["in_progress_files"]:
                 return False
 
             # Check if previously failed (allow retry after some time)
-            if file_url in self.state['failed_files']:
+            if file_url in self.state["failed_files"]:
                 # Allow retry after 1 hour
                 # In a real implementation, you might want more sophisticated retry logic
                 return True
@@ -152,42 +151,42 @@ class DownloadResumeManager:
     def mark_in_progress(self, file_url: str):
         """Mark a file as currently being downloaded"""
         with self.lock:
-            self.state['in_progress_files'].add(file_url)
+            self.state["in_progress_files"].add(file_url)
             self._save_state()
 
     def mark_completed(self, file_url: str, file_path: str = None, file_size: int = 0):
         """Mark a file as successfully downloaded"""
         with self.lock:
-            self.state['completed_files'].add(file_url)
-            self.state['in_progress_files'].discard(file_url)
-            self.state['failed_files'].discard(file_url)
+            self.state["completed_files"].add(file_url)
+            self.state["in_progress_files"].discard(file_url)
+            self.state["failed_files"].discard(file_url)
 
             # Update stats
-            self.state['stats']['total_downloads'] += 1
-            self.state['stats']['total_bytes'] += file_size
+            self.state["stats"]["total_downloads"] += 1
+            self.state["stats"]["total_bytes"] += file_size
 
             # Store file hash for deduplication
             if file_path and os.path.exists(file_path):
                 file_hash = self.get_file_hash(file_path)
                 if file_hash:
-                    self.state['file_hashes'][file_hash] = file_url
+                    self.state["file_hashes"][file_hash] = file_url
 
             self._save_state()
 
     def mark_failed(self, file_url: str, error: str = None):
         """Mark a file as failed to download"""
         with self.lock:
-            self.state['in_progress_files'].discard(file_url)
-            self.state['failed_files'].add(file_url)
-            self.state['stats']['total_failures'] += 1
+            self.state["in_progress_files"].discard(file_url)
+            self.state["failed_files"].add(file_url)
+            self.state["stats"]["total_failures"] += 1
 
             # Store error info if provided
             if error:
-                if 'errors' not in self.state:
-                    self.state['errors'] = {}
-                self.state['errors'][file_url] = {
-                    'error': error,
-                    'timestamp': datetime.now()
+                if "errors" not in self.state:
+                    self.state["errors"] = {}
+                self.state["errors"][file_url] = {
+                    "error": error,
+                    "timestamp": datetime.now(),
                 }
 
             self._save_state()
@@ -195,28 +194,28 @@ class DownloadResumeManager:
     def get_resume_info(self) -> Dict[str, Any]:
         """Get information for resuming downloads"""
         with self.lock:
-            completed = len(self.state['completed_files'])
-            in_progress = len(self.state['in_progress_files'])
-            failed = len(self.state['failed_files'])
+            completed = len(self.state["completed_files"])
+            in_progress = len(self.state["in_progress_files"])
+            failed = len(self.state["failed_files"])
 
             return {
-                'completed_count': completed,
-                'in_progress_count': in_progress,
-                'failed_count': failed,
-                'total_processed': completed + in_progress + failed,
-                'stats': self.state['stats'],
-                'last_updated': self.state.get('last_updated')
+                "completed_count": completed,
+                "in_progress_count": in_progress,
+                "failed_count": failed,
+                "total_processed": completed + in_progress + failed,
+                "stats": self.state["stats"],
+                "last_updated": self.state.get("last_updated"),
             }
 
     def get_failed_files(self) -> List[str]:
         """Get list of files that failed to download"""
         with self.lock:
-            return list(self.state['failed_files'])
+            return list(self.state["failed_files"])
 
     def retry_failed_files(self):
         """Reset failed files for retry"""
         with self.lock:
-            self.state['failed_files'].clear()
+            self.state["failed_files"].clear()
             self._save_state()
 
     def reset_state(self):
@@ -225,17 +224,20 @@ class DownloadResumeManager:
             self.state = self._create_empty_state()
             self._save_state()
 
-    def get_collection_progress(self, collection: str, congress: int, session: int) -> Dict[str, Any]:
+    def get_collection_progress(
+        self, collection: str, congress: int, session: int
+    ) -> Dict[str, Any]:
         """Get progress for a specific collection"""
         key = f"{collection}_{congress}_{session}"
-        return self.state['collections'].get(key, {})
+        return self.state["collections"].get(key, {})
 
-    def update_collection_progress(self, collection: str, congress: int, session: int,
-                                 progress: Dict[str, Any]):
+    def update_collection_progress(
+        self, collection: str, congress: int, session: int, progress: Dict[str, Any]
+    ):
         """Update progress for a collection"""
         key = f"{collection}_{congress}_{session}"
-        self.state['collections'][key] = progress
-        self.state['collections'][key]['last_updated'] = datetime.now()
+        self.state["collections"][key] = progress
+        self.state["collections"][key]["last_updated"] = datetime.now()
         self._save_state()
 
 
@@ -251,7 +253,7 @@ class DeduplicationManager:
         """Load hash cache from disk"""
         if self.hash_cache_file.exists():
             try:
-                with open(self.hash_cache_file, 'r') as f:
+                with open(self.hash_cache_file, "r") as f:
                     return json.load(f)
             except Exception:
                 pass
@@ -260,7 +262,7 @@ class DeduplicationManager:
     def _save_hash_cache(self):
         """Save hash cache to disk"""
         try:
-            with open(self.hash_cache_file, 'w') as f:
+            with open(self.hash_cache_file, "w") as f:
                 json.dump(self.hash_cache, f, indent=2)
         except Exception as e:
             print(f"Warning: Could not save hash cache: {e}")
@@ -279,9 +281,9 @@ class DeduplicationManager:
             file_hash = self._calculate_hash(file_path)
             if file_hash:
                 self.hash_cache[file_hash] = {
-                    'file_path': str(file_path),
-                    'processed_at': datetime.now().isoformat(),
-                    'metadata': metadata or {}
+                    "file_path": str(file_path),
+                    "processed_at": datetime.now().isoformat(),
+                    "metadata": metadata or {},
                 }
                 self._save_hash_cache()
 
@@ -296,7 +298,7 @@ class DeduplicationManager:
         """Calculate MD5 hash of file"""
         try:
             hash_md5 = hashlib.md5()
-            with open(file_path, 'rb') as f:
+            with open(file_path, "rb") as f:
                 for chunk in iter(lambda: f.read(4096), b""):
                     hash_md5.update(chunk)
             return hash_md5.hexdigest()
@@ -309,7 +311,7 @@ class DeduplicationManager:
         to_remove = []
 
         for hash_val, info in self.hash_cache.items():
-            processed_at = info.get('processed_at')
+            processed_at = info.get("processed_at")
             if processed_at:
                 try:
                     processed_date = datetime.fromisoformat(processed_at)
@@ -338,7 +340,10 @@ class ParallelDownloadCoordinator:
     def can_start_download(self, file_url: str) -> bool:
         """Check if a download can be started"""
         with self.lock:
-            if file_url in self.active_downloads or file_url in self.completed_downloads:
+            if (
+                file_url in self.active_downloads
+                or file_url in self.completed_downloads
+            ):
                 return False
             return len(self.active_downloads) < self.max_concurrent
 
@@ -375,8 +380,9 @@ dedupe_manager = DeduplicationManager()
 coordinator = ParallelDownloadCoordinator()
 
 
-def check_and_download_file(file_url: str, output_path: str,
-                          force: bool = False) -> bool:
+def check_and_download_file(
+    file_url: str, output_path: str, force: bool = False
+) -> bool:
     """Check if file should be downloaded and download if needed"""
     # Check with resume manager
     if not force and not resume_manager.should_download(file_url, output_path):
@@ -408,7 +414,7 @@ def check_and_download_file(file_url: str, output_path: str,
 
         # Mark as completed
         resume_manager.mark_completed(file_url, output_path, file_size)
-        dedupe_manager.mark_processed(output_path, {'url': file_url})
+        dedupe_manager.mark_processed(output_path, {"url": file_url})
         coordinator.complete_download(file_url)
 
         print(f"Completed: {file_url}")
@@ -426,11 +432,11 @@ def get_resume_status() -> Dict[str, Any]:
     resume_info = resume_manager.get_resume_info()
 
     return {
-        'resume_info': resume_info,
-        'failed_files': resume_manager.get_failed_files(),
-        'active_downloads': coordinator.get_active_count(),
-        'state_file_exists': resume_manager.state_file.exists(),
-        'hash_cache_exists': dedupe_manager.hash_cache_file.exists()
+        "resume_info": resume_info,
+        "failed_files": resume_manager.get_failed_files(),
+        "active_downloads": coordinator.get_active_count(),
+        "state_file_exists": resume_manager.state_file.exists(),
+        "hash_cache_exists": dedupe_manager.hash_cache_file.exists(),
     }
 
 
@@ -442,21 +448,23 @@ def print_resume_status():
     print("RESUME STATUS")
     print(f"{'='*50}")
 
-    resume_info = status['resume_info']
+    resume_info = status["resume_info"]
     print(f"Completed downloads: {resume_info['completed_count']:,}")
     print(f"In-progress downloads: {resume_info['in_progress_count']}")
     print(f"Failed downloads: {resume_info['failed_count']}")
     print(f"Total processed: {resume_info['total_processed']:,}")
 
-    stats = resume_info['stats']
+    stats = resume_info["stats"]
     print(f"Total bytes downloaded: {stats['total_bytes'] / (1024**3):.2f} GB")
-    print(f"Success rate: {(stats['total_downloads'] / max(stats['total_downloads'] + stats['total_failures'], 1)) * 100:.1f}%")
+    print(
+        f"Success rate: {(stats['total_downloads'] / max(stats['total_downloads'] + stats['total_failures'], 1)) * 100:.1f}%"
+    )
 
-    if status['failed_files']:
+    if status["failed_files"]:
         print(f"\nFailed files ({len(status['failed_files'])}):")
-        for failed_file in status['failed_files'][:5]:  # Show first 5
+        for failed_file in status["failed_files"][:5]:  # Show first 5
             print(f"  - {failed_file}")
-        if len(status['failed_files']) > 5:
+        if len(status["failed_files"]) > 5:
             print(f"  ... and {len(status['failed_files']) - 5} more")
 
     print(f"\nState file: {'✓' if status['state_file_exists'] else '✗'}")
@@ -474,14 +482,18 @@ def cleanup_old_state(days: int = 30):
     print("Cleanup complete")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description='Resume Manager for Data Ingestion')
-    parser.add_argument('--status', action='store_true', help='Show resume status')
-    parser.add_argument('--reset', action='store_true', help='Reset all state')
-    parser.add_argument('--retry-failed', action='store_true', help='Retry failed downloads')
-    parser.add_argument('--cleanup', type=int, metavar='DAYS', help='Clean up state older than DAYS')
+    parser = argparse.ArgumentParser(description="Resume Manager for Data Ingestion")
+    parser.add_argument("--status", action="store_true", help="Show resume status")
+    parser.add_argument("--reset", action="store_true", help="Reset all state")
+    parser.add_argument(
+        "--retry-failed", action="store_true", help="Retry failed downloads"
+    )
+    parser.add_argument(
+        "--cleanup", type=int, metavar="DAYS", help="Clean up state older than DAYS"
+    )
 
     args = parser.parse_args()
 

@@ -15,4 +15,3 @@ ALTER TABLE master.bill_amendment_text_diff
 
 CREATE INDEX bill_amendment_text_diff_print_no_session_year_amend_version
   ON master.bill_amendment_text_diff USING btree (bill_print_no, bill_session_year, bill_amend_version);
-

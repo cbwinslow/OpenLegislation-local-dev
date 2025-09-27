@@ -140,4 +140,3 @@ function DataProcessLogResult({ log }) {
     </div>
   )
 }
-

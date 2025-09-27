@@ -34,7 +34,8 @@ def test_db_conn():
     cursor.execute("CREATE SCHEMA IF NOT EXISTS master")
     cursor.execute("CREATE EXTENSION IF NOT EXISTS pgvector")
     # Apply federal schema if not present (simplified for test)
-    cursor.execute("""
+    cursor.execute(
+        """
         CREATE TABLE IF NOT EXISTS master.federal_person (
             id BIGSERIAL PRIMARY KEY,
             bioguide_id TEXT UNIQUE NOT NULL,
@@ -43,7 +44,8 @@ def test_db_conn():
             birth_year INTEGER, death_year INTEGER, gender TEXT,
             created_at TIMESTAMP DEFAULT now(), updated_at TIMESTAMP DEFAULT now()
         )
-    """)
+    """
+    )
     # Add other tables similarly for test
     # ... (add federal_member, terms, etc. for complete test)
     conn.commit()
@@ -56,7 +58,7 @@ def test_db_conn():
 def mock_api(mocker: MockFixture):
     """Mock Congress.gov API responses."""
     mock_data = {
-        'member/Y000064': {
+        "member/Y000064": {
             "member": {
                 "bioguideId": "Y000064",
                 "name": "Young, Todd",
@@ -67,10 +69,17 @@ def mock_api(mocker: MockFixture):
                 "partyName": "Republican",
                 "birthYear": "1972",
                 "twitterAccount": "@SenToddYoung",
-                "terms": [{"congress": 118, "startYear": 2017, "endYear": 2025, "party": "Republican"}]
+                "terms": [
+                    {
+                        "congress": 118,
+                        "startYear": 2017,
+                        "endYear": 2025,
+                        "party": "Republican",
+                    }
+                ],
             }
         },
-        'member/W000779': {  # Example with empty chamber in summary, but details have it
+        "member/W000779": {  # Example with empty chamber in summary, but details have it
             "member": {
                 "bioguideId": "W000779",
                 "name": "Washington, Harold",
@@ -80,12 +89,17 @@ def mock_api(mocker: MockFixture):
                 "state": "IL",
                 "partyName": "Democratic",
                 "birthYear": "1922",
-                "deathYear": "1987"
+                "deathYear": "1987",
             }
         },
         # Add more sample data
     }
-    mocker.patch('requests.Session.get', return_value=Mock(status_code=200, json=lambda: mock_data.get(f'member/{bioguide_id}', {})))
+    mocker.patch(
+        "requests.Session.get",
+        return_value=Mock(
+            status_code=200, json=lambda: mock_data.get(f"member/{bioguide_id}", {})
+        ),
+    )
     return mocker
 
 
@@ -100,10 +114,11 @@ class TestIngestionUnits:
             "middleName": "Quincy",
             "lastName": "Doe",
             "suffix": "Jr.",
-            "nickname": "Jack"
+            "nickname": "Jack",
         }
         # Call the parsing logic from insert_person (extract logic if needed)
         from ingest_federal_members import parse_name  # Assume extracted
+
         full_name, first, middle, last, suffix, nickname = parse_name(member_data)
         assert full_name == 'John Quincy "Jack" Doe Jr.'
         assert first == "John"
@@ -112,7 +127,7 @@ class TestIngestionUnits:
         assert suffix == "Jr."
         assert nickname == '"Jack"'
 
-    @patch('ingest_federal_members.requests.Session.get')
+    @patch("ingest_federal_members.requests.Session.get")
     def test_party_normalization(self, mock_get):
         """Test party code normalization."""
         mock_get.return_value.json.return_value = {
@@ -136,7 +151,9 @@ class TestIngestionUnits:
         url, handle = ingestor.build_social_url("twitter", "SenToddYoung")
         assert url == "https://twitter.com/SenToddYoung"
         assert handle == "SenToddYoung"
-        url_fb, handle_fb = ingestor.build_social_url("facebook", "https://fb.com/SenatorYoung")
+        url_fb, handle_fb = ingestor.build_social_url(
+            "facebook", "https://fb.com/SenatorYoung"
+        )
         assert url_fb == "https://fb.com/SenatorYoung"
         assert handle_fb == "SenatorYoung"
 
@@ -157,19 +174,25 @@ class TestIngestionIntegration:
         assert success is True
 
         # Verify insert
-        cursor.execute("SELECT COUNT(*) FROM master.federal_person WHERE bioguide_id = 'Y000064'")
+        cursor.execute(
+            "SELECT COUNT(*) FROM master.federal_person WHERE bioguide_id = 'Y000064'"
+        )
         count = cursor.fetchone()[0]
         assert count == 1
 
         # Verify member insert (chamber should be 'senate' from details)
-        cursor.execute("SELECT * FROM master.federal_member WHERE person_id = (SELECT id FROM master.federal_person WHERE bioguide_id = 'Y000064')")
+        cursor.execute(
+            "SELECT * FROM master.federal_member WHERE person_id = (SELECT id FROM master.federal_person WHERE bioguide_id = 'Y000064')"
+        )
         member = cursor.fetchone()
-        assert member['chamber'] == 'senate'
-        assert member['state'] == 'IN'
-        assert member['party'] == 'R'
+        assert member["chamber"] == "senate"
+        assert member["state"] == "IN"
+        assert member["party"] == "R"
 
         # Verify triggers fired (audit log)
-        cursor.execute("SELECT COUNT(*) FROM master.audit_log WHERE table_name = 'federal_member'")
+        cursor.execute(
+            "SELECT COUNT(*) FROM master.audit_log WHERE table_name = 'federal_member'"
+        )
         audit_count = cursor.fetchone()[0]
         assert audit_count >= 1
 
@@ -185,21 +208,31 @@ class TestIngestionIntegration:
         conn, cursor = test_db_conn
         ingestor = CongressMemberIngestor(db_config=settings.test_db_config)
         # Mock detail API to return empty chamber
-        mocker.patch.object(ingestor, 'get_member_details', return_value={"bioguideId": "INVALID", "chamber": ""})
+        mocker.patch.object(
+            ingestor,
+            "get_member_details",
+            return_value={"bioguideId": "INVALID", "chamber": ""},
+        )
         sample_record = {"record_id": "INVALID", "metadata": {}}
         success = ingestor.process_record(sample_record)
         assert success is False  # Should fail gracefully
 
         # Verify person inserted but member skipped
-        cursor.execute("SELECT COUNT(*) FROM master.federal_person WHERE bioguide_id = 'INVALID'")
+        cursor.execute(
+            "SELECT COUNT(*) FROM master.federal_person WHERE bioguide_id = 'INVALID'"
+        )
         person_count = cursor.fetchone()[0]
         assert person_count == 1  # Person always inserted
-        cursor.execute("SELECT COUNT(*) FROM master.federal_member WHERE person_id = (SELECT id FROM master.federal_person WHERE bioguide_id = 'INVALID')")
+        cursor.execute(
+            "SELECT COUNT(*) FROM master.federal_member WHERE person_id = (SELECT id FROM master.federal_person WHERE bioguide_id = 'INVALID')"
+        )
         member_count = cursor.fetchone()[0]
         assert member_count == 0  # Member skipped
 
         # Verify audit log for insert and failure
-        cursor.execute("SELECT COUNT(*) FROM master.audit_log WHERE record_id = 'INVALID'")
+        cursor.execute(
+            "SELECT COUNT(*) FROM master.audit_log WHERE record_id = 'INVALID'"
+        )
         audit_count = cursor.fetchone()[0]
         assert audit_count > 0
 
@@ -209,25 +242,33 @@ class TestIngestionIntegration:
         conn, cursor = test_db_conn
         # Assume sample data inserted in fixture or previous test
         # Test party distribution
-        cursor.execute("SELECT party, COUNT(*) FROM master.federal_member GROUP BY party ORDER BY COUNT(*) DESC")
+        cursor.execute(
+            "SELECT party, COUNT(*) FROM master.federal_member GROUP BY party ORDER BY COUNT(*) DESC"
+        )
         parties = cursor.fetchall()
         assert len(parties) > 0
-        assert parties[0]['party'] in ['D', 'R', 'I']
-        assert sum(row['count'] for row in parties) > 0
+        assert parties[0]["party"] in ["D", "R", "I"]
+        assert sum(row["count"] for row in parties) > 0
 
         # Test state coverage
-        cursor.execute("SELECT state, COUNT(*) FROM master.federal_member WHERE current_member = true GROUP BY state")
+        cursor.execute(
+            "SELECT state, COUNT(*) FROM master.federal_member WHERE current_member = true GROUP BY state"
+        )
         states = cursor.fetchall()
         assert len(states) >= 50  # At least all states represented
 
         # Test social media completeness
-        cursor.execute("""
+        cursor.execute(
+            """
             SELECT COUNT(DISTINCT member_id) as total_with_social
             FROM master.federal_member_social_media
-        """)
-        social_count = cursor.fetchone()['total_with_social']
-        cursor.execute("SELECT COUNT(*) as total_members FROM master.federal_member WHERE current_member = true")
-        total_members = cursor.fetchone()['total_members']
+        """
+        )
+        social_count = cursor.fetchone()["total_with_social"]
+        cursor.execute(
+            "SELECT COUNT(*) as total_members FROM master.federal_member WHERE current_member = true"
+        )
+        total_members = cursor.fetchone()["total_members"]
         completeness = (social_count / total_members * 100) if total_members > 0 else 0
         assert completeness > 70  # Based on doc expectation
 
@@ -235,45 +276,62 @@ class TestIngestionIntegration:
     def test_data_manipulation_and_audit(self, test_db_conn):
         """Test manipulating records and verifying audit logs."""
         import uuid
+
         conn, cursor = test_db_conn
         # Insert sample record
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO master.federal_person (bioguide_id, full_name) VALUES (%s, %s) RETURNING id
-        """, ("TEST123", "Test Member"))
-        person_id = cursor.fetchone()['id']
+        """,
+            ("TEST123", "Test Member"),
+        )
+        person_id = cursor.fetchone()["id"]
         conn.commit()
 
         # Manipulate data (update)
-        cursor.execute("""
+        cursor.execute(
+            """
             UPDATE master.federal_person SET full_name = 'Updated Name' WHERE id = %s
-        """, (person_id,))
+        """,
+            (person_id,),
+        )
         conn.commit()
 
         # Verify audit log
-        cursor.execute("""
-            SELECT * FROM master.audit_log 
+        cursor.execute(
+            """
+            SELECT * FROM master.audit_log
             WHERE table_name = 'federal_person' AND record_id = 'TEST123' OR record_id = %s
             ORDER BY created_at DESC LIMIT 1
-        """, (person_id,))
+        """,
+            (person_id,),
+        )
         audit = cursor.fetchone()
         assert audit is not None
-        assert audit['operation'] == 'UPDATE'
-        assert audit['old_value'] is not None
-        assert audit['new_value'] == 'Updated Name'
+        assert audit["operation"] == "UPDATE"
+        assert audit["old_value"] is not None
+        assert audit["new_value"] == "Updated Name"
 
         # Test foreign key integrity
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT INTO master.federal_member (person_id, chamber, state, party) VALUES (%s, 'senate', 'CA', 'D')
-        """, (person_id,))
+        """,
+            (person_id,),
+        )
         conn.commit()
 
         # Delete person - should cascade or block
         with pytest.raises(psycopg2.IntegrityError):
-            cursor.execute("DELETE FROM master.federal_person WHERE id = %s", (person_id,))
+            cursor.execute(
+                "DELETE FROM master.federal_person WHERE id = %s", (person_id,)
+            )
             conn.commit()  # Should fail due to FK if no cascade
 
         # Reset for cleanup
-        cursor.execute("DELETE FROM master.federal_member WHERE person_id = %s", (person_id,))
+        cursor.execute(
+            "DELETE FROM master.federal_member WHERE person_id = %s", (person_id,)
+        )
         cursor.execute("DELETE FROM master.federal_person WHERE id = %s", (person_id,))
         conn.commit()
 
@@ -284,7 +342,7 @@ class TestIngestionIntegration:
         sample_records = [
             {"record_id": "RESUME1", "metadata": {}},
             {"record_id": "RESUME2", "metadata": {}},
-            {"record_id": "RESUME3", "metadata": {}}
+            {"record_id": "RESUME3", "metadata": {}},
         ]
         ingestor.tracker.initialize_records(sample_records)
 
@@ -295,41 +353,47 @@ class TestIngestionIntegration:
 
         # Verify status
         status1 = ingestor.tracker.get_record_status("RESUME1")
-        assert status1['ingestion_status'] == 'completed'
+        assert status1["ingestion_status"] == "completed"
         status2 = ingestor.tracker.get_record_status("RESUME2")
-        assert status2['ingestion_status'] == 'completed'
+        assert status2["ingestion_status"] == "completed"
         status3 = ingestor.tracker.get_record_status("RESUME3")
-        assert status3['ingestion_status'] == 'pending'  # Retry pending
+        assert status3["ingestion_status"] == "pending"  # Retry pending
 
         # Resume should only process RESUME3
         pending = ingestor.tracker.get_pending_records()
         assert len(pending) == 1
-        assert pending[0]['record_id'] == 'RESUME3'
+        assert pending[0]["record_id"] == "RESUME3"
 
     @pytest.mark.vector
     def test_vectorization_support(self, test_db_conn):
         """Test pgvector extension for future semantic search."""
         conn, cursor = test_db_conn
         # Add vector column to test
-        cursor.execute("""
+        cursor.execute(
+            """
             ALTER TABLE master.federal_person ADD COLUMN IF NOT EXISTS embedding VECTOR(384)
-        """)
+        """
+        )
         conn.commit()
 
         # Insert with sample vector
-        cursor.execute("""
-            INSERT INTO master.federal_person (bioguide_id, full_name, embedding) 
+        cursor.execute(
+            """
+            INSERT INTO master.federal_person (bioguide_id, full_name, embedding)
             VALUES ('VEC1', 'Vector Test', '[0.1, 0.2, 0.3]'::vector)
-        """)
+        """
+        )
         conn.commit()
 
         # Verify vector query (cosine similarity example)
-        cursor.execute("""
-            SELECT bioguide_id FROM master.federal_person 
+        cursor.execute(
+            """
+            SELECT bioguide_id FROM master.federal_person
             ORDER BY embedding <=> '[0.1, 0.2, 0.3]'::vector LIMIT 1
-        """)
+        """
+        )
         result = cursor.fetchone()
-        assert result['bioguide_id'] == 'VEC1'
+        assert result["bioguide_id"] == "VEC1"
 
         # Cleanup
         cursor.execute("DELETE FROM master.federal_person WHERE bioguide_id = 'VEC1'")

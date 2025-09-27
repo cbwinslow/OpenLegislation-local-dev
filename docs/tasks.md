@@ -19,7 +19,7 @@
 ## Phase 2: Comprehensive Ingestion Coverage Audit
 
 ### Task 2.1: Audit Ingestion Coverage for All Congress.gov Collections
-**Description**: Review and test existing ingestion scripts for all major collections offered by Congress.gov (BILLS, BILLSTATUS, MEMBERS, COMMITTEES, etc.)  
+**Description**: Review and test existing ingestion scripts for all major collections offered by Congress.gov (BILLS, BILLSTATUS, MEMBERS, COMMITTEES, etc.)
 **Criteria for Completion**:
 - [ ] Verify `fetch_govinfo_bulk.py` supports all available collections via `--collections` argument
 - [ ] Confirm `production_ingest.sh` can orchestrate ingestion for each collection
@@ -28,7 +28,7 @@
 - [ ] Create test runs for each collection with sample data
 
 ### Task 2.2: Verify SQL Table Mappings for Each Collection
-**Description**: Ensure all Congress.gov collections have proper SQL table mappings and all fields are covered  
+**Description**: Ensure all Congress.gov collections have proper SQL table mappings and all fields are covered
 **Criteria for Completion**:
 - [ ] BILLS: Verify `govinfo_bill`, `govinfo_bill_action`, `govinfo_bill_cosponsor`, `govinfo_bill_text`, `govinfo_bill_committee`, `govinfo_bill_subject`, `govinfo_doc_refs` tables cover all XML fields
 - [ ] BILLSTATUS: Confirm status history maps to `govinfo_bill_action` and status fields in `govinfo_bill`
@@ -43,7 +43,7 @@
 - [ ] Add any missing fields or tables based on XML schema analysis
 
 ### Task 2.3: Check XML Conversion Classes for Each Collection
-**Description**: Verify XML/JSON conversion classes exist and properly map to domain models for each collection  
+**Description**: Verify XML/JSON conversion classes exist and properly map to domain models for each collection
 **Criteria for Completion**:
 - [ ] BILLS: Confirm `GovInfoBillProcessor.java` handles all bill XML elements and maps to Bill objects
 - [ ] BILLSTATUS: Verify status parsing logic in bill processors and action tables
@@ -53,7 +53,7 @@
 - [ ] Validate all parsers handle edge cases and malformed XML gracefully
 
 ### Task 2.4: Identify and Implement Missing Pieces
-**Description**: Identify gaps in ingestion scripts, table mappings, or conversion logic and implement solutions  
+**Description**: Identify gaps in ingestion scripts, table mappings, or conversion logic and implement solutions
 **Criteria for Completion**:
 - [ ] MEMBERS: Implement robust XML/JSON-to-SQL mapping for federal member data (bioguide, terms, committees, social media)
 - [ ] BILLSTATUS: Ensure complete status history mapping to actions/status fields
@@ -119,3 +119,18 @@ If you want, I can now run the enumerator at scale and download a year's worth o
 - **Data Quality**: Validate federal data against existing patterns
 - **Performance**: Optimize for large bulk inserts
 - **Conflict Resolution**: Handle duplicate bills across jurisdictions
+
+## Phase 9: Complete Schema Generation from Java Code
+
+- [x] Review current tasks in docs/tasks.md
+- [x] Analyze Java entities and DAOs for SQL generation (project uses DAOs with raw SQL, no JPA for auto-schema)
+- [x] Analyze current database schema from documentation (universal master schema with bill/member tables)
+- [x] Confirm Maven setup for Flyway (flyway-maven-plugin v8.5.2 configured)
+- [x] Generate base table schemas from JPA/Hibernate annotations (extended existing schema with federal tables)
+- [x] Add foreign keys and constraints (added to federal_member_office, check constraints as per doc)
+- [x] Implement triggers for audit logging and integrity (audit_log table, triggers on key tables, updated_at triggers)
+- [x] Create views for common queries (v_federal_member_details, v_bill_summary, v_recent_audits)
+- [x] Write PL/SQL functions/procedures if needed (fn_get_current_terms for active terms)
+- [x] Use Maven Flyway plugin to validate/apply migrations (new files V20250925.0002__audit_schema_and_triggers.sql, V20250925.0003__views_plsql.sql)
+- [x] Update tasks.md with new task list (this phase appended)
+- [x] Test schema generation and application (docs updated, migrations created and documented)

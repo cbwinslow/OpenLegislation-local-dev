@@ -14,9 +14,9 @@ public final class CreateTestFiles {
     private static final Pattern INTEGRATION_PATTERN = Pattern.compile("@Autowired|extends BaseTest");
     private static final Pattern UNIT_PATTERN = Pattern.compile("assert");
     private static final String ANNOTATION_PACKAGE = "gov.nysenate.openleg.config.annotation";
-    
+
     private static int count = 0;
-    
+
     /**
      * The main program that calls the recursion
      *
@@ -28,7 +28,7 @@ public final class CreateTestFiles {
         recursion(testDir);
         System.out.println(count);
     }
-    
+
     /**
      * Goes through the package "dir" and lists all files
      * If the file is a Java file and not a test file,
@@ -43,17 +43,17 @@ public final class CreateTestFiles {
             throw new IOException("Error! " + dir + " isn't a directory.");
         }
         Arrays.sort(files, Collections.reverseOrder());
-        
+
         for (File file : files){
             if (file.isDirectory()) {
                 recursion(file);
             }
             else {
                 String name = file.getName();
-                
+
                 if (name.endsWith("java")){
                     name = name.substring(0, name.indexOf(".java"));
-                    
+
                     if (!name.endsWith("Test") && !name.endsWith("IT")){
                         try (Scanner scanner = new Scanner(file).useDelimiter("\\Z")){
                             String contents = scanner.next();
@@ -70,7 +70,7 @@ public final class CreateTestFiles {
             }
         }
     }
-    
+
     /**
      * It determines the file suffix (Test or IT) based on the contents
      * It then creates a outline for the file and prints it out.
@@ -82,14 +82,14 @@ public final class CreateTestFiles {
     private static void makeFile(File dir, String name, String contents){
         String dirAbsolute = dir.getAbsolutePath();
         String pack = dirAbsolute.substring(dirAbsolute.indexOf("gov")).replace("/", ".");
-        
+
         CategoryTypes category = CategoryTypes.SillyTest;
-        
+
         // Integration Test
         if (INTEGRATION_PATTERN.matcher(contents).find()){
             category = CategoryTypes.IntegrationTest;
         }
-        
+
         // Unit Test
         else if (UNIT_PATTERN.matcher(contents).find()){
             category = CategoryTypes.UnitTest;

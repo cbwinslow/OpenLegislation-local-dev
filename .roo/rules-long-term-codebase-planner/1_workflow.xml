@@ -20,7 +20,7 @@
       </actions>
       <validation>User responds with confirmation; abort if declined and suggest smaller-scale modes.</validation>
     </step>
-    
+
     <step number="2">
       <title>UI and Configuration Setup</title>
       <description>Optimize interface for large-scale operations.</description>

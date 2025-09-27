@@ -65,6 +65,6 @@ public class XmlFile extends BaseSourceFile {
         throw new IllegalStateException(
                 "Failed to parse published datetime from Sobi XML because the filename" +
                         " did not match the required format.");
-    
+
     }
 }

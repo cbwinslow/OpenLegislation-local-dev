@@ -7,13 +7,13 @@ public enum CategoryTypes {
     IntegrationTest("IT"),
     UnitTest("Test"),
     SillyTest("Test");
-    
+
     private final String suffix;
-    
+
     CategoryTypes(String suffix){
         this.suffix = suffix;
     }
-    
+
     /**
      * Gets the suffix
      *

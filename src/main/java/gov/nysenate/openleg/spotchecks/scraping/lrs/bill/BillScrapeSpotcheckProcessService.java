@@ -61,19 +61,3 @@ public class BillScrapeSpotcheckProcessService extends BaseSpotcheckProcessServi
         return "Bill Text spotcheck reference";
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

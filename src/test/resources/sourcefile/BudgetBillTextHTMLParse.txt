@@ -2,22 +2,22 @@
 P.brk {page-break-before:always}--></STYLE>
 <BASEFONT SIZE=3>
 <PRE WIDTH="178">
- 
+
 <FONT SIZE=5><B>                STATE OF NEW YORK</B></FONT>
         ________________________________________________________________________
- 
+
                                          3007--A
- 
+
 <FONT SIZE=5><B>                   IN ASSEMBLY</B></FONT>
- 
+
                                     January 23, 2017
                                        ___________
- 
+
         A  BUDGET  BILL,  submitted by the Governor pursuant to article seven of
           the Constitution -- read once and referred to the  Committee  on  Ways
           and  Means -- committee discharged, bill amended, ordered reprinted as
           amended and recommitted to said committee
- 
+
         AN ACT to amend the insurance law, in relation to the early intervention
           program for infants and toddlers with disabilities and their  families
           (Part A); intentionally omitted (Part B); to amend the social services
@@ -51,13 +51,13 @@ P.brk {page-break-before:always}--></STYLE>
           tiveness  of  provisions  thereof;  to amend the public health law, in
           relation to the distribution of pool allocations and graduate  medical
           education;  to amend the public health law, in relation to health care
- 
+
          EXPLANATION--Matter in <B><U>italics</U></B> (underscored) is new; matter in brackets
                               [<B><S> </S></B>] is old law to be omitted.
                                                                    LBD12571-02-7
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                          2
- 
+
           initiative pool distributions; to amend the social  services  law,  in
           relation  to  extending  payment  provisions for general hospitals; to
           amend the public health law, in relation to the assessments on covered
@@ -116,7 +116,7 @@ P.brk {page-break-before:always}--></STYLE>
           and the social services  law  relating  to  encouraging  comprehensive
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                          3
- 
+
           health  services,  in  relation to the effectiveness thereof; to amend
           chapter 62 of the laws of 2003, amending the public health law  relat-
           ing  to  allowing  for  the use of funds of the office of professional
@@ -175,7 +175,7 @@ P.brk {page-break-before:always}--></STYLE>
           law,  in relation to school-based health centers and sponsoring organ-
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                          4
- 
+
           izations for managed care programs  (Part  V);  to  amend  the  social
           services  law,  in relation to fiscal intermediary certification under
           the consumer directed personal assistance program; to amend the social
@@ -200,10 +200,10 @@ P.brk {page-break-before:always}--></STYLE>
           public  health  law  relating  to  the New York state health insurance
           continuation assistance demonstration  project,  in  relation  to  the
           effectiveness thereof (Part BB)
- 
+
           <B><U>The  People of the State of New York, represented in Senate and Assem-</U></B>
         <B><U>bly, do enact as follows:</U></B>
- 
+
      1    Section 1. This act enacts into law major  components  of  legislation
      2  which are necessary to implement the state fiscal plan for the 2017-2018
      3  state  fiscal  year.  Each  component  is wholly contained within a Part
@@ -215,9 +215,9 @@ P.brk {page-break-before:always}--></STYLE>
      9  shall  be  deemed  to mean and refer to the corresponding section of the
     10  Part in which it is found. Section three of  this  act  sets  forth  the
     11  general effective date of this act.
- 
+
     12                                   PART A
- 
+
     13    Section  1.  Paragraph  2  of  subsection (d) of section 3224-a of the
     14  insurance law, as amended by section 57-b of part A of chapter 56 of the
     15  laws of 2013, is amended to read as follows:
@@ -232,7 +232,7 @@ P.brk {page-break-before:always}--></STYLE>
     24  of  the  education  law,  a  dispenser  or  provider  of  pharmaceutical
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                          5
- 
+
      1  products,  services  or  durable  medical equipment, or a representative
      2  designated by such entity or person.
      3    &#167;  2.  Section  3235-a  of the insurance law, as added by section 3 of
@@ -291,7 +291,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  <B><U>An insurer shall, within fifteen business days of receipt of a notice of</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                          6
- 
+
      1  <B><U>right of subrogation, notify the provider, in a format determined by the</U></B>
      2  <B><U>department of health, through  the  department  of  health's  designated</U></B>
      3  <B><U>fiscal  agent whether the insurer is acting as a third party administra-</U></B>
@@ -318,13 +318,13 @@ P.brk {page-break-before:always}--></STYLE>
     24  the insurance law as made by section two of this act shall apply only to
     25  policies  and contracts issued, renewed, modified, altered or amended on
     26  or after such date.
- 
+
     27                                   PART B
- 
+
     28                            Intentionally Omitted
- 
+
     29                                   PART C
- 
+
     30    Section 1. Subdivision 5 of section 369-gg of the social services law,
     31  as added by section 51 of part C of chapter 60 of the laws of  2014,  is
     32  amended to read as follows:
@@ -349,15 +349,15 @@ P.brk {page-break-before:always}--></STYLE>
     51  <B><U>provisions shall maintain an actuarial value of 99.68 percent,  and  for</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                          7
- 
+
      1  <B><U>individuals  with  a  household income from one hundred fifty-one to two</U></B>
      2  <B><U>hundred percent of the federal poverty  level  cost  sharing  provisions</U></B>
      3  <B><U>shall maintain an actuarial value of 90.02 percent.</U></B>
      4    &#167;  2.  This  act  shall take effect immediately and shall be deemed to
      5  have been in full force and effect on and after January 1, 2017.
- 
+
      6                                   PART D
- 
+
      7    Section 1. The public health law is amended by adding  a  new  section
      8  280 to read as follows:
      9    <B><U>&#167; 280. High cost drugs. 1. High priced drugs. The department may iden-</U></B>
@@ -408,7 +408,7 @@ P.brk {page-break-before:always}--></STYLE>
     54  <B><U>pricing  information  collected  pursuant  to  subdivision  two  of this</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                          8
- 
+
      1  <B><U>section with respect to a particular drug to the drug utilization review</U></B>
      2  <B><U>board, and request the board to recommend a per-unit benchmark price for</U></B>
      3  <B><U>the drug, taking into consideration such cost and pricing information as</U></B>
@@ -467,7 +467,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  <B><U>meanings when used in this section.</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                          9
- 
+
      1    <B><U>(a) "High priced drug" shall mean a  drug  determined  to  be  a  high</U></B>
      2  <B><U>priced  drug pursuant to section two hundred eighty of the public health</U></B>
      3  <B><U>law, but not until the fifteenth day after the manufacturer was notified</U></B>
@@ -526,7 +526,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  <B><U>showing the total excess charge amount of its  gross  receipt  from  the</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         10
- 
+
      1  <B><U>first sale in the state of high priced drugs during the preceding calen-</U></B>
      2  <B><U>dar  month  and  the amount of surcharge due thereon. Such returns shall</U></B>
      3  <B><U>contain such further information as the commissioner may require.  Every</U></B>
@@ -584,7 +584,7 @@ P.brk {page-break-before:always}--></STYLE>
     55  <B><U>amount necessary to effectuate refunds of appropriations of the  depart-</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         11
- 
+
      1  <B><U>ment  to  reimburse the department for the costs incurred to administer,</U></B>
      2  <B><U>collect and distribute the surcharges imposed by this article.</U></B>
      3    <B><U>(b)  On  or before the twelfth and twenty-sixth day of each succeeding</U></B>
@@ -643,7 +643,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  <B><U>require the production of, and may admit in evidence  so  much  of  said</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         12
- 
+
      1  <B><U>returns or reports or of the facts shown thereby as are pertinent to the</U></B>
      2  <B><U>action  or  proceeding and no more. Nothing herein shall be construed to</U></B>
      3  <B><U>prohibit the commissioner, in his or her discretion, from  allowing  the</U></B>
@@ -701,7 +701,7 @@ P.brk {page-break-before:always}--></STYLE>
     55  of chapter 59 of the laws of 2014, is amended to read as follows:
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         13
- 
+
      1    &#167;  1825.  Violation  of secrecy provisions of the tax law.--Any person
      2  who violates the provisions of subdivision (b)  of  section  twenty-one,
      3  subdivision one of section two hundred two, subdivision eight of section
@@ -758,7 +758,7 @@ P.brk {page-break-before:always}--></STYLE>
     54  <B><U>cle five of the social services law.</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         14
- 
+
      1    <B><U>6.  The  superintendent of financial services may issue such rules and</U></B>
      2  <B><U>regulations as he or she shall deem necessary to implement this  section</U></B>
      3  <B><U>and administer the high priced drug reimbursement fund.</U></B>
@@ -817,7 +817,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  <B><U>department  for  prescription drugs provided to the managed care provid-</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         15
- 
+
      1  <B><U>er's participants. Payment for prescription drugs shall be  included  in</U></B>
      2  <B><U>the  capitation  payments  to  the managed care provider for services or</U></B>
      3  <B><U>supplies provided to a managed care provider's participants.</U></B>
@@ -875,7 +875,7 @@ P.brk {page-break-before:always}--></STYLE>
     55  of 2009, are amended to read as follows:
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         16
- 
+
      1    Notwithstanding any inconsistent provision of law or regulation to the
      2  contrary,  for  those  drugs  which  may  not  be  dispensed  without  a
      3  prescription as required by  section  sixty-eight  hundred  ten  of  the
@@ -993,7 +993,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  exclusive of long-term maintenance drugs, shall be dispensed in  quanti-
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         18
- 
+
      1  ties no greater than a thirty day supply or one hundred doses, whichever
      2  is  greater; provided further that the commissioner of health is author-
      3  ized to require prior authorization for any  refill  of  a  prescription
@@ -1052,7 +1052,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  ant to paragraph (d) of this subdivision.
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         19
- 
+
      1    (5)  Beginning in two thousand seventeen, the department shall provide
      2  an annual report to the legislature no later than February first setting
      3  forth:
@@ -1099,19 +1099,19 @@ P.brk {page-break-before:always}--></STYLE>
     44  vision  9  of  section  367-a of the social services law made by section
     45  twelve of this act shall not affect the expiration of  such  subdivision
     46  and shall be deemed to expire therewith.
- 
+
     47                                   PART E
- 
+
     48                            Intentionally Omitted
- 
+
     49                                   PART F
- 
+
     50    Section  1. Subdivision 4 of section 365-h of the social services law,
     51  as separately amended by section 50 of part B and section 24 of  part  D
     52  of chapter 57 of the laws of 2015, is amended to read as follows:
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         20
- 
+
      1    4.  The  commissioner of health is authorized to assume responsibility
      2  from a local social services official for the provision  and  reimburse-
      3  ment  of  transportation  costs  under this section. If the commissioner
@@ -1147,13 +1147,13 @@ P.brk {page-break-before:always}--></STYLE>
     33  that  the amendments to section 365-h of the social services law made by
     34  section one of this act shall not affect the repeal of such section  and
     35  shall be deemed repealed therewith.
- 
+
     36                                   PART G
- 
+
     37                            Intentionally Omitted
- 
+
     38                                   PART H
- 
+
     39    Section  1. Subdivision 5 of section 168 of chapter 639 of the laws of
     40  1996, constituting the New York Health  Care  Reform  Act  of  1996,  as
     41  amended  by  section  1  of part B of chapter 60 of the laws of 2014, is
@@ -1170,7 +1170,7 @@ P.brk {page-break-before:always}--></STYLE>
     52  health  law  related  to  patient  services provided before December 31,
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         21
- 
+
      1  [<B><S>2017</S></B>] <B><U>2020</U></B>, and continued expenditure of funds authorized for  programs
      2  and grants until the exhaustion of funds therefor;
      3    &#167;  2.  Subdivision  1 of section 138 of chapter 1 of the laws of 1999,
@@ -1229,7 +1229,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  funding the empire clinical research investigation  program  (ECRIP)  in
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         22
- 
+
      1  accordance  with paragraph eight of subdivision (e) and paragraph two of
      2  subdivision (f) of section 86-1.89 of title 10 of the codes,  rules  and
      3  regulations  of the state of New York, distributions shall be made using
@@ -1287,7 +1287,7 @@ P.brk {page-break-before:always}--></STYLE>
     55  hundred ten thousand dollars.
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         23
- 
+
      1    (C) If the dollar amount for the total  number  of  clinical  research
      2  positions  in  the  region  calculated  pursuant  to  clause (B) of this
      3  subparagraph exceeds the total amount appropriated for purposes of  this
@@ -1346,7 +1346,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  ing  data  and  information  on a hospital-specific basis. Such data and
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         24
- 
+
      1  information shall be certified as to accuracy and  completeness  by  the
      2  chief executive officer, chief financial officer or chair of the consor-
      3  tium  governing body of each consortium or teaching general hospital and
@@ -1405,7 +1405,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  dollars  for the period January first, two thousand eight through Decem-
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         25
- 
+
      1  ber thirty-first, two thousand eight, four million nine hundred thousand
      2  dollars for the period January first, two thousand nine through December
      3  thirty-first, two thousand nine,  four  million  nine  hundred  thousand
@@ -1463,7 +1463,7 @@ P.brk {page-break-before:always}--></STYLE>
     55  physicians  who  train  in  primary care or specialty tracks in teaching
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         26
- 
+
      1  general hospitals, and who enter and remain in primary care or specialty
      2  practices in underserved communities, as determined by the commissioner.
      3    (ii)  After  distributions in accordance with subparagraph (i) of this
@@ -1522,7 +1522,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  paragraph, all remaining funds shall be awarded to physicians to support
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         27
- 
+
      1  the cost of establishing or joining practices  in  underserved  communi-
      2  ties,  as  determined  by  the  commissioner, and to hospitals and other
      3  health care providers to recruit new physicians to provide  services  in
@@ -1581,7 +1581,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  Associated  Medical  Schools  of  New York to fund its diversity program
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         28
- 
+
      1  including existing and new post-baccalaureate programs for minority  and
      2  economically disadvantaged students and encourage participation from all
      3  medical  schools in New York. The associated medical schools of New York
@@ -1640,7 +1640,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  during the period January first, nineteen hundred  eighty-eight  through
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         29
- 
+
      1  March  thirty-first  two  thousand [<B><S>seventeen</S></B>] <B><U>twenty</U></B>, by such hospitals
      2  which elect to participate in the system.
      3    &#167;  8.  Subdivision  6  of  section 2807-t of the public health law, as
@@ -1699,7 +1699,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  commissioner of health is authorized to transfer  and  the  state  comp-
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         30
- 
+
      1  troller  is authorized and directed to receive for deposit to the credit
      2  of the department of health's special revenue fund - other, health  care
      3  reform  act  (HCRA) resources fund - 061, provider collection monitoring
@@ -1758,7 +1758,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  revenue funds - other, health care reform act (HCRA)  resources  fund  -
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         31
- 
+
      1  061,  pilot  health insurance account, established within the department
      2  of health.
      3    (7)  Notwithstanding  any inconsistent provision of law, rule or regu-
@@ -1816,7 +1816,7 @@ P.brk {page-break-before:always}--></STYLE>
     55  ally thereafter. Such report shall include an assessment of  the  finan-
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         32
- 
+
      1  cial  impact  of such payment system on providers, as well as the impact
      2  of such system on access to care.
      3    &#167;  11. Paragraph (i) of subdivision (b) of section 1 of chapter 520 of
@@ -1875,7 +1875,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  provided,  however,  that  for  periods  on and after January first, two
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         33
- 
+
      1  thousand eight, such additional payments shall be distributed to  volun-
      2  tary, non-profit diagnostic and treatment centers and to public diagnos-
      3  tic  and  treatment centers in accordance with paragraph (g) of subdivi-
@@ -1934,7 +1934,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  thousand twelve through March thirty-first, two thousand thirteen, up to
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         34
- 
+
      1  nineteen  million  four hundred nineteen thousand dollars for the period
      2  April first, two thousand thirteen through March thirty-first, two thou-
      3  sand fourteen, and up to nineteen million six hundred  fifty-nine  thou-
@@ -1992,7 +1992,7 @@ P.brk {page-break-before:always}--></STYLE>
     55  thousand fourteen, and up to three million  dollars  each  state  fiscal
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         35
- 
+
      1  year  for  the  period  April first, two thousand fourteen through March
      2  thirty-first, two thousand [<B><S>seventeen</S></B>] <B><U>twenty</U></B>; and
      3    &#167;  18.  Subparagraph  (i) of paragraph (d) of subdivision 1 of section
@@ -2051,7 +2051,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  thousand dollars each state fiscal year for the period April first,  two
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         36
- 
+
      1  thousand  fourteen  through March thirty-first, two thousand [<B><S>seventeen</S></B>]
      2  <B><U>twenty</U></B>, less the amount of funds  available  for  allocations  for  rate
      3  adjustments  for  workforce  training  programs  for  payments  by state
@@ -2110,7 +2110,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  thousand  dollars each state fiscal year for the period April first, two
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         37
- 
+
      1  thousand fourteen through March thirty-first, two  thousand  [<B><S>seventeen</S></B>]
      2  <B><U>twenty</U></B>.
      3    &#167;  23.  Paragraph (b) of subdivision 1 of section 2807-v of the public
@@ -2169,7 +2169,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  March thirty-first, two thousand [<B><S>seventeen</S></B>] <B><U>twenty</U></B>.
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         38
- 
+
      1    &#167; 27. Subparagraph (xii) of paragraph (q) of subdivision 1 of  section
      2  2807-v  of  the  public health law, as amended by section 8 of part B of
      3  chapter 60 of the laws of 2014, is amended to read as follows:
@@ -2228,7 +2228,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  two thousand nine through March thirty-first, two thousand  ten,  up  to
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         39
- 
+
      1  three  million five hundred thousand dollars for the period April first,
      2  two thousand ten through March thirty-first, two thousand eleven, up  to
      3  two  million  eight  hundred thousand dollars each state fiscal year for
@@ -2253,9 +2253,9 @@ P.brk {page-break-before:always}--></STYLE>
     22    (b) the amendments to subdivision 6 of section 2807-t  of  the  public
     23  health  law made by section eight of this act shall not affect the expi-
     24  ration of such section and shall be deemed to expire therewith.
- 
+
     25                                   PART I
- 
+
     26    Section 1. Section 11 of chapter 884 of the laws of 1990, amending the
     27  public health law relating to authorizing  bad  debt  and  charity  care
     28  allowances  for  certified home health agencies, as amended by section 1
@@ -2287,7 +2287,7 @@ P.brk {page-break-before:always}--></STYLE>
     54  April  first,  two thousand two through March thirty-first, two thousand
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         40
- 
+
      1  three for hospital  or  health-related  services,  including  adult  day
      2  services;  provided,  however,  that residential health care facilities'
      3  gross receipts attributable to payments received pursuant to title XVIII
@@ -2346,7 +2346,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  and on and after April 1, 2013 through March 31, 2015, and on and  after
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         41
- 
+
      1  April  1,  2015  through  March 31, 2017<B><U>, and on and after April 1, 2017</U></B>
      2  <B><U>through March 31, 2020</U></B> for inpatient and outpatient services provided by
      3  general hospitals and for inpatient services and  outpatient  adult  day
@@ -2405,7 +2405,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  to section 367-h of the social services law in order that the commission
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         42
- 
+
      1  may maintain an accurate and timely effective data base of the  official
      2  text of the laws of the state of New York in furtherance of effectuating
      3  the  provisions of section 44 of the legislative law and section 70-b of
@@ -2464,7 +2464,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  part C of chapter 60 of the laws of 2014, is amended to read as follows:
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         43
- 
+
      1    &#167; 4. This act shall take effect 120 days after it shall have become  a
      2  law and shall expire and be deemed repealed March 31, [<B><S>2017</S></B>] <B><U>2020</U></B>.
      3    &#167;  12. Paragraph (e-1) of subdivision 12 of section 2808 of the public
@@ -2523,7 +2523,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  the public health law relating to allowing for the use of funds  of  the
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         44
- 
+
      1  office  of  professional  medical  conduct for activities of the patient
      2  health information and quality improvement act of 2000,  as  amended  by
      3  section  4-b  of part A of chapter 57 of the laws of 2015, is amended to
@@ -2576,11 +2576,11 @@ P.brk {page-break-before:always}--></STYLE>
     50  [<B><S>sixteen</S></B>] <B><U>twenty</U></B>.
     51    &#167; 18. This act shall take effect immediately and shall  be  deemed  to
     52  have been in full force and effect on and after April 1, 2017.
- 
+
     53                                   PART J
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         45
- 
+
      1    Section  1. The insurance law is amended by adding a new article 29 to
      2  read as follows:
      3                                 <B><U>ARTICLE 29</U></B>
@@ -2638,7 +2638,7 @@ P.brk {page-break-before:always}--></STYLE>
     55  <B><U>under.</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         46
- 
+
      1    <B><U>(b) Following the effective date of this section,  no  health  insurer</U></B>
      2  <B><U>may  pay any fee or other compensation to any person, firm, association,</U></B>
      3  <B><U>corporation or other entity for performing pharmacy  benefit  management</U></B>
@@ -2696,7 +2696,7 @@ P.brk {page-break-before:always}--></STYLE>
     55  <B><U>concerning this article as the superintendent shall prescribe.</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         47
- 
+
      1    <B><U>(b) In the event any pharmacy  benefit  manager  or  person  does  not</U></B>
      2  <B><U>submit  the  report required by paragraph one or three of subsection (a)</U></B>
      3  <B><U>of this section or does not provide a good faith response to an  inquiry</U></B>
@@ -2755,7 +2755,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  <B><U>regulations of this state.</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         48
- 
+
      1    <B><U>(d)(1) Before a pharmacy benefit manager's license shall be issued  or</U></B>
      2  <B><U>renewed,  the  prospective licensee shall properly file in the office of</U></B>
      3  <B><U>the superintendent a written application therefor in such form or  forms</U></B>
@@ -2813,7 +2813,7 @@ P.brk {page-break-before:always}--></STYLE>
     55  <B><U>commissioner or any law including but not limited to section two hundred</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         49
- 
+
      1  <B><U>eighty-a of the public health law, in the course of his or her  dealings</U></B>
      2  <B><U>in such capacity;</U></B>
      3    <B><U>(2)  provided  materially incorrect, materially misleading, materially</U></B>
@@ -2872,7 +2872,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  <B><U>license,  or  to  be  named as a sub-licensee in any such license, under</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         50
- 
+
      1  <B><U>this chapter for the same period  of  time,  unless  the  superintendent</U></B>
      2  <B><U>determines,  after  notice and hearing which shall be held promptly upon</U></B>
      3  <B><U>such request, that such member, officer or  director  was  not  directly</U></B>
@@ -2931,7 +2931,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  <B><U>whose registration or license under this article has  been  revoked,  or</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         51
- 
+
      1  <B><U>whose  registration  or  license  to  engage in the business of pharmacy</U></B>
      2  <B><U>benefit management in any capacity has been revoked by any  other  state</U></B>
      3  <B><U>or territory of the United States, shall become employed or appointed by</U></B>
@@ -2989,7 +2989,7 @@ P.brk {page-break-before:always}--></STYLE>
     55  <B><U>reasonable.</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         52
- 
+
      1    <B><U>&#167;  2913. Applicability of other laws. Nothing in this article shall be</U></B>
      2  <B><U>construed to exempt a pharmacy benefit manager from complying  with  the</U></B>
      3  <B><U>provisions  of  articles  twenty-one and forty-nine of this chapter, and</U></B>
@@ -3048,7 +3048,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  retail  pharmacy  provided that the network participating non-mail order
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         53
- 
+
      1  retail pharmacy agrees [<B><S>in advance, through a contractual network agree-</S></B>
      2  <B><S>ment,</S></B>] to the same reimbursement amount[<B><S>, as well as the same applicable</S></B>
      3  <B><S>terms and conditions,</S></B>] that the insurer has established for the  network
@@ -3107,7 +3107,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  <B><U>to  receive  prescriptions  by  mail,  telefax  or  through   electronic</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         54
- 
+
      1  <B><U>submissions  and  to  dispense medication to patients through the use of</U></B>
      2  <B><U>the United States mail or other common or contract carrier services  and</U></B>
      3  <B><U>provides any consultation with patients electronically rather than face-</U></B>
@@ -3166,7 +3166,7 @@ P.brk {page-break-before:always}--></STYLE>
     56    <B><U>(vi) disease management;</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         55
- 
+
      1    <B><U>(vii) drug utilization review or prior authorization;</U></B>
      2    <B><U>(viii)  adjudication  of appeals or grievances related to prescription</U></B>
      3  <B><U>drug coverage;</U></B>
@@ -3224,7 +3224,7 @@ P.brk {page-break-before:always}--></STYLE>
     55  <B><U>ly required or permitted by law.</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         56
- 
+
      1    <B><U>5. A pharmacy benefit manager shall, with respect to contracts between</U></B>
      2  <B><U>a pharmacy benefit manager and a pharmacy or, alternatively, a  pharmacy</U></B>
      3  <B><U>benefit  manager  and a pharmacy's contracting agent, such as a pharmacy</U></B>
@@ -3267,9 +3267,9 @@ P.brk {page-break-before:always}--></STYLE>
     40  ly,  the  superintendent  of  financial services shall repeal, amend, or
     41  promulgate any rules and regulations necessary for the implementation of
     42  the provisions of this act on its effective date.
- 
+
     43                                   PART K
- 
+
     44    Section 1. The public health law is amended by adding  a  new  section
     45  2825-e to read as follows:
     46    <B><U>&#167;  2825-e.  Health care facility transformation program: statewide II.</U></B>
@@ -3283,7 +3283,7 @@ P.brk {page-break-before:always}--></STYLE>
     54  <B><U>ing, but not limited to, merger,  consolidation,  acquisition  or  other</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         57
- 
+
      1  <B><U>activities intended to create financially sustainable systems of care or</U></B>
      2  <B><U>preserve  or  expand essential health care services. Grants shall not be</U></B>
      3  <B><U>available to support general operating expenses.  The  issuance  of  any</U></B>
@@ -3340,7 +3340,7 @@ P.brk {page-break-before:always}--></STYLE>
     54  <B><U>nity or communities served by the applicant;</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         58
- 
+
      1    <B><U>(b) The extent to which the proposed project  or  purpose  is  aligned</U></B>
      2  <B><U>with  delivery  system  reform incentive payment ("DSRIP") program goals</U></B>
      3  <B><U>and objectives;</U></B>
@@ -3375,13 +3375,13 @@ P.brk {page-break-before:always}--></STYLE>
     32  <B><U>to subdivision five of this section.</U></B>
     33    &#167;  2.  This  act  shall take effect immediately and shall be deemed to
     34  have been in full force and effect on and after April 1, 2017.
- 
+
     35                                   PART L
- 
+
     36                            Intentionally Omitted
- 
+
     37                                   PART M
- 
+
     38    Section 1. This act shall be known and may be cited as  the  "Emerging
     39  Contaminant Monitoring Act."
     40    &#167;  2. The public health law is amended by adding a new section 1112 to
@@ -3399,7 +3399,7 @@ P.brk {page-break-before:always}--></STYLE>
     52  <B><U>Yorkers  served  by  public  water  supplies have the right to know when</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         59
- 
+
      1  <B><U>potentially hazardous substances contaminate their  drinking  water  and</U></B>
      2  <B><U>the  department  must be equipped to monitor and protect the public from</U></B>
      3  <B><U>these emerging contaminants.</U></B>
@@ -3458,7 +3458,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  <B><U>to this subdivision shall be equal to or lower than any federally estab-</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         60
- 
+
      1  <B><U>lished  concentration  level  that would require public notification, or</U></B>
      2  <B><U>remedial action for that substance.</U></B>
      3    <B><U>7.  Whenever  one or more emerging contaminants is present in drinking</U></B>
@@ -3517,7 +3517,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  <B><U>mine  if the department should establish a maximum contaminant level for</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         61
- 
+
      1  <B><U>the substance. Such a review shall occur, at a minimum, once every three</U></B>
      2  <B><U>years.</U></B>
      3    &#167;  3.  Section 502 of the public health law is amended by adding a new
@@ -3526,9 +3526,9 @@ P.brk {page-break-before:always}--></STYLE>
      6  <B><U>laboratory  test  results  to  the  department,  or  to any other health</U></B>
      7  <B><U>department in an electronic manner prescribed by the department.</U></B>
      8    &#167; 4. This act shall take effect immediately.
- 
+
      9                                   PART N
- 
+
     10    Section 1. This act shall be known and may be cited as  the  "residen-
     11  tial well testing act".
     12    &#167;  2. The public health law is amended by adding a new section 1111 to
@@ -3576,7 +3576,7 @@ P.brk {page-break-before:always}--></STYLE>
     54  <B><U>for  the  rental of a residential unit on the property, or to any former</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         62
- 
+
      1  <B><U>tenant upon request. The department or the department's  designee  shall</U></B>
      2  <B><U>have  the  authority  to  request and receive such test results from the</U></B>
      3  <B><U>lessor.</U></B>
@@ -3635,7 +3635,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  water well driller shall provide a copy of such completion report to the
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         63
- 
+
      1  water well owner <B><U>and the department of health and department of environ-</U></B>
      2  <B><U>mental  conservation</U></B>. The number of the certificate of registration must
      3  be displayed on the well  drilling  machinery  of  the  registrant.  The
@@ -3671,13 +3671,13 @@ P.brk {page-break-before:always}--></STYLE>
     33  vation shall be authorized to promulgate any and  all  rules  and  regu-
     34  lations  necessary  to  implement  the  provisions  of  this  act on its
     35  effective date.
- 
+
     36                                   PART O
- 
+
     37                            Intentionally Omitted
- 
+
     38                                   PART P
- 
+
     39    Section 1. Section 48-a of part A of chapter 56 of the  laws  of  2013
     40  amending  chapter  59 of the laws of 2011 amending the public health law
     41  and other laws relating to general  hospital  reimbursement  for  annual
@@ -3694,7 +3694,7 @@ P.brk {page-break-before:always}--></STYLE>
     52  of the insurance law. Such managed care organizations shall utilize such
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         64
- 
+
      1  funds  for  the  purpose  of  reimbursing providers licensed pursuant to
      2  article 28 of the public health law or article 31 or 32  of  the  mental
      3  hygiene  law for ambulatory behavioral health services, as determined by
@@ -3753,7 +3753,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  <B><U>Medicare and Medicaid services. The commissioner  of  health  shall,  in</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         65
- 
+
      1  <B><U>consultation  with  the  commissioner  of alcoholism and substance abuse</U></B>
      2  <B><U>services and the commissioner of the office of mental health, waive such</U></B>
      3  <B><U>conditions if a sufficient number of providers,  as  determined  by  the</U></B>
@@ -3812,7 +3812,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  services  are authorized, subject to the approval of the director of the
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         66
- 
+
      1  budget, to transfer to the commissioner of  health  state  funds  to  be
      2  utilized as the state share for the purpose of increasing payments under
      3  the  medicaid program to managed care organizations licensed under arti-
@@ -3871,7 +3871,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  <B><U>least eighty percent of such managed care expenditures are paid  through</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         67
- 
+
      1  <B><U>level  one  value  based  payment  arrangements and at least thirty-five</U></B>
      2  <B><U>percent are paid through level two  value  based  payment  arrangements,</U></B>
      3  <B><U>pursuant  to  the  terms  and  conditions  of the delivery system reform</U></B>
@@ -3930,18 +3930,18 @@ P.brk {page-break-before:always}--></STYLE>
     56  the  laws  of  2013 made by section one of this act shall not affect the
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         68
- 
+
      1  repeal of such section and shall be deemed repealed therewith;  provided
      2  further,  that  the  amendments to section 1 of part H of chapter 111 of
      3  the laws of 2010 made by section two of this act shall  not  affect  the
      4  expiration of such section and shall be deemed to expire therewith.
- 
+
      5                                   PART Q
- 
+
      6                            Intentionally Omitted
- 
+
      7                                   PART R
- 
+
      8    Section 1. Paragraph (a) of subdivision 1 of section 18 of chapter 266
      9  of the laws of 1986, amending the civil practice law and rules and other
     10  laws  relating  to  malpractice  and  professional  medical  conduct, as
@@ -3989,7 +3989,7 @@ P.brk {page-break-before:always}--></STYLE>
     52  1,  1997  and  June  30,  1998,  between July 1, 1998 and June 30, 1999,
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         69
- 
+
      1  between July 1, 1999 and June 30, 2000, between July 1,  2000  and  June
      2  30,  2001,  between July 1, 2001 and June 30, 2002, between July 1, 2002
      3  and June 30, 2003, between July 1, 2003 and June 30, 2004, between  July
@@ -4047,7 +4047,7 @@ P.brk {page-break-before:always}--></STYLE>
     55  part C of chapter 59 of the laws of 2016, is amended to read as follows:
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         70
- 
+
      1    (3)(a)  The  superintendent  of financial services shall determine and
      2  certify to each general hospital and to the commissioner of  health  the
      3  cost  of  excess malpractice insurance for medical or dental malpractice
@@ -4106,7 +4106,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  1988, to the period January 1, 1989 to June 30, 1989, to the period July
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         71
- 
+
      1  1,  1989 to December 31, 1989, to the period January 1, 1990 to June 30,
      2  1990, to the period July 1, 1990 to December 31,  1990,  to  the  period
      3  January 1, 1991 to June 30, 1991, to the period July 1, 1991 to December
@@ -4165,7 +4165,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  <B><S>between</S></B>]  <B><U>during  the  period</U></B> July 1, 2016 and June 30, 2017<B><U>, and during</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         72
- 
+
      1  <B><U>the period July 1, 2017 and June 30, 2018</U></B> allocated  or  reallocated  in
      2  accordance  with  paragraph  (a)  of  subdivision 4-a of this section to
      3  rates of payment applicable to state governmental agencies, each  physi-
@@ -4224,7 +4224,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  2009 to June 30, 2010, or covering the period July 1, 2010 to  June  30,
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         73
- 
+
      1  2011,  or covering the period July 1, 2011 to June 30, 2012, or covering
      2  the period July 1, 2012 to June 30, 2013, or covering the period July 1,
      3  2013 to June 30, 2014, or covering the period July 1, 2014 to  June  30,
@@ -4283,7 +4283,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  2004, and to the period July 1, 2004 to June 30, 2005, and to the period
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         74
- 
+
      1  July  1,  2005  to June 30, 2006, and to the period July 1, 2006 to June
      2  30, 2007, and to the period July 1, 2007 to June 30, 2008,  and  to  the
      3  period  July 1, 2008 to June 30, 2009, and to the period July 1, 2009 to
@@ -4342,7 +4342,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  ty-five  percent  of  the  approved  adequate rate, and that such annual
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         75
- 
+
      1  surcharges shall continue for such period of time as shall be sufficient
      2  to satisfy such deficiency. The superintendent  shall  not  impose  such
      3  surcharge  during the period commencing July 1, 2009 and ending June 30,
@@ -4401,7 +4401,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  liability pool, created pursuant to section 18 of  chapter  266  of  the
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         76
- 
+
      1  laws  of  1986,  and  whether  such funds are sufficient for purposes of
      2  purchasing excess insurance coverage for eligible  participating  physi-
      3  cians  and  dentists during the period July 1, 2001 to June 30, 2002, or
@@ -4460,7 +4460,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  for the policy year ending the thirtieth of June, two thousand seventeen
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         77
- 
+
      1  exceeds the total number of physicians or dentists certified as eligible
      2  for the coverage period beginning the first of July, two thousand seven-
      3  teen,  then the general hospitals may certify additional eligible physi-
@@ -4477,9 +4477,9 @@ P.brk {page-break-before:always}--></STYLE>
     14  beginning the first of July, two thousand seventeen.
     15    &#167; 7. Intentionally omitted.
     16    &#167; 8. This act shall take effect immediately.
- 
+
     17                                   PART S
- 
+
     18    Section  1.  On  or  before  October  1, 2017, the commissioner of the
     19  office for people with developmental disabilities shall issue  a  report
     20  to the temporary president of the senate and the speaker of the assembly
@@ -4514,11 +4514,11 @@ P.brk {page-break-before:always}--></STYLE>
     49    &#167; 2. This act shall take effect immediately; provided,  however,  that
     50  this  at  shall be subject to appropriations made specifically available
     51  for this purpose and shall expire and be deemed repealed April 1, 2018.
- 
+
     52                                   PART T
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         78
- 
+
      1    Section 1. The opening paragraph of section 220.03 of the  penal  law,
      2  as  amended by section 4 of part I of chapter 57 of the laws of 2015, is
      3  amended to read as follows:
@@ -4577,7 +4577,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  laws of 2016, is amended to read as follows:
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         79
- 
+
      1    &#167; 3381. Sale and possession  of  hypodermic  syringes  and  hypodermic
      2  needles.  1.  It  shall be unlawful for any person to sell or furnish to
      3  another person or persons, a hypodermic  syringe  or  hypodermic  needle
@@ -4636,7 +4636,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  insert. Such safety insert shall be developed or approved by the commis-
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         80
- 
+
      1  sioner and shall include, but not be limited to, (i) information on  the
      2  proper  use of hypodermic syringes and hypodermic needles; (ii) the risk
      3  of blood borne diseases that may  result  from  the  use  of  hypodermic
@@ -4695,9 +4695,9 @@ P.brk {page-break-before:always}--></STYLE>
     56    &#167; 5. This act shall take effect immediately.
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         81
- 
+
      1                                   PART U
- 
+
      2    Section  1.  Notwithstanding  any other inconsistent provision of law,
      3  the Western New York Children's Psychiatric Center shall  be  maintained
      4  as  a  distinct entity, both organizationally and physically, within the
@@ -4707,9 +4707,9 @@ P.brk {page-break-before:always}--></STYLE>
      8  of  mental health shall not take any steps to limit clinically appropri-
      9  ate admissions or transfers to such facility.
     10    &#167; 2. This act shall take effect immediately.
- 
+
     11                                   PART V
- 
+
     12    Section 1. Subdivision 1 of section 364-j of the social  services  law
     13  is  amended  by  adding  two  new  paragraphs  (w)  and (w-1) to read as
     14  follows:
@@ -4748,11 +4748,11 @@ P.brk {page-break-before:always}--></STYLE>
     47  the amendments to subdivisions 1 and 3 of section 364-j  of  the  social
     48  services  law  made by sections one and two of this act shall not affect
     49  the repeal of such section and shall be deemed repealed therewith.
- 
+
     50                                   PART W
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         82
- 
+
      1    Section 1. Section 365-f of the social  services  law  is  amended  by
      2  adding two new subdivisions 4-a and 4-b to read as follows:
      3    <B><U>4-a.  Fiscal  intermediary  services.  (a)  For  the  purposes of this</U></B>
@@ -4811,7 +4811,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  <B><U>home health aide services and skilled nursing tasks that are included on</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         83
- 
+
      1  <B><U>the consumer's plan  of  care.  A  fiscal  intermediary  shall  exercise</U></B>
      2  <B><U>reasonable  care in properly carrying out its responsibilities under the</U></B>
      3  <B><U>program.</U></B>
@@ -4869,7 +4869,7 @@ P.brk {page-break-before:always}--></STYLE>
     55  <B><U>will be provided in the manner required  by  this  subdivision  and  the</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         84
- 
+
      1  <B><U>rules  and  regulations hereunder, in a manner determined by the commis-</U></B>
      2  <B><U>sioner.</U></B>
      3    <B><U>(f)  The  commissioner  may  contract  with an entity with appropriate</U></B>
@@ -4928,7 +4928,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  <B><U>activities of daily living; family, social or geographic determinants of</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         85
- 
+
      1  <B><U>health; primary or secondary diagnoses of cognitive impairment or mental</U></B>
      2  <B><U>illness; and other appropriate conditions or factors.</U></B>
      3    &#167;  3.  Paragraphs (c) of subdivision 18 of section 364-j of the social
@@ -4987,7 +4987,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  <B><U>providing quality care, including compliance with all applicable federal</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         86
- 
+
      1  <B><U>and  state  laws  and  regulations, including, but not limited to, those</U></B>
      2  <B><U>relating to wages and labor. A managed care provider with  a  long  term</U></B>
      3  <B><U>care  entity shall report its method of compliance with this subdivision</U></B>
@@ -5046,7 +5046,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  prospective  enrollee's  health  care  practitioner  as  necessary.  The
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         87
- 
+
      1  commissioner shall prescribe the forms on which the assessment shall  be
      2  made.
      3    (iii)  The  enrollment  application  shall be submitted by the managed
@@ -5105,7 +5105,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  <B><U>commissioner  shall  direct  managed  care  organizations licensed under</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         88
- 
+
      1  <B><U>article forty-four of the public health law, article forty-three of  the</U></B>
      2  <B><U>insurance law, and this section, to continue to reimburse at a benchmark</U></B>
      3  <B><U>rate  which  is  to  be  the fee-for-service rate calculated pursuant to</U></B>
@@ -5163,7 +5163,7 @@ P.brk {page-break-before:always}--></STYLE>
     55  retention  of  non-supervisory home health aides or other personnel with
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         89
- 
+
      1  direct patient care responsibility. Such recoupment shall be in addition
      2  to any other penalties provided by law.
      3    (c)  In  the  case  of  services provided by such agencies or programs
@@ -5222,7 +5222,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  tively bargained agreement.
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         90
- 
+
      1    (d) "Home care aide" means a home health  aide,  personal  care  aide,
      2  home attendant<B><U>, personal assistant performing consumer directed personal</U></B>
      3  <B><U>assistance  services  pursuant  to section three hundred sixty-five-f of</U></B>
@@ -5281,7 +5281,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  thirty-first two thousand sixteen, no less than the prevailing  rate  of
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         91
- 
+
      1  total  compensation  as  of  January  first, two thousand eleven, or the
      2  total compensation mandated by the living wage law of such city,  which-
      3  ever is greater;
@@ -5340,7 +5340,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  cy, long term home health care program, or managed care plan must obtain
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         92
- 
+
      1  a written certification from the licensed home care services  agency  or
      2  other  third  party, on forms prepared by the department in consultation
      3  with the department of labor, which attests to the  licensed  home  care
@@ -5399,7 +5399,7 @@ P.brk {page-break-before:always}--></STYLE>
     56  shall be deemed repealed therewith;
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         93
- 
+
      1    d.  the amendments to subparagraph (i) of paragraph (g) of subdivision
      2  7 of section 4403-f of the public health law made  by  section  four  of
      3  this  act shall not affect the expiration and reversion of such subpara-
@@ -5410,9 +5410,9 @@ P.brk {page-break-before:always}--></STYLE>
      8  becoming  a  law may continue to do so for one year after this act takes
      9  effect, and may continue to do so after that time  only  upon  obtaining
     10  certification under this act.
- 
+
     11                                   PART X
- 
+
     12    Section  1.  Section  364-j  of  the social services law is amended by
     13  adding a new subdivision 33 to read as follows:
     14    <B><U>33. (a) Thirty days prior to implementing or adjusting a rate,  premi-</U></B>
@@ -5438,9 +5438,9 @@ P.brk {page-break-before:always}--></STYLE>
     34  <B><U>pools, or other rate components for the previous  quarter,  including  a</U></B>
     35  <B><U>description of any modifications implemented within such period.</U></B>
     36    &#167; 2. This act shall take effect immediately.
- 
+
     37                                   PART Y
- 
+
     38    Section 1. Notwithstanding any other provision of law to the contrary,
     39  any  state  agency  with  25 percent or more of their workforce accruing
     40  overtime in a calendar year, and absent an emergency requiring a  tempo-
@@ -5458,14 +5458,14 @@ P.brk {page-break-before:always}--></STYLE>
     52  workers and per diem workers in positions in such agency and the specif-
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         94
- 
+
      1  ic  number  of  hours worked by each temporary and per diem worker. Such
      2  report shall include the length of time such temporary  workers  or  per
      3  diem workers have been employed in each agency.
      4    &#167; 2. This act shall take effect immediately.
- 
+
      5                                   PART Z
- 
+
      6    Section  1.  1.  In  the  event that the commissioner of the office of
      7  mental health shall order the transfer  of  inpatient  services  from  a
      8  state  operated  facility  to  a  facility licensed by article 28 of the
@@ -5498,9 +5498,9 @@ P.brk {page-break-before:always}--></STYLE>
     35  tive  civil service classifications, status and rights pursuant to their
     36  collective bargaining units and collective bargaining agreements.
     37    &#167; 2. This act shall take effect immediately.
- 
+
     38                                   PART AA
- 
+
     39    Section 1. Section 364-j of the social  services  law  is  amended  by
     40  adding a new subdivision 34 to read as follows:
     41    <B><U>34. Enhanced safety net hospital program. (a) For the purposes of this</U></B>
@@ -5517,7 +5517,7 @@ P.brk {page-break-before:always}--></STYLE>
     52  <B><U>to are attributed to the care of uninsured patients; and</U></B>
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         95
- 
+
      1    <B><U>(E) provides care to uninsured patients in its emergency room,  hospi-</U></B>
      2  <B><U>tal  based  clinics and community based clinics, including the provision</U></B>
      3  <B><U>of important community services, such as dental care and prenatal care;</U></B>
@@ -5576,9 +5576,9 @@ P.brk {page-break-before:always}--></STYLE>
     56  section and shall be deemed repealed therewith.
 </PRE><P CLASS="brk"><PRE WIDTH="178">
         A. 3007--A                         96
- 
+
      1                                   PART BB
- 
+
      2    Section  1. Section 4 of chapter 495 of the laws of 2004, amending the
      3  insurance law and the public health law relating to the New  York  state
      4  health  insurance  continuation  assistance  demonstration  project,  as

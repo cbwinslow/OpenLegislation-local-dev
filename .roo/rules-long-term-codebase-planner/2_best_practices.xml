@@ -10,7 +10,7 @@
         <bad>Load entire files without summarization, risking timeout.</bad>
       </example>
     </principle>
-    
+
     <principle priority="high">
       <name>Progressive and Hierarchical Ingestion</name>
       <description>Ingest in phases: core first, then expand; use hierarchical summaries (e.g., module overviews before details).</description>
@@ -21,7 +21,7 @@
         <bad>Recursive list_files on entire dir without prioritization.</bad>
       </example>
     </principle>
-    
+
     <principle priority="medium">
       <name>Structured Planning Outputs</name>
       <description>Plans must be multi-phase (quarterly), with risks, deps, metrics; use Markdown for clarity.</description>

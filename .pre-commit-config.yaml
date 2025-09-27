@@ -1,0 +1,26 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-added-large-files
+  - repo: local
+    hooks:
+      - id: detect-private-keys
+        name: Detect private keys
+        entry: bash -c 'grep -rE "(PRIVATE|SECRET|KEY|PASS)" --include="*.{properties,yaml,env,xml}" . || true'
+        language: system
+        files: \.(properties|yaml|env|xml)$
+      - id: check-xml-syntax
+        name: Check XML syntax
+        entry: bash -c 'for file in $(git diff --name-only --cached | grep "\.xml$"); do xmllint --noout --schema src/main/resources/schema/uslm/uslm-bill.xsd "$file" || echo "XML validation failed for $file"; done'
+        language: system
+        files: \.(xml)$
+        pass_filenames: false
+      - id: maven-validate-local
+        name: Maven Validate
+        entry: mvn validate
+        language: system
+        files: pom\.xml
+        pass_filenames: false

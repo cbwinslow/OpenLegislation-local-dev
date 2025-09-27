@@ -12,4 +12,3 @@ fi
 
 # TODO: This memory size should be an adjustable parameter
 java -Xmx1G -Xms16m -cp $BASE/classes/:$BASE/lib/*:$TOMCAT_DIR/lib/* -Dspring.profiles.active=$PROFILE gov.nysenate.openleg.script.$SCRIPT $@
-

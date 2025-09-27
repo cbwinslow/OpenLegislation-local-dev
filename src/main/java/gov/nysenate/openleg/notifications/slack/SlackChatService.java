@@ -46,4 +46,3 @@ public interface SlackChatService {
     void sendMessage(SlackMessage messageContent,
                             Collection<SlackAddress> addresses);
 }
-

@@ -40,9 +40,15 @@ class Settings(BaseSettings):
     cuda_visible_devices: str = Field(default="", env="CUDA_VISIBLE_DEVICES")
 
     # Script Configuration
-    max_errors: int = Field(default=100, description="Maximum number of errors before script fails")
-    request_timeout: int = Field(default=30, description="HTTP request timeout in seconds")
-    rate_limit_delay: float = Field(default=0.5, description="Delay between API requests in seconds")
+    max_errors: int = Field(
+        default=100, description="Maximum number of errors before script fails"
+    )
+    request_timeout: int = Field(
+        default=30, description="HTTP request timeout in seconds"
+    )
+    rate_limit_delay: float = Field(
+        default=0.5, description="Delay between API requests in seconds"
+    )
 
     class Config:
         env_file = ".env"

@@ -9,8 +9,11 @@ import subprocess
 import logging
 
 # Set up logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
+
 
 def check_python_version():
     """Check Python version"""
@@ -21,10 +24,12 @@ def check_python_version():
     else:
         logger.warning("✗ Python version is below 3.10")
 
+
 def check_gpu_availability():
     """Check if GPU is available"""
     try:
         import torch
+
         if torch.cuda.is_available():
             logger.info(f"✓ CUDA GPU available: {torch.cuda.get_device_name(0)}")
             logger.info(f"  CUDA version: {torch.version.cuda}")
@@ -36,8 +41,11 @@ def check_gpu_availability():
 
     # Check NVIDIA drivers
     try:
-        result = subprocess.run(['nvidia-smi', '--query-gpu=name', '--format=csv,noheader,nounits'],
-                              capture_output=True, text=True)
+        result = subprocess.run(
+            ["nvidia-smi", "--query-gpu=name", "--format=csv,noheader,nounits"],
+            capture_output=True,
+            text=True,
+        )
         if result.returncode == 0:
             logger.info(f"✓ NVIDIA GPU detected: {result.stdout.strip()}")
         else:
@@ -45,43 +53,54 @@ def check_gpu_availability():
     except FileNotFoundError:
         logger.warning("✗ nvidia-smi not found")
 
+
 def check_key_libraries():
     """Check versions of key libraries"""
-    libraries = ['psycopg2', 'pydantic', 'pydantic_settings', 'requests', 'pandas', 'numpy']
+    libraries = [
+        "psycopg2",
+        "pydantic",
+        "pydantic_settings",
+        "requests",
+        "pandas",
+        "numpy",
+    ]
 
     for lib in libraries:
         try:
-            module = __import__(lib.replace('_', ''))
-            version = getattr(module, '__version__', 'unknown')
+            module = __import__(lib.replace("_", ""))
+            version = getattr(module, "__version__", "unknown")
             logger.info(f"✓ {lib}: {version}")
         except ImportError:
             logger.warning(f"✗ {lib} not installed")
 
+
 def check_legal_analysis_libs():
     """Check for legal document analysis libraries"""
-    legal_libs = ['spacy', 'transformers', 'nltk', 'torch']
+    legal_libs = ["spacy", "transformers", "nltk", "torch"]
 
     for lib in legal_libs:
         try:
             module = __import__(lib)
-            version = getattr(module, '__version__', 'unknown')
+            version = getattr(module, "__version__", "unknown")
             logger.info(f"✓ {lib}: {version}")
         except ImportError:
             logger.warning(f"✗ {lib} not installed")
 
+
 def check_sql_tools():
     """Check for SQL GUI tools availability"""
-    tools = ['pgadmin3', 'dbeaver', 'sqlitebrowser']
+    tools = ["pgadmin3", "dbeaver", "sqlitebrowser"]
 
     for tool in tools:
         try:
-            result = subprocess.run(['which', tool], capture_output=True)
+            result = subprocess.run(["which", tool], capture_output=True)
             if result.returncode == 0:
                 logger.info(f"✓ {tool} available")
             else:
                 logger.warning(f"✗ {tool} not available")
         except Exception:
             logger.warning(f"✗ Error checking {tool}")
+
 
 if __name__ == "__main__":
     logger.info("Starting OpenLegislation diagnostic check")

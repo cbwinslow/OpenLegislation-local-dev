@@ -11,4 +11,3 @@ VALUES ((SELECT id from p), 'assembly', true, 'Yudelka Tapia')
 
 INSERT INTO public.session_member(member_id, lbdc_short_name, session_year, district_code)
 VALUES ((SELECT id from m), 'TAPIA', 2019, 86);
-

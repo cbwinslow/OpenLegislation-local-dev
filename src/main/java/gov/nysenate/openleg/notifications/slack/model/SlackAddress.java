@@ -68,4 +68,3 @@ public class SlackAddress {
         return username;
     }
 }
-

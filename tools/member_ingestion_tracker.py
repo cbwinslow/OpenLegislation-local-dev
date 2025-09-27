@@ -40,6 +40,7 @@ import psycopg2.extras
 @dataclass
 class IngestionStats:
     """Statistics for ingestion progress"""
+
     total_members: int = 0
     completed: int = 0
     failed: int = 0
@@ -52,8 +53,12 @@ class IngestionStats:
 class MemberIngestionTracker:
     """Tracks federal member ingestion status and enables resume capability"""
 
-    def __init__(self, db_config: Dict[str, Any], session_id: Optional[str] = None,
-                 max_retry_attempts: int = 3):
+    def __init__(
+        self,
+        db_config: Dict[str, Any],
+        session_id: Optional[str] = None,
+        max_retry_attempts: int = 3,
+    ):
         self.db_config = db_config
         self.session_id = session_id or str(uuid.uuid4())
         self.max_retry_attempts = max_retry_attempts
@@ -64,7 +69,9 @@ class MemberIngestionTracker:
         """Get database connection with proper cursor"""
         if not self._db_connection or self._db_connection.closed:
             self._db_connection = psycopg2.connect(**self.db_config)
-            self._db_cursor = self._db_connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            self._db_cursor = self._db_connection.cursor(
+                cursor_factory=psycopg2.extras.RealDictCursor
+            )
         return self._db_connection, self._db_cursor
 
     def _execute_query(self, query: str, params: tuple = None, fetch: bool = False):
@@ -85,21 +92,27 @@ class MemberIngestionTracker:
         if self._db_connection:
             self._db_connection.commit()
 
-    def initialize_members(self, member_list: List[Dict[str, Any]], reset_existing: bool = False):
+    def initialize_members(
+        self, member_list: List[Dict[str, Any]], reset_existing: bool = False
+    ):
         """Initialize ingestion status for a list of members
 
         Args:
             member_list: List of member dicts with 'bioguideId' keys
             reset_existing: If True, reset status of existing members to pending
         """
-        bioguide_ids = [member.get('bioguideId') for member in member_list if member.get('bioguideId')]
+        bioguide_ids = [
+            member.get("bioguideId")
+            for member in member_list
+            if member.get("bioguideId")
+        ]
 
         if not bioguide_ids:
             return
 
         # Create ingestion records for new members
         values = [(bioguide_id, self.session_id) for bioguide_id in bioguide_ids]
-        value_placeholders = ','.join(['(%s, %s)'] * len(values))
+        value_placeholders = ",".join(["(%s, %s)"] * len(values))
 
         query = f"""
             INSERT INTO master.federal_member_ingestion_status
@@ -165,7 +178,9 @@ class MemberIngestionTracker:
                 updated_at = now()
             WHERE bioguide_id = %s
         """
-        self._execute_query(query, (self.max_retry_attempts, failure_reason, bioguide_id))
+        self._execute_query(
+            query, (self.max_retry_attempts, failure_reason, bioguide_id)
+        )
         self._commit()
 
     def get_member_status(self, bioguide_id: str) -> Optional[Dict[str, Any]]:
@@ -190,7 +205,7 @@ class MemberIngestionTracker:
 
         params = (limit,) if limit else ()
         results = self._execute_query(query, params, fetch=True)
-        return [row['bioguide_id'] for row in results]
+        return [row["bioguide_id"] for row in results]
 
     def get_failed_members(self) -> List[Dict[str, Any]]:
         """Get list of members that failed processing"""
@@ -209,19 +224,19 @@ class MemberIngestionTracker:
         if not status:
             return True  # New member, should process
 
-        current_status = status['ingestion_status']
-        retry_count = status.get('retry_count', 0)
+        current_status = status["ingestion_status"]
+        retry_count = status.get("retry_count", 0)
 
         # Don't process if completed
-        if current_status == 'completed':
+        if current_status == "completed":
             return False
 
         # Don't process if failed and exceeded max retries
-        if current_status == 'failed' and retry_count >= self.max_retry_attempts:
+        if current_status == "failed" and retry_count >= self.max_retry_attempts:
             return False
 
         # Process if pending or in_progress (allow retry of in_progress)
-        return current_status in ('pending', 'in_progress')
+        return current_status in ("pending", "in_progress")
 
     def get_ingestion_stats(self) -> IngestionStats:
         """Get comprehensive ingestion statistics"""
@@ -240,18 +255,18 @@ class MemberIngestionTracker:
             return IngestionStats()
 
         stats = results[0]
-        total = stats['total_members']
-        completed = stats['completed']
+        total = stats["total_members"]
+        completed = stats["completed"]
 
         success_rate = (completed / total * 100) if total > 0 else 0.0
 
         return IngestionStats(
             total_members=total,
             completed=completed,
-            failed=stats['failed'],
-            in_progress=stats['in_progress'],
-            pending=stats['pending'],
-            success_rate=success_rate
+            failed=stats["failed"],
+            in_progress=stats["in_progress"],
+            pending=stats["pending"],
+            success_rate=success_rate,
         )
 
     def reset_session(self, session_id: Optional[str] = None):
@@ -290,7 +305,9 @@ class MemberIngestionTracker:
 
 
 # Convenience functions for CLI usage
-def get_ingestion_status(db_config: Dict[str, Any], session_id: Optional[str] = None) -> Dict[str, Any]:
+def get_ingestion_status(
+    db_config: Dict[str, Any], session_id: Optional[str] = None
+) -> Dict[str, Any]:
     """Get comprehensive ingestion status"""
     tracker = MemberIngestionTracker(db_config, session_id)
     try:
@@ -298,10 +315,10 @@ def get_ingestion_status(db_config: Dict[str, Any], session_id: Optional[str] = 
         failed_members = tracker.get_failed_members()
 
         return {
-            'stats': stats,
-            'failed_members': failed_members[:10],  # First 10 failed members
-            'total_failed': len(failed_members),
-            'session_id': tracker.session_id
+            "stats": stats,
+            "failed_members": failed_members[:10],  # First 10 failed members
+            "total_failed": len(failed_members),
+            "session_id": tracker.session_id,
         }
     finally:
         tracker.close()

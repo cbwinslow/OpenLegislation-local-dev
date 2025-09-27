@@ -173,17 +173,128 @@ Clones official Markdown docs repos to `~/KnowledgeBase/{tool}/` for vectorizati
 - Git clone fails: Check network; manual clone if needed.
 - Non-MD docs: Some (e.g., Grafana) have MD in subpaths; convert HTML if any via pandoc.
 
+## Core OpenLegislation Components Installers
+### 6. PostgreSQL (Bare Metal)
+#### Description
+Database for OpenLegislation app and Flyway migrations.
+
+#### Script
+`tools/install_postgres.sh`
+
+#### Usage
+1. Set env: `export DB_PASS=strongpass`
+2. `cd tools && chmod +x install_postgres.sh && sudo ./install_postgres.sh`
+3. Creates `openleg` DB/user; run Flyway from core app script.
+
+#### Testing
+- `psql -h localhost -U openleg -d openleg -c '\dt'` (lists tables after migrations)
+- Logs: `/var/log/postgresql/`
+
+### 7. Elasticsearch 8 (Bare Metal)
+#### Description
+Search engine for legislation indexing (matches client v8.14.3).
+
+#### Script
+`tools/install_elasticsearch.sh`
+
+#### Usage
+1. `sudo ES_HEAP=2g ./tools/install_elasticsearch.sh` (adjust heap)
+2. Config: Edit `/etc/elasticsearch/elasticsearch.yml` for prod (e.g., security).
+
+#### Testing
+- `curl localhost:9200/_cluster/health` (green status)
+- Logs: `/var/log/elasticsearch/`
+
+### 8. Tomcat 9 (Bare Metal)
+#### Description
+Application server for Java WAR deployment.
+
+#### Script
+`tools/install_tomcat.sh`
+
+#### Usage
+1. `sudo ./tools/install_tomcat.sh`
+2. Deploys WAR via core app script.
+
+#### Testing
+- `curl http://localhost:8080` (Tomcat welcome)
+- Logs: `/var/log/tomcat9/`
+
+### 9. Core Java Application (Bare Metal)
+#### Description
+Builds Spring/Java WAR, deploys to Tomcat, configures props, runs Flyway.
+
+#### Script
+`tools/install_core_app.sh`
+
+#### Usage
+1. Set env: `export DB_PASS=pass ES_HOST=localhost:9200`
+2. `sudo ./tools/install_core_app.sh`
+3. Clones to `/opt/openleg`, builds, deploys to Tomcat.
+
+#### Testing
+- `curl http://localhost:8080/api` (API endpoints)
+- Check Tomcat logs for startup.
+
+### 10. Python Ingestion Tools (Venv with uv)
+#### Description
+Tools for federal/state data ingestion (govinfo, bulk ingest).
+
+#### Script
+`tools/install_python_tools.sh`
+
+#### Usage
+1. `./tools/install_python_tools.sh` (non-sudo)
+2. Activate: `source /opt/openleg/tools/venv/bin/activate`
+3. Run: `uv run python govinfo_data_connector.py`
+
+#### Testing
+- `uv run python -c "import requests; print('OK')"`
+- Run sample: `./tools/bulk_ingest_congress_gov.sh`
+
+### 11. GitLab (Bare Metal Omnibus - Bash Equivalent)
+#### Description
+Git repo manager (replaces Ansible).
+
+#### Script
+`tools/install_gitlab.sh`
+
+#### Usage
+1. Set env: `export GITLAB_EXTERNAL_URL=http://your-domain.com GITLAB_ROOT_PASS=strongpass`
+2. `sudo ./tools/install_gitlab.sh`
+3. Reconfigure: `gitlab-ctl reconfigure`
+
+#### Testing
+- Access URL, login with root creds
+- `gitlab-ctl status`
+
+### 12. Bin Scripts and Cron Jobs
+#### Description
+Legacy bash scripts for mirroring, data transfer, crons.
+
+#### Script
+`tools/setup_bin_crons.sh`
+
+#### Usage
+1. `./tools/setup_bin_crons.sh` (or sudo for root crons)
+2. Copies to `/opt/openleg/bin`, adds example crontab entries.
+
+#### Testing
+- `crontab -l | grep openleg`
+- Manual run: `/opt/openleg/bin/mirror_aging.sh`
+
 ## Overall Testing and Validation
-1. Run all scripts in order (monitoring first for observability).
-2. Monitor with stack: Add GitLab/Sentry/OpenWebUI as scrape targets in Prometheus.
-3. Full stack access: Ensure no port conflicts (e.g., Grafana/OpenWebUI both 3000? Change one).
-4. Backup: Script data dirs (e.g., rsync /opt/*).
-5. Production: Use systemd timers for backups; monitor with alerts in Grafana.
+1. Run all scripts in order: DB/ES/Tomcat/Core App/Python Tools, then ancillaries (monitoring first).
+2. Monitor with stack: Add Tomcat/GitLab as Prometheus targets; use Sentry for errors.
+3. Full stack access: Verify ports (5432 DB, 9200 ES, 8080 Tomcat, etc.); resolve conflicts.
+4. End-to-end: Ingest sample data via Python tools, query via Tomcat API, check ES indices.
+5. Backup: Script data (/var/lib/postgresql, /var/lib/elasticsearch, /opt/openleg).
+6. Production: Systemd timers for backups; Grafana alerts for services.
 
 ## Usage Summary
-- All scripts in `tools/`: Make executable, run with sudo (except pull_docs).
-- Ansible: From `ansible/gitlab/`.
-- Customize: Edit scripts/vars before running.
-- Cleanup: `docker rm -f openwebui` for Docker; `apt purge` for packages.
+- Core install order: `sudo ./tools/install_postgres.sh && sudo ./tools/install_elasticsearch.sh && sudo ./tools/install_tomcat.sh && sudo DB_PASS=pass ./tools/install_core_app.sh && ./tools/install_python_tools.sh && ./tools/setup_bin_crons.sh`
+- Ancillary: Existing Docker/package scripts + new GitLab/bash crons.
+- Customize: Env vars for creds/URLs; edit scripts for specifics.
+- Cleanup: `apt purge postgresql tomcat9 elasticsearch gitlab-ee` etc.; remove /opt/openleg.
 
 For issues, check logs/services. Contribute back to OpenLegislation repo if useful!

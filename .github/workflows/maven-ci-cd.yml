@@ -1,0 +1,79 @@
+name: Maven CI/CD
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java-version: [ '17' ]  # Matches project Java 17
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up JDK ${{ matrix.java-version }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ matrix.java-version }}
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Cache Maven packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+
+    - name: Validate Maven POM
+      run: mvn validate
+
+    - name: Compile with tests
+      run: mvn clean compile test
+
+    - name: Run Flyway migrations (validate)
+      run: mvn flyway:validate
+      env:
+        FLYWAY_URL: jdbc:postgresql://localhost:5432/openlegdb  # Adjust for your DB
+        FLYWAY_USER: ${{ secrets.DB_USER }}
+        FLYWAY_PASSWORD: ${{ secrets.DB_PASS }}
+
+    - name: Build WAR
+      run: mvn package -DskipTests
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: openlegislation-war
+        path: target/*.war
+
+  deploy-staging:
+    needs: build
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Deploy to staging
+      run: |
+        # Example: SCP WAR to staging server or use Tomcat deploy action
+        echo "Deploying to staging... (customize with your server)"
+      env:
+        DEPLOY_SERVER: ${{ secrets.STAGING_SERVER }}
+        DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Run OWASP Dependency-Check
+      uses: dependency-check/Dependency-Check_Action@v2
+      env:
+        FORMAT: SARIF
+    - name: Upload SARIF
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: reports/dependency-check-report.sarif
