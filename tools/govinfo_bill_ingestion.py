@@ -21,14 +21,24 @@ Usage:
 """
 
 import os
+import sys
 import glob
 import logging
+from datetime import datetime
 from typing import List, Dict, Any, Optional, Union
 from pathlib import Path
 from lxml import etree
 
 from base_ingestion_process import BaseIngestionProcess
 from settings import settings
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.append(str(PROJECT_ROOT))
+
+from govinfo.models import GovInfoAction, GovInfoBillRecord, GovInfoSponsor
+from govinfo.persistence import persist_bill_record
+from db.session import session_scope
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -180,149 +190,103 @@ class GovInfoBillIngestor(BaseIngestionProcess):
             congress_elem = root.get("congress")
             congress = int(congress_elem) if congress_elem else 0
 
-            title_elem = root.find(".//officialTitle")
-            title = title_elem.text if title_elem is not None else ""
+            title = self._text(root.find(".//officialTitle"))
+            short_title = self._text(root.find(".//shortTitle"))
+            summary = self._text(root.find(".//summaryText"))
 
-            # Extract sponsor
             sponsor = None
             sponsor_elem = root.find(".//sponsor")
             if sponsor_elem is not None:
-                name_elem = sponsor_elem.find(".//fullName")
-                party_elem = sponsor_elem.find(".//party")
-                state_elem = sponsor_elem.find(".//state")
+                sponsor = GovInfoSponsor(
+                    name=self._text(sponsor_elem.find(".//fullName")) or "",
+                    party=self._text(sponsor_elem.find(".//party")),
+                    state=self._text(sponsor_elem.find(".//state")),
+                )
 
-                sponsor = {
-                    "name": name_elem.text if name_elem is not None else "",
-                    "party": party_elem.text if party_elem is not None else "",
-                    "state": state_elem.text if state_elem is not None else "",
-                }
-
-            # Extract actions
-            actions = []
-            action_elems = root.findall(".//actions/action")
-            for action_elem in action_elems:
-                action_date_elem = action_elem.find(".//actionDate")
-                chamber_elem = action_elem.find(".//chamber")
-                text_elem = action_elem.find(".//text")
-                code_elem = action_elem.find(".//actionCode")
-
-                if text_elem is not None:
-                    actions.append(
-                        {
-                            "action_date": (
-                                action_date_elem.text
-                                if action_date_elem is not None
-                                else ""
-                            ),
-                            "chamber": (
-                                chamber_elem.text if chamber_elem is not None else ""
-                            ),
-                            "description": text_elem.text,
-                            "action_type": (
-                                code_elem.text if code_elem is not None else ""
-                            ),
-                        }
+            cosponsors: List[GovInfoSponsor] = []
+            for cosponsor_elem in root.findall(".//cosponsors/cosponsor"):
+                name = self._text(cosponsor_elem.find(".//fullName"))
+                if not name:
+                    continue
+                cosponsors.append(
+                    GovInfoSponsor(
+                        name=name,
+                        party=self._text(cosponsor_elem.find(".//party")),
+                        state=self._text(cosponsor_elem.find(".//state")),
+                        role="cosponsor",
                     )
+                )
 
-            # Validate that we have at least a bill number
-            if not bill_number:
+            actions: List[GovInfoAction] = []
+            for action_elem in root.findall(".//actions/action"):
+                text_value = self._text(action_elem.find(".//text"))
+                if not text_value:
+                    continue
+                actions.append(
+                    GovInfoAction(
+                        description=text_value,
+                        action_code=self._text(action_elem.find(".//actionCode")),
+                        chamber=self._text(action_elem.find(".//chamber")),
+                        action_date=self._parse_datetime(self._text(action_elem.find(".//actionDate"))),
+                    )
+                )
+
+            introduced_date = self._parse_datetime(self._text(root.find(".//introducedDate")))
+
+            bill_print_no = bill_number.replace(" ", "")
+            if not bill_print_no:
                 logger.error(f"Missing bill number in XML: {xml_file}")
                 return None
 
-            return {
-                "bill_number": bill_number,
-                "congress": congress,
-                "title": title,
-                "bill_type": bill_type,
-                "sponsor": sponsor,
-                "actions": actions,
-                "data_source": "govinfo",
-            }
+            return GovInfoBillRecord(
+                bill_print_no=bill_print_no,
+                session_year=congress,
+                bill_type=bill_type,
+                title=title,
+                short_title=short_title,
+                summary=summary,
+                congress=congress,
+                sponsor=sponsor,
+                cosponsors=cosponsors,
+                actions=actions,
+                introduced_date=introduced_date,
+                active_version="",
+            )
 
         except Exception as e:
             logger.error(f"XML parsing error for {xml_file}: {e}")
             return None
 
-    def _insert_bill_data(self, bill_data: Dict[str, Any]) -> None:
-        """Insert bill data into database"""
-        conn = None
+    def _insert_bill_data(self, record: GovInfoBillRecord) -> None:
+        """Persist bill data using SQLAlchemy ORM."""
+
+        with session_scope() as session:
+            persist_bill_record(session, record)
+
+    @staticmethod
+    def _text(element: Optional[etree._Element]) -> Optional[str]:
+        if element is None or element.text is None:
+            return None
+        value = element.text.strip()
+        return value or None
+
+    @staticmethod
+    def _parse_datetime(value: Optional[str]) -> Optional[datetime]:
+        if not value:
+            return None
+        value = value.strip()
+        if not value:
+            return None
         try:
-            import psycopg2
-
-            conn = psycopg2.connect(**self.db_config)
-            cursor = conn.cursor()
-
-            # Insert/update bill
-            bill_print_no = f"{bill_data['bill_type']}{bill_data['bill_number']}"
-
-            bill_session_year = bill_data["congress"]
-            cursor.execute(
-                """
-                INSERT INTO master.bill
-                (bill_print_no, bill_session_year, congress, title, bill_type, data_source, updated_at)
-                VALUES (%s, %s, %s, %s, %s, %s, now())
-                ON CONFLICT (bill_print_no, bill_session_year)
-                DO UPDATE SET
-                    title = EXCLUDED.title,
-                    bill_type = EXCLUDED.bill_type,
-                    data_source = EXCLUDED.data_source,
-                    updated_at = now()
-                RETURNING bill_id
-            """,
-                (
-                    bill_print_no,
-                    bill_session_year,
-                    bill_data["congress"],
-                    bill_data["title"],
-                    bill_data["bill_type"],
-                    bill_data["data_source"],
-                ),
-            )
-
-            bill_id = cursor.fetchone()[0]
-
-            # Insert sponsor if present
-            if bill_data.get("sponsor"):
-                sponsor = bill_data["sponsor"]
-                cursor.execute(
-                    """
-                    INSERT INTO master.bill_sponsor
-                    (bill_id, sponsor_name, party, state)
-                    VALUES (%s, %s, %s, %s)
-                    ON CONFLICT DO NOTHING
-                """,
-                    (bill_id, sponsor["name"], sponsor["party"], sponsor["state"]),
-                )
-
-            # Insert actions
-            for action in bill_data.get("actions", []):
-                cursor.execute(
-                    """
-                    INSERT INTO master.bill_amendment_action
-                    (bill_print_no, bill_session_year, action_date, chamber, description, action_type)
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                    ON CONFLICT (bill_print_no, bill_session_year, action_date, description)
-                    DO NOTHING
-                """,
-                    (
-                        bill_print_no,
-                        bill_session_year,
-                        action["action_date"],
-                        action["chamber"],
-                        action["description"],
-                        action["action_type"],
-                    ),
-                )
-
-            conn.commit()
-
-        except Exception as e:
-            if conn:
-                conn.rollback()
-            raise e
-        finally:
-            if conn:
-                conn.close()
+            return datetime.fromisoformat(value.replace("Z", ""))
+        except ValueError:
+            for fmt in ("%Y-%m-%d", "%m/%d/%Y"):
+                try:
+                    return datetime.strptime(value, fmt)
+                except ValueError:
+                    continue
+        logger.warning("Unable to parse datetime '%s'", value)
+        return None
 
 
 if __name__ == "__main__":

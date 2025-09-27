@@ -11,53 +11,48 @@ class LawType(str, Enum):
     MISC = "MISC"
 
 class LawInfo(BaseModel):
-    law_id: str
-    name: str
-    chapter_id: str
-    type: LawType
-    def __str__(self):
+    law_id: Optional[str] = None
+    name: Optional[str] = None
+    chapter_id: Optional[str] = None
+    type: Optional[LawType] = None
+
+    def __str__(self) -> str:
         return f"LawInfo {{lawId='{self.law_id}', name='{self.name}', chapterId='{self.chapter_id}', type={self.type}}}"
-    def __eq__(self, other):
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, LawInfo):
+            return False
         return self.law_id == other.law_id
-    def __lt__(self, other):
-        return self.law_id < other.law_id
 
-class LawChapterCode(str, Enum):
-    # Only a subset for brevity; add all as needed
-    ABP = "Abandoned Property"
-    AGM = "Agriculture & Markets"
-    ABC = "Alcoholic Beverage Control"
-    ACG = "Alternative County Government"
-    ACA = "Arts and Cultural Affairs"
-    BNK = "Banking"
-    # ... (add all codes as needed)
-    # Example for unconsolidated, court acts, rules, misc
-    BSW = "Boxing, Sparring and Wrestling Ch. 912/20"
-    CTC = "Court of Claims Act"
-    CMA = "Assembly Rules"
-    CNS = "Constitution"
-    # ... (add all as needed)
+    def __lt__(self, other) -> bool:
+        if self.law_id and other.law_id:
+            return self.law_id < other.law_id
+        return False
 
-    @staticmethod
-    def get_chapter_name(code: 'LawChapterCode') -> str:
-        return code.value
+    # Getters and setters
+    def get_law_id(self) -> Optional[str]:
+        return self.law_id
 
-    @staticmethod
-    def get_type(code: 'LawChapterCode') -> LawType:
-        # This is a simplified mapping; expand as needed
-        consolidated = {"ABP", "AGM", "ABC", "ACG", "ACA", "BNK"}
-        unconsolidated = {"BSW"}
-        court_acts = {"CTC"}
-        rules = {"CMA"}
-        misc = {"CNS"}
-        if code.name in consolidated:
-            return LawType.CONSOLIDATED
-        if code.name in unconsolidated:
-            return LawType.UNCONSOLIDATED
-        if code.name in court_acts:
-            return LawType.COURT_ACTS
-        if code.name in rules:
-            return LawType.RULES
-        if code.name in misc:
-            return LawType.MISC
-        return LawType.MISC
+    def set_law_id(self, law_id: str) -> None:
+        self.law_id = law_id
+
+    def get_name(self) -> Optional[str]:
+        return self.name
+
+    def set_name(self, name: str) -> None:
+        self.name = name
+
+    def get_chapter_id(self) -> Optional[str]:
+        return self.chapter_id
+
+    def set_chapter_id(self, chapter_id: str) -> None:
+        self.chapter_id = chapter_id
+
+    def get_type(self) -> Optional[LawType]:
+        return self.type
+
+    def set_type(self, type_: LawType) -> None:
+        self.type = type_
+
+# Note: LawChapterCode enum would be extensive; implement as needed based on actual usage
+# For now, keeping it minimal as in the original simplified version
