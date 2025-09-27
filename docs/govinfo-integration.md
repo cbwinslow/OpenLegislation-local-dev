@@ -19,6 +19,80 @@ Comprehensive integration of all bulk data from govinfo.gov (XML/JSON, 2000+) an
 6. **Archive/Monitor**: Archive processed; log via ingestion_log.json.
 7. **API**: `/api/3/federal/<collection>` endpoints.
 
+## GovInfo API Endpoint Mappings to Java Classes
+
+The following table maps GovInfo API search/retrieve endpoints (base: https://api.govinfo.gov/v1) to existing or planned Java models and processors in the OpenLegislation codebase. This ensures a generalized approach for ingestion scripts. Each collection uses /v1/search?collection={COLLECTION}&congress={CONGRESS}&api_key={KEY}&offset={OFFSET}&limit={LIMIT} for querying, with /v1/package/{COLLECTION}/{CONGRESS}/{PACKAGE_ID} for bulk retrieval.
+
+| API Collection | Endpoint Example | Java Model | Processor Class | Notes |
+|----------------|------------------|------------|-----------------|-------|
+| BILLS | /v1/search?collection=BILLS&congress=119 | [`Bill`](src/main/java/gov/nysenate/openleg/legislation/bill/Bill.java) | [`GovInfoApiProcessor`](src/main/java/gov/nysenate/openleg/processors/federal/GovInfoApiProcessor.java) (extend for JSON parsing) | Map JSON 'search.results' to Bill fields (title, sponsors, actions). Use ObjectMapper for JSON. Persist via BillDao. |
+| BILLSTATUS | /v1/search?collection=BILLSTATUS&congress=119 | [`Bill`](src/main/java/gov/nysenate/openleg/legislation/bill/Bill.java) | [`GovInfoApiProcessor`](src/main/java/gov/nysenate/openleg/processors/federal/GovInfoApiProcessor.java) | Update existing bills with status/actions. |
+| PLAW | /v1/search?collection=PLAW&congress=119 | [`LawDocument`](src/main/java/gov/nysenate/openleg/legislation/law/LawDocument.java) (extend if needed) | FederalLawXmlProcessor (adapt for API JSON/XML) | Map to LawDocId, sections. Use JAXB for XML if retrieved. |
+| CRPT | /v1/search?collection=CRPT&congress=119 | ReportDoc (new: src/main/java/gov/nysenate/openleg/legislation/federal/ReportDoc.java) | FederalReportXmlProcessor (adapt for API) | Map report-number, committee, text. |
+| CREC | /v1/search?collection=CREC&from=2025-01-01 | RecordEntry (new: src/main/java/gov/nysenate/openleg/legislation/transcript/RecordEntry.java) | FederalRecordXmlProcessor (adapt) | Parse speeches; extend Transcript model. |
+| CHRG | /v1/search?collection=CHRG&congress=119 | Hearing (extend Transcript) | FederalHearingXmlProcessor (adapt) | Map witnesses, statements. |
+| CCAL | /v1/search?collection=CCAL&congress=119 | Calendar (extend existing) | FederalCalendarXmlProcessor (adapt) | Map bill references to entries. |
+| NOM | /v1/search?collection=NOMINATIONS&congress=119 | NominationDoc (new) | FederalNominationXmlProcessor (adapt) | Map nominee, status. |
+| TRTY | /v1/search?collection=TREATIES&congress=119 | TreatyDoc (new) | FederalTreatyXmlProcessor (adapt) | Map ratification details. |
+| FR | /v1/search?collection=FR&from=2025-01-01 | FrDoc (new: src/main/java/gov/nysenate/openleg/legislation/federal/FrDoc.java) | FederalRegisterXmlProcessor (adapt via Link Service) | Map agency, body text. |
+| CFR | /v1/search?collection=CFR&title=40 | CfrSection (new) | FederalCfrXmlProcessor (adapt) | Hierarchical: titles/parts/sections. |
+| STATUTE | /v1/search?collection=STATUTE&congress=119 | StatuteDoc (new, extend LawDocument) | FederalStatuteXmlProcessor (adapt) | Historical statutes. |
+| Other (e.g., SUMMARIES, MANUALS) | /v1/search?collection=BILL-SUMMARIES | SummaryDoc/ManualEntry (new) | Custom processors (simple DOM/JSON) | One-off mappings. |
+
+**Generalization Notes**:
+- Use a config-driven approach: Enum for collections, Map<Collection, Class<? extends LegContent>> for models.
+- API Response: Always parse 'search.results' array; each hit has 'title', 'metadata' (sponsors, actions), 'link' for full doc.
+- For XML retrieval: Use /v1/document/{COLLECTION}/{PACKAGE_ID}?format=XML.
+- Error Handling: Check 'status' in response; retry on 429 (rate limit).
+- Persistence: Route to specific DAOs (e.g., BillDao.insert(bill, NoticeNoOp)).
+
+## Ingestion Script Usage
+
+The ingestion is handled by [`GovInfoApiProcessor`](src/main/java/gov/nysenate/openleg/processors/federal/GovInfoApiProcessor.java), which implements Spring's CommandLineRunner for CLI execution.
+
+### Configuration
+- Edit `src/main/resources/govinfo-api.properties`:
+  ```
+  govinfo.api.key=your_api_key_here  # From api.data.gov
+  govinfo.api.base-url=https://api.govinfo.gov/v1
+  govinfo.api.limit=50
+  govinfo.api.retry-max=3
+  govinfo.api.retry-delay-ms=1000
+  ```
+- Logging: Configured in `src/main/resources/log4j2.xml` with rolling file `logs/ingestion-govinfo.log` (daily, 50MB max, 30 days retention). Includes timestamps, endpoint, processed count, errors.
+
+### Running the Script
+Build the project: `mvn clean compile`
+
+Run for bills (default):
+```
+java -jar target/legislation-3.10.2.war GovInfoApiProcessor --congress=119
+```
+
+For other collections:
+```
+java -jar target/legislation-3.10.2.war GovInfoApiProcessor --congress=119 --collection=PLAW
+```
+
+- **Args**:
+  - `--congress=119`: Required, congress number.
+  - `--collection=BILLS`: Optional, default BILLS. Supported: BILLS, PLAW, CRPT, CREC (stubs for others).
+
+- **Output**:
+  - Console: Verbose INFO/DEBUG logs (progress, fetched URL, processed count).
+  - File: Detailed logs in `logs/ingestion-govinfo.log` (e.g., "2025-09-27 03:45:00 INFO GovInfoApiProcessor: Processed 25 bills for congress 119").
+  - Errors: Logged with stack traces; retries on transient failures (e.g., rate limit).
+
+### Repeatability & Generalization
+- **Config-Driven**: Properties for API params; CLI for runtime (congress, collection).
+- **Extensibility**: Add cases in `processCollection()` for new collections; map JSON to specific models/DAOs.
+- **Robustness**: Retry logic (3 attempts, backoff), JSON validation, exception trapping.
+- **Monitoring**: Check logs for "Ingestion completed: X items"; query DB (e.g., SELECT COUNT(*) FROM bills WHERE federal_congress=119).
+
+For bulk/full congress, paginate with offset/limit in future enhancements (API supports &offset=0&limit=1000 max).
+
+Update `federal-integration-tasklist.md` with completions as implemented.
+
 ## Collection-Specific Mappings & Extensions
 
 ### Bills/Resolutions

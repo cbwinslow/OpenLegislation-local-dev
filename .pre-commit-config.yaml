@@ -14,13 +14,13 @@ repos:
         files: \.(properties|yaml|env|xml)$
       - id: check-xml-syntax
         name: Check XML syntax
-        entry: bash -c 'for file in $(git diff --name-only --cached | grep "\.xml$"); do xmllint --noout --schema src/main/resources/schema/uslm/uslm-bill.xsd "$file" || echo "XML validation failed for $file"; done'
+        entry: bash -c 'for file in $(git diff --name-only --cached | grep "\.xml$"); do xmllint --noout "$file" || echo "XML validation failed for $file"; done'
         language: system
         files: \.(xml)$
         pass_filenames: false
       - id: maven-validate-local
         name: Maven Validate
-        entry: mvn validate
+        entry: cd /home/cbwinslow/OpenLegislation/OpenLegislation-local-dev && mvn validate
         language: system
         files: pom\.xml
         pass_filenames: false

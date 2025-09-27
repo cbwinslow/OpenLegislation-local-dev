@@ -1,0 +1,35 @@
+{
+  "congress": 120,
+  "collection": "BILLS",
+  "offset": 0,
+  "completed": {
+    "113": {
+      "total": 0,
+      "offset": 0
+    },
+    "114": {
+      "total": 0,
+      "offset": 0
+    },
+    "115": {
+      "total": 0,
+      "offset": 0
+    },
+    "116": {
+      "total": 0,
+      "offset": 0
+    },
+    "117": {
+      "total": 0,
+      "offset": 0
+    },
+    "118": {
+      "total": 0,
+      "offset": 0
+    },
+    "119": {
+      "total": 0,
+      "offset": 0
+    }
+  }
+}

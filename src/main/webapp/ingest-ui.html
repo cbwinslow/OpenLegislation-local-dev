@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Data Ingestion UI</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        select, button, input { padding: 10px; margin: 5px; }
+        #progress { width: 100%; height: 20px; background: #ddd; }
+        #bar { height: 100%; background: #4caf50; width: 0%; transition: width 0.3s; }
+        #logs { height: 200px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Data Ingestion Interface</h1>
+    <label>Site: <select id="site">
+        <option value="govinfo">GovInfo</option>
+        <option value="wikileaks">WikiLeaks</option>
+        <option value="cdc">CDC</option>
+        <option value="whitehouse">WhiteHouse</option>
+        <option value="reuters">Reuters</option>
+    </select></label>
+    <label>Collection: <select id="collection">
+        <option value="BILLS">BILLS</option>
+        <option value="FR">FR</option>
+        <option value="CFR">CFR</option>
+        <option value="CREC">CREC</option>
+        <option value="PLAW">PLAW</option>
+    </select></label>
+    <label>Congress Range: <input type="text" id="congress" placeholder="e.g., 113-119"></label>
+    <label>Limit: <input type="number" id="limit" placeholder="50" value="50"></label>
+    <button onclick="startIngestion()">Start Ingestion</button>
+    <div id="progress"><div id="bar"></div></div>
+    <div id="logs"></div>
+
+    <script>
+        let stompClient = null;
+        let total = 0, ingested = 0, successRate = 0;
+
+        function connect() {
+            const socket = new SockJS('/ws');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function(frame) {
+                stompClient.subscribe('/topic/progress', function(message) {
+                    const data = JSON.parse(message.body);
+                    total = data.total || total;
+                    ingested = data.ingested || ingested;
+                    successRate = data.successRate || successRate;
+                    document.getElementById('bar').style.width = (ingested / total * 100) + '%';
+                    log(`Progress: ${ingested}/${total} (${successRate.toFixed(2)}% success)`);
+                    if (data.status === 'completed') log('Ingestion complete!');
+                    if (data.status === 'error') log('Error: ' + data.message);
+                });
+            });
+        }
+
+        function startIngestion() {
+            const site = document.getElementById('site').value;
+            const collection = document.getElementById('collection').value;
+            const congress = document.getElementById('congress').value;
+            const limit = document.getElementById('limit').value;
+            fetch('/ingest/start?site=' + site + '&collection=' + collection + (congress ? '&congress=' + congress : '') + (limit ? '&limit=' + limit : ''), {
+                method: 'POST'
+            }).then(response => response.json()).then(data => {
+                log('Started ingestion for ' + site + '/' + collection + (congress ? ' congress ' + congress : '') + (limit ? ' limit ' + limit : ''));
+            }).catch(err => log('Error starting: ' + err));
+        }
+
+        function log(message) {
+            const logs = document.getElementById('logs');
+            logs.innerHTML += new Date().toLocaleTimeString() + ': ' + message + '<br>';
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        connect();  // Connect on load
+    </script>
+</body>
+</html>
