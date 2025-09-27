@@ -20,12 +20,12 @@ Usage:
     ingestor.run()
 """
 
+import argparse
 import os
 import sys
-import glob
 import logging
 from datetime import datetime
-from typing import List, Dict, Any, Optional, Union
+from typing import Iterable, List, Dict, Any, Optional, Union
 from pathlib import Path
 from lxml import etree
 
@@ -48,14 +48,27 @@ logger = logging.getLogger(__name__)
 class GovInfoBillIngestor(BaseIngestionProcess):
     """Ingestor for GovInfo bill XML data"""
 
-    def __init__(self, xml_dir: Optional[str] = None, **kwargs):
+    def __init__(
+        self,
+        xml_dir: Optional[Union[str, Iterable[str]]] = None,
+        patterns: Optional[Iterable[str]] = None,
+        files: Optional[Iterable[str]] = None,
+        recursive: bool = False,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
-        self.xml_dir = xml_dir or getattr(
-            settings, "govinfo_xml_dir", "/tmp/govinfo_xml"
-        )
 
-        # Ensure XML directory exists
-        Path(self.xml_dir).mkdir(parents=True, exist_ok=True)
+        if xml_dir is None:
+            xml_dir = getattr(settings, "govinfo_xml_dir", "staging/govinfo/bills")
+        if isinstance(xml_dir, str):
+            xml_dir = [xml_dir]
+        self.xml_dirs = [Path(p) for p in xml_dir]
+        self.patterns = list(patterns or ["BILLS-*.xml", "BILLSTATUS-*.xml"])
+        self.extra_files = [Path(f) for f in files] if files else []
+        self.recursive = recursive
+
+        for directory in self.xml_dirs:
+            directory.mkdir(parents=True, exist_ok=True)
 
     def get_data_source(self) -> str:
         """Return the data source identifier"""
@@ -71,23 +84,29 @@ class GovInfoBillIngestor(BaseIngestionProcess):
 
     def discover_records(self) -> List[Dict[str, Any]]:
         """Discover XML files to process"""
-        logger.info(f"Discovering XML files in {self.xml_dir}")
+        logger.info("Discovering XML files from configured locations")
 
-        # Find all XML files matching GovInfo pattern
-        xml_pattern = os.path.join(self.xml_dir, "BILLS-*.xml")
-        xml_files = glob.glob(xml_pattern)
+        candidate_files: List[Path] = []
+        for directory in self.xml_dirs:
+            for pattern in self.patterns:
+                iterator = directory.rglob(pattern) if self.recursive else directory.glob(pattern)
+                candidate_files.extend(iterator)
+
+        candidate_files.extend(self.extra_files)
 
         records = []
-        for xml_file in xml_files:
-            bill_id = self._extract_bill_id_from_path(xml_file)
+        for xml_path in candidate_files:
+            if not xml_path.is_file():
+                continue
+            bill_id = self._extract_bill_id_from_path(str(xml_path))
             if bill_id:
                 records.append(
                     {
                         "record_id": bill_id,
-                        "xml_file": xml_file,
+                        "xml_file": str(xml_path),
                         "metadata": {
-                            "xml_file": xml_file,
-                            "file_size": os.path.getsize(xml_file),
+                            "xml_file": str(xml_path),
+                            "file_size": xml_path.stat().st_size,
                         },
                     }
                 )
@@ -289,24 +308,30 @@ class GovInfoBillIngestor(BaseIngestionProcess):
         return None
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Ingest GovInfo bill XML files")
+    parser.add_argument("--xml-dir", dest="xml_dirs", nargs="*", help="Directory/directories containing XML files")
+    parser.add_argument(
+        "--pattern",
+        dest="patterns",
+        nargs="*",
+        help="Filename patterns to include (default: BILLS-*.xml BILLSTATUS-*.xml)",
+    )
+    parser.add_argument("--file", dest="files", nargs="*", help="Explicit XML files to ingest")
+    parser.add_argument("--recursive", action="store_true", help="Recursively search directories for XML files")
+    parser.add_argument("--reset", action="store_true", help="Reset ingestion tracker before running")
+    parser.add_argument("--limit", type=int, help="Limit number of files processed")
+    parser.add_argument("--log-level", default="INFO", help="Logging level (default: INFO)")
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    # Run as standalone script
-    import argparse
-
-    parser = argparse.ArgumentParser(description="Ingest GovInfo bill data")
-    parser.add_argument("--xml-dir", help="Directory containing XML files")
-    parser.add_argument("--db-config", help="Database config JSON file")
-
-    args = parser.parse_args()
-
-    # Load database config if provided
-    db_config = None
-    if args.db_config:
-        import json
-
-        with open(args.db_config, "r") as f:
-            db_config = json.load(f)
-
-    # Create and run ingestor
-    ingestor = GovInfoBillIngestor(xml_dir=args.xml_dir, db_config=db_config)
-    ingestor.run()
+    args = parse_args()
+    logging.basicConfig(level=getattr(logging, args.log_level.upper(), logging.INFO))
+    ingestor = GovInfoBillIngestor(
+        xml_dir=args.xml_dirs,
+        patterns=args.patterns,
+        files=args.files,
+        recursive=args.recursive,
+    )
+    ingestor.run(resume=not args.reset, reset=args.reset, limit=args.limit)

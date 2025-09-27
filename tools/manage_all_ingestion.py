@@ -57,7 +57,60 @@ class IngestionManager:
                 'class': 'GovInfoBillIngestor',
                 'description': 'Bill data from GovInfo XML files',
                 'table': 'master.bill',
-                'source': 'govinfo'
+                'source': 'govinfo',
+                'default_kwargs': {
+                    'xml_dir': getattr(settings, 'govinfo_xml_dir', 'staging/govinfo/bills')
+                }
+            },
+            'govinfo_agendas': {
+                'module': 'govinfo.agenda_ingestion',
+                'class': 'GovInfoAgendaIngestor',
+                'description': 'Agenda info/vote addenda from GovInfo JSON',
+                'table': 'master.agenda',
+                'source': 'govinfo_agenda',
+                'default_kwargs': {
+                    'agenda_dir': getattr(settings, 'govinfo_agenda_dir', 'staging/govinfo/agendas')
+                }
+            },
+            'govinfo_calendars': {
+                'module': 'govinfo.calendar_ingestion',
+                'class': 'GovInfoCalendarIngestor',
+                'description': 'Calendar active lists and supplements from GovInfo JSON',
+                'table': 'master.calendar',
+                'source': 'govinfo_calendar',
+                'default_kwargs': {
+                    'calendar_dir': getattr(settings, 'govinfo_calendar_dir', 'staging/govinfo/calendars')
+                }
+            },
+            'member_data': {
+                'module': 'member_data_ingestion',
+                'class': 'MemberDataIngestor',
+                'description': 'Member/person/session-member JSON payloads',
+                'table': 'public.session_member',
+                'source': 'member_data',
+                'default_kwargs': {
+                    'json_dir': getattr(settings, 'member_json_dir', 'staging/members')
+                }
+            },
+            'bill_votes': {
+                'module': 'bill_vote_ingestion',
+                'class': 'BillVoteIngestor',
+                'description': 'Bill vote metadata and roll calls',
+                'table': 'master.bill_amendment_vote_info',
+                'source': 'bill_votes',
+                'default_kwargs': {
+                    'json_dir': getattr(settings, 'vote_json_dir', 'staging/govinfo/votes')
+                }
+            },
+            'bill_status': {
+                'module': 'bill_status_ingestion',
+                'class': 'BillStatusIngestor',
+                'description': 'Bill milestone/status history',
+                'table': 'master.bill_milestone',
+                'source': 'bill_status',
+                'default_kwargs': {
+                    'json_dir': getattr(settings, 'bill_status_json_dir', 'staging/govinfo/status')
+                }
             },
             # Add more as they are implemented
         }
@@ -84,7 +137,9 @@ class IngestionManager:
             ingestor_class = getattr(module, info['class'])
 
             # Create and run the ingestor
-            ingestor = ingestor_class(**kwargs)
+            default_kwargs = info.get('default_kwargs', {})
+            merged_kwargs = {**default_kwargs, **kwargs}
+            ingestor = ingestor_class(**merged_kwargs)
             ingestor.run()
             return True
 
@@ -256,6 +311,8 @@ def main():
     parser.add_argument('--limit', type=int, help='Limit records to process')
     parser.add_argument('--no-resume', action='store_true', help='Start fresh instead of resuming')
     parser.add_argument('--no-progress', action='store_true', help='Disable progress reporting')
+    parser.add_argument('--xml-dir', help='Override XML directory for applicable ingestors')
+    parser.add_argument('--json-dir', help='Override JSON directory for applicable ingestors')
 
     args = parser.parse_args()
 
@@ -292,6 +349,21 @@ def main():
             }
             if args.api_key:
                 kwargs['api_key'] = args.api_key
+            if args.xml_dir:
+                kwargs['xml_dir'] = args.xml_dir
+            if args.json_dir:
+                # Determine parameter name based on ingestion type
+                if args.run == 'govinfo_agendas':
+                    kwargs['agenda_dir'] = args.json_dir
+                elif args.run == 'govinfo_calendars':
+                    kwargs['calendar_dir'] = args.json_dir
+                else:
+                    kwargs['json_dir'] = args.json_dir
+            if args.no_resume:
+                kwargs['resume'] = False
+                kwargs['reset'] = True
+            if args.limit:
+                kwargs['limit'] = args.limit
 
             success = manager.run_ingestion(args.run, **kwargs)
             sys.exit(0 if success else 1)
@@ -320,4 +392,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()</parameter>
+    main()

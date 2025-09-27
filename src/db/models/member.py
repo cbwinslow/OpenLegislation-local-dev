@@ -72,6 +72,9 @@ class SessionMember(Base):
     agenda_attendance: Mapped[List["AgendaVoteCommitteeAttend"]] = relationship(
         "AgendaVoteCommitteeAttend", back_populates="session_member"
     )
+    bill_votes: Mapped[List["BillAmendmentVoteRoll"]] = relationship(
+        "BillAmendmentVoteRoll", back_populates="session_member"
+    )
 
 
 from .bill import (  # noqa: E402  pylint: disable=wrong-import-position
@@ -79,6 +82,7 @@ from .bill import (  # noqa: E402  pylint: disable=wrong-import-position
     BillAmendmentMultiSponsor,
     BillSponsor,
     BillSponsorAdditional,
+    BillAmendmentVoteRoll,
 )
 from .committee import CommitteeMember  # noqa: E402  pylint: disable=wrong-import-position
 from .agenda import AgendaVoteCommitteeAttend  # noqa: E402  pylint: disable=wrong-import-position

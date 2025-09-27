@@ -76,6 +76,44 @@ class GovInfoAgendaRecord:
     published_date_time: Optional[datetime] = None
     modified_date_time: Optional[datetime] = None
     info_addenda: List[GovInfoAgendaAddendum] = field(default_factory=list)
+    vote_addenda: List["GovInfoAgendaVoteAddendum"] = field(default_factory=list)
+
+
+@dataclass
+class GovInfoAgendaVoteAttendance:
+    session_member_id: int
+    session_year: int
+    lbdc_short_name: str
+    rank: int
+    party: Optional[str] = None
+    attend_status: Optional[str] = None
+
+
+@dataclass
+class GovInfoAgendaVoteDecision:
+    vote_action: str
+    vote_info_id: Optional[int] = None
+    refer_committee_name: Optional[str] = None
+    refer_committee_chamber: Optional[str] = None
+    with_amendment: bool = False
+
+
+@dataclass
+class GovInfoAgendaVoteCommittee:
+    committee_name: str
+    committee_chamber: str
+    chair: Optional[str] = None
+    meeting_date_time: Optional[datetime] = None
+    attendance: List[GovInfoAgendaVoteAttendance] = field(default_factory=list)
+    votes: List[GovInfoAgendaVoteDecision] = field(default_factory=list)
+
+
+@dataclass
+class GovInfoAgendaVoteAddendum:
+    addendum_id: str
+    modified_date_time: Optional[datetime] = None
+    published_date_time: Optional[datetime] = None
+    committees: List[GovInfoAgendaVoteCommittee] = field(default_factory=list)
 
 
 # Calendar structures
@@ -115,3 +153,72 @@ class GovInfoCalendarRecord:
     modified_date_time: Optional[datetime] = None
     active_lists: List[GovInfoCalendarActiveList] = field(default_factory=list)
     supplements: List[GovInfoCalendarSupplemental] = field(default_factory=list)
+
+
+# Member records
+
+
+@dataclass
+class GovInfoMemberSession:
+    session_year: int
+    lbdc_short_name: str
+    district_code: Optional[int] = None
+    alternate: bool = False
+
+
+@dataclass
+class GovInfoMemberRecord:
+    person_id: int
+    full_name: str
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    email: Optional[str] = None
+    member_id: int = 0
+    chamber: str = "senate"
+    incumbent: bool = True
+    sessions: List[GovInfoMemberSession] = field(default_factory=list)
+
+
+# Vote records
+
+
+@dataclass
+class GovInfoVoteRollEntry:
+    session_member_id: int
+    session_year: int
+    member_short_name: str
+    vote_code: str
+
+
+@dataclass
+class GovInfoVoteRecord:
+    bill_print_no: str
+    bill_session_year: int
+    bill_amend_version: str
+    vote_date: datetime
+    vote_type: str
+    sequence_no: Optional[int] = None
+    committee_name: Optional[str] = None
+    committee_chamber: Optional[str] = None
+    roll: List[GovInfoVoteRollEntry] = field(default_factory=list)
+
+
+# Bill milestone/status records
+
+
+@dataclass
+class GovInfoBillMilestone:
+    status: str
+    rank: int
+    action_sequence_no: int
+    date: datetime
+    committee_name: Optional[str] = None
+    committee_chamber: Optional[str] = None
+    cal_no: Optional[int] = None
+
+
+@dataclass
+class GovInfoBillStatusRecord:
+    bill_print_no: str
+    bill_session_year: int
+    milestones: List[GovInfoBillMilestone] = field(default_factory=list)

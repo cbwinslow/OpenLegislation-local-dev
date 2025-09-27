@@ -7,8 +7,12 @@ from .bill import (
     BillAmendmentCosponsor,
     BillAmendmentMultiSponsor,
     BillAmendmentPublishStatus,
+    BillAmendmentVoteInfo,
+    BillAmendmentVoteRoll,
     BillSponsor,
     BillSponsorAdditional,
+    BillMilestone,
+    BillEmbedding,
 )
 from .member import Person, Member, SessionMember
 from .committee import Committee, CommitteeVersion, CommitteeMember
@@ -25,6 +29,7 @@ from .agenda import (
     AgendaInfoCommittee,
     AgendaInfoCommitteeItem,
 )
+from .raw import GovInfoRawPayload
 
 __all__ = [
     "Bill",
@@ -33,8 +38,12 @@ __all__ = [
     "BillAmendmentCosponsor",
     "BillAmendmentMultiSponsor",
     "BillAmendmentPublishStatus",
+    "BillAmendmentVoteInfo",
+    "BillAmendmentVoteRoll",
     "BillSponsor",
     "BillSponsorAdditional",
+    "BillMilestone",
+    "BillEmbedding",
     "Person",
     "Member",
     "SessionMember",
@@ -50,4 +59,5 @@ __all__ = [
     "AgendaInfoAddendum",
     "AgendaInfoCommittee",
     "AgendaInfoCommitteeItem",
+    "GovInfoRawPayload",
 ]

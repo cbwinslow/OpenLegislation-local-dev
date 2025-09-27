@@ -10,6 +10,7 @@ for the Python representation.
 """
 from __future__ import annotations
 
+import argparse
 import json
 import logging
 import os
@@ -50,7 +51,6 @@ class GovInfoAgendaIngestor(BaseIngestionProcess):
         return "agenda_no"
 
     def discover_records(self) -> List[Dict[str, str]]:
-        pattern = os.path.join(self.agenda_dir, "AGENDAS-*.json")
         records: List[Dict[str, str]] = []
         for path in Path(self.agenda_dir).glob("AGENDAS-*.json"):
             agenda_id = path.stem.replace("AGENDAS-", "")
@@ -139,7 +139,17 @@ def _parse_datetime(value: Optional[str]) -> Optional[datetime]:
     return None
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Ingest GovInfo agenda JSON files")
+    parser.add_argument("--json-dir", dest="agenda_dir", help="Directory containing GovInfo agenda JSON files")
+    parser.add_argument("--reset", action="store_true", help="Reset ingestion tracker before running")
+    parser.add_argument("--limit", type=int, help="Limit number of records processed in this run")
+    parser.add_argument("--log-level", default="INFO", help="Logging level (default: INFO)")
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    ingestor = GovInfoAgendaIngestor()
-    ingestor.run()
+    args = parse_args()
+    logging.basicConfig(level=getattr(logging, args.log_level.upper(), logging.INFO))
+    ingestor = GovInfoAgendaIngestor(agenda_dir=args.agenda_dir)
+    ingestor.run(resume=not args.reset, reset=args.reset, limit=args.limit)
