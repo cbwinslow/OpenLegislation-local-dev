@@ -1,5 +1,36 @@
 # Ignore local environment files
 .env
+.env.local
+env.*
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+venv/
+/.venv
+
+# Java/IDE
+.classpath
+.project
+.idea/
+target/
+
+# Node
+node_modules/
+npm-debug.log
+yarn.lock
+
+# OS
+.DS_Store
+thumbs.db
+
+# Misc
+*.log
+/.mvn/
+# Ignore local environment files
+.env
 
 # IDE/editor files
 .vscode/
