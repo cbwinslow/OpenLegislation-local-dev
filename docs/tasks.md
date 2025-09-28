@@ -134,3 +134,46 @@ If you want, I can now run the enumerator at scale and download a year's worth o
 - [x] Use Maven Flyway plugin to validate/apply migrations (new files V20250925.0002__audit_schema_and_triggers.sql, V20250925.0003__views_plsql.sql)
 - [x] Update tasks.md with new task list (this phase appended)
 - [x] Test schema generation and application (docs updated, migrations created and documented)
+
+
+## Federal Ingestion Scripts Implementation (New Phase)
+
+### Analysis
+- [x] Review Python models (bill.py, committee.py, agenda.py, calendar.py, raw.py) for structure and dependencies
+- [x] Analyze universal schema support for federal data (data_source='federal', congress field, FK relationships)
+- [x] Examine existing docs (data_model.md, database_schema_documentation.md, congress_gov_integration.md, govinfo_ingestion_pipeline.md) for integration points
+
+### Script Design
+- [x] Design CLI with argparse for parameters: --type (bills/amendments/committees), --volume (record limit), --congress, --batch-size
+- [x] Integrate SQLAlchemy ORM for batch inserts using existing models (Bill, Committee, etc.)
+- [x] Plan congress.gov API fetching (endpoints: /bill, /committee; pagination, rate limits via retries)
+- [x] Include error handling (tenacity retries), logging (file/stream), batch commits (100 records)
+- [x] Ensure scalability (streaming API responses, env-based config for web UI params)
+
+### Database Preparation
+- [x] Generate migration V20250928.0001__ingestion_optimizations.sql with indexes (idx_bill_congress_session, etc.), FK constraints, check constraints (data_source, congress)
+- [x] Add triggers for updated_at, vector extension for embeddings, JSONB indexing for raw payloads
+- [x] Include partitioning comments for high-volume (e.g., by congress)
+- [x] Create ingestion_stats view for verification
+- [ ] Validate optimizations (run ANALYZE, check query plans)
+- [ ] Deploy migration (mvn flyway:migrate or psql apply)
+
+### Ingestion Implementation
+- [x] Create tools/ingest_federal_data.py as unified script for bills, amendments, committees
+- [x] Implement API fetching with requests session, retries, API key from env
+- [x] Map API data to models (e.g., bill_number -> bill_print_no, congress -> session_year/bill_session_year)
+- [x] Handle raw payloads in govinfo_raw_payload table
+- [x] Add batch processing with commit per batch, dry-run mode
+- [x] Integrate web params via env vars (DATABASE_URL, CONGRESS_API_KEY)
+- [x] Implement verification (count queries post-ingest)
+
+### Testing
+- [ ] Add unit tests (tools/test_ingest_federal_data.py: mock API, test mapping/parsing)
+- [ ] Create integration tests (end-to-end with test DB, sample congress 118 data)
+- [ ] Performance tests (simulate 1000+ records, measure time/memory)
+
+### Final Validation & Documentation
+- [ ] Verify DB readiness (apply migration, check schema with \d master.bill)
+- [ ] Test pipeline with sample data (e.g., --type bills --volume 10 --congress 118)
+- [ ] Update docs (congress_gov_integration.md, govinfo_ingestion_pipeline.md with script usage)
+- [ ] Add to production_ingest.sh for orchestration

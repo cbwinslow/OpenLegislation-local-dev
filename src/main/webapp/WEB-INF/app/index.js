@@ -14,6 +14,7 @@ import useGlobals, { GlobalsProvider } from "app/shared/useGlobals";
 import Logout from "app/views/logout/Logout";
 import ErrorBoundary from "app/views/ErrorBoundary";
 import Register from "app/views/Register";
+import DataIngestionView from "./views/ingestion/DataIngestionView";
 
 
 function App() {
@@ -57,6 +58,9 @@ function AppRouter() {
       </Route>
       <Route exact path="/register/:token">
         <Register />
+      </Route>
+      <Route exact path="/ingestion">
+        <DataIngestionView />
       </Route>
       <Route>
         <Home />

@@ -81,3 +81,7 @@ node_modules/**
 src/test/java/gov/nysenate/openleg/SillyTests.java
 
 .env
+
+
+#Ignore vscode AI rules
+.github/instructions/codacy.instructions.md
