@@ -2,7 +2,6 @@ package gov.nysenate.openleg.model.federal;
 
 import javax.persistence.*;
 import java.time.LocalDate;
-import java.util.Objects;
 
 /**
  * Represents a committee assignment for a federal legislator.
@@ -25,12 +24,8 @@ public class FederalMemberCommittee {
     @Column(name = "committee_code")
     private String committeeCode;
 
-    @Column(name = "chamber")
-    @Enumerated(EnumType.STRING)
-    private FederalChamber chamber;
-
-    @Column(name = "role", length = 50)
-    private String role; // e.g., "Chair", "Ranking Member", "Member"
+    @Column(name = "role")
+    private String role; // Chair, Ranking Member, Member, etc.
 
     @Column(name = "start_date")
     private LocalDate startDate;
@@ -40,6 +35,10 @@ public class FederalMemberCommittee {
 
     @Column(name = "subcommittee")
     private String subcommittee;
+
+    @Column(name = "chamber", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private FederalChamber chamber;
 
     @Column(name = "created_at", nullable = false)
     private LocalDate createdAt;
@@ -57,108 +56,35 @@ public class FederalMemberCommittee {
     }
 
     // Getters and Setters
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public FederalMember getMember() { return member; }
+    public void setMember(FederalMember member) { this.member = member; }
 
-    public FederalMember getMember() {
-        return member;
-    }
+    public String getCommitteeName() { return committeeName; }
+    public void setCommitteeName(String committeeName) { this.committeeName = committeeName; }
 
-    public void setMember(FederalMember member) {
-        this.member = member;
-    }
+    public String getCommitteeCode() { return committeeCode; }
+    public void setCommitteeCode(String committeeCode) { this.committeeCode = committeeCode; }
 
-    public String getCommitteeName() {
-        return committeeName;
-    }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 
-    public void setCommitteeName(String committeeName) {
-        this.committeeName = committeeName;
-    }
+    public LocalDate getStartDate() { return startDate; }
+    public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
 
-    public String getCommitteeCode() {
-        return committeeCode;
-    }
+    public LocalDate getEndDate() { return endDate; }
+    public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
 
-    public void setCommitteeCode(String committeeCode) {
-        this.committeeCode = committeeCode;
-    }
+    public String getSubcommittee() { return subcommittee; }
+    public void setSubcommittee(String subcommittee) { this.subcommittee = subcommittee; }
 
-    public FederalChamber getChamber() {
-        return chamber;
-    }
+    public FederalChamber getChamber() { return chamber; }
+    public void setChamber(FederalChamber chamber) { this.chamber = chamber; }
 
-    public void setChamber(FederalChamber chamber) {
-        this.chamber = chamber;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
-    public LocalDate getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
-    }
-
-    public LocalDate getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(LocalDate endDate) {
-        this.endDate = endDate;
-    }
-
-    public String getSubcommittee() {
-        return subcommittee;
-    }
-
-    public void setSubcommittee(String subcommittee) {
-        this.subcommittee = subcommittee;
-    }
-
-    public LocalDate getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDate createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    // Business methods
-    public boolean isActive() {
-        LocalDate now = LocalDate.now();
-        return startDate != null && startDate.isBefore(now) &&
-               (endDate == null || endDate.isAfter(now));
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        FederalMemberCommittee that = (FederalMemberCommittee) o;
-        return Objects.equals(member, that.member) &&
-               Objects.equals(committeeName, that.committeeName) &&
-               Objects.equals(chamber, that.chamber) &&
-               Objects.equals(subcommittee, that.subcommittee);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(member, committeeName, chamber, subcommittee);
-    }
+    public LocalDate getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDate createdAt) { this.createdAt = createdAt; }
 
     @Override
     public String toString() {
@@ -166,9 +92,8 @@ public class FederalMemberCommittee {
                 "id=" + id +
                 ", member=" + (member != null ? member.getBioguideId() : "null") +
                 ", committeeName='" + committeeName + '\'' +
-                ", chamber=" + chamber +
                 ", role='" + role + '\'' +
-                ", active=" + isActive() +
+                ", chamber=" + chamber +
                 '}';
     }
 }

@@ -44,6 +44,9 @@ public class FederalMemberTerm {
     @Column(name = "created_at", nullable = false)
     private LocalDate createdAt;
 
+    @Column(name = "updated_at", nullable = false)
+    private LocalDate updatedAt;
+
     // Constructors
     public FederalMemberTerm() {
         this.createdAt = LocalDate.now();
@@ -136,6 +139,14 @@ public class FederalMemberTerm {
 
     public void setCreatedAt(LocalDate createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public LocalDate getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDate updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     // Business methods

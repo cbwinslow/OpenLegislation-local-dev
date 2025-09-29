@@ -29,10 +29,7 @@
           <release>21</release>
           <!-- avoid possible encoding issues -->
           <encoding>utf-8</encoding>
-          <!-- Exclude federal processors that have incomplete dependencies -->
-          <excludes>
-            <exclude>**/processors/federal/**/*.java</exclude>
-          </excludes>
+          <!-- Federal processors now have complete dependencies -->
         </configuration>
       </plugin>
       <!-- JAXB2 Maven Plugin for generating classes from XSD -->
