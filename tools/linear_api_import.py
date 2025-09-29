@@ -307,7 +307,9 @@ def main():
                                 processed_file, 'w', encoding='utf-8'
                             ) as phf:
                                 json.dump(
-                                    sorted(list(processed_hashes)), phf, indent=2
+                                    sorted(list(processed_hashes)),
+                                    phf,
+                                    indent=2
                                 )
                         except Exception:
                             pass
