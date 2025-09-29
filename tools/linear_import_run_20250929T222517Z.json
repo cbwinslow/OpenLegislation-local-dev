@@ -1,0 +1,330 @@
+{
+  "created": [
+    {
+      "commit": {
+        "hash": "3b1f31c96d5eb69c70243e819f650f30f6e483fa",
+        "author": "cbwinslow",
+        "date": "2025-09-29 20:46:21 +0000",
+        "subject": "dfgdfg     new file:   DIFF_20250929_125611.md        new file:   RECOMMENDATIONS_20250929_125611.md  new file:   docs/federal_ingestion_procedures.md   new file:   docs/federal_ingestion_summary.md   new file:   docs/federal_ingestion_testing.md      modified:   tools/ingest_congress_api.py"
+      },
+      "issue": {
+        "id": "e2a83eae-043d-441a-ae85-53fc9d0c6fca",
+        "identifier": "CLO-176",
+        "url": "https://linear.app/cloudcurio/issue/CLO-176/dfgdfg-new-file-diff-20250929-125611md-new-file-recommendations"
+      }
+    },
+    {
+      "commit": {
+        "hash": "7c87eaeae1a2716ddd7c914b018b0b8dcf05a01b",
+        "author": "cbwinslow",
+        "date": "2025-09-29 05:34:19 +0000",
+        "subject": "sdfsdf     modified:   .autoclaude/CLAUDE_CONTEXT.md  modified:   .autoclaude/cache/project-index.json        modified:   .autoclaude/tasks/sessions.json        new file:   .claude_agent_farm_backups/settings_2025-09-29T04-39-25-793Z.json      modified:   .claude_agent_farm_state.json       modified:   .heartbeats/agent00.heartbeat  new file:   docs/java_tests.md  modified:   docs/tasks.md       modified:   pom.xml        new file:   src/main/java/gov/nysenate/openleg/dao/federal/FederalCFRDao.java   new file:   src/main/java/gov/nysenate/openleg/dao/federal/FederalCommitteeDao.java        new file:   src/main/java/gov/nysenate/openleg/dao/federal/FederalHearingDao.java  new file:   src/main/java/gov/nysenate/openleg/dao/federal/FederalMemberCommitteeDao.java  modified:   src/main/java/gov/nysenate/openleg/dao/federal/FederalMemberDao.java   new file:   src/main/java/gov/nysenate/openleg/dao/federal/FederalMemberSocialMediaDao.java        new file:   src/main/java/gov/nysenate/openleg/dao/federal/FederalRegisterDao.java         new file:   src/main/java/gov/nysenate/openleg/dao/federal/FederalReportDao.java   new file:   src/main/java/gov/nysenate/openleg/dao/federal/FederalSocialMediaPostDao.java  new file:   src/main/java/gov/nysenate/openleg/dao/federal/FederalTranscriptDao.java    modified:   src/main/java/gov/nysenate/openleg/dao/federal/bill/FederalBillRepository.java         new file:   src/main/java/gov/nysenate/openleg/model/federal/FederalCFR.java       new file:   src/main/java/gov/nysenate/openleg/model/federal/FederalCommittee.java         new file:   src/main/java/gov/nysenate/openleg/model/federal/FederalHearing.java   modified:   src/main/java/gov/nysenate/openleg/model/federal/FederalMember.java    modified:   src/main/java/gov/nysenate/openleg/model/federal/FederalMemberCommittee.java   modified:   src/main/java/gov/nysenate/openleg/model/federal/FederalMemberTerm.java        new file:   src/main/java/gov/nysenate/openleg/model/federal/FederalRegister.java  new file:   src/main/java/gov/nysenate/openleg/model/federal/FederalReport.java         new file:   src/main/java/gov/nysenate/openleg/model/federal/FederalSocialMediaPost.java   new file:   src/main/java/gov/nysenate/openleg/processors/federal/CongressionalRecordProcessor.java        new file:   src/main/java/gov/nysenate/openleg/processors/federal/FederalCFRProcessor.java         new file:   src/main/java/gov/nysenate/openleg/processors/federal/FederalHearingProcessor.java     new file:   src/main/java/gov/nysenate/openleg/processors/federal/FederalRegisterProcessor.java    new file:   src/main/java/gov/nysenate/openleg/scripts/analysis/AllMembersIngester.java    new file:   src/main/java/gov/nysenate/openleg/scripts/analysis/AppConfig.java     new file:   src/test/java/gov/nysenate/openleg/processors/federal/CongressionalRecordProcessorTest.java"
+      },
+      "issue": {
+        "id": "5e8d2bfa-c037-45dd-8827-edca5c8cf9f6",
+        "identifier": "CLO-177",
+        "url": "https://linear.app/cloudcurio/issue/CLO-177/sdfsdf-modified-autoclaudeclaude-contextmd-modified"
+      }
+    },
+    {
+      "commit": {
+        "hash": "6fe8c95093aeb20791f38c7c9a6bc305c7397d5d",
+        "author": "cbwinslow",
+        "date": "2025-09-29 04:39:22 +0000",
+        "subject": "fghfgh     modified:   .autoclaude/CLAUDE_CONTEXT.md  modified:   .autoclaude/cache/project-index.json"
+      },
+      "issue": {
+        "id": "7e6545e4-136a-42d4-9202-1d7b94cfc619",
+        "identifier": "CLO-178",
+        "url": "https://linear.app/cloudcurio/issue/CLO-178/fghfgh-modified-autoclaudeclaude-contextmd-modified"
+      }
+    },
+    {
+      "commit": {
+        "hash": "1149a431cded92050cde984ef5c534e32ed2717f",
+        "author": "cbwinslow",
+        "date": "2025-09-29 04:39:06 +0000",
+        "subject": "feat(ui): add federal members support to data ingestion view"
+      },
+      "issue": {
+        "id": "146c4a4a-a947-4c61-a665-c3b176298008",
+        "identifier": "CLO-179",
+        "url": "https://linear.app/cloudcurio/issue/CLO-179/featui-add-federal-members-support-to-data-ingestion-view"
+      }
+    },
+    {
+      "commit": {
+        "hash": "3feb8f5415b4979362705e60aac5323dfeb9b7d8",
+        "author": "cbwinslow",
+        "date": "2025-09-28 18:20:06 -0400",
+        "subject": "dfgdfg     new file:   ${input:duckdb_db_path}        new file:   .autoclaude/CLAUDE_CONTEXT.md       new file:   .autoclaude/cache/project-index.json   new file:   .autoclaude/config.json     new file:   .autoclaude/detected_problems.txt      new file:   .autoclaude/enhanced-config.json    new file:   .autoclaude/scripts/README.md  new file:   .autoclaude/scripts/build-check.sh  new file:   .autoclaude/scripts/code-understanding-check.sh        new file:   .autoclaude/scripts/context-check.sh        new file:   .autoclaude/scripts/dependency-check.sh        new file:   .autoclaude/scripts/format-check.sh   new file:   .autoclaude/scripts/github-actions.sh        new file:   .autoclaude/scripts/integration-testing-check.sh       new file:   .autoclaude/scripts/performance-check.sh    new file:   .autoclaude/scripts/production-readiness.sh    new file:   .autoclaude/scripts/security-audit-check.sh   new file:   .autoclaude/tasks/sessions.json     new file:   .autoclaude/tasks/tasks.json   new file:   .claude_agent_farm_backups/settings_2025-09-28T21-15-38-276Z.json      modified:   .gitignore  new file:   .heartbeats/agent00.heartbeat       new file:   .specstory/.what-is-this.md    modified:   docs/tasks.md       new file:   frontend/app/layout.tsx        new file:   frontend/components/DataIngestionPlatform.tsx       new file:   frontend/components/ui/Card.tsx        new file:   frontend/next.config.js     new file:   requirements.txt       new file:   src/main/resources/db/migration/V20250928.0001__ingestion_optimizations.sql   new file:   src/main/resources/db/migration/V20250928.0002__federal_social_media_posts.sql       new file:   src/main/webapp/WEB-INF/app/apis/ingestionApi.js       modified:   src/main/webapp/WEB-INF/app/index.js   new file:   src/main/webapp/WEB-INF/app/shared/Alert.js         new file:   src/main/webapp/WEB-INF/app/shared/Badge.js    new file:   src/main/webapp/WEB-INF/app/shared/Button.js  new file:   src/main/webapp/WEB-INF/app/shared/Card.js   modified:   src/main/webapp/WEB-INF/app/shared/Checkbox.js         new file:   src/main/webapp/WEB-INF/app/shared/Collapsible.js   modified:   src/main/webapp/WEB-INF/app/shared/Input.js    new file:   src/main/webapp/WEB-INF/app/shared/Progress.js         modified:   src/main/webapp/WEB-INF/app/shared/Select.js        modified:   src/main/webapp/WEB-INF/app/shared/Tabs.js     new file:   src/main/webapp/WEB-INF/app/shared/Textarea.js modified:   src/main/webapp/WEB-INF/app/views/home/NavMenu.js   new file:   tools/ingest_federal_data.py        new file:   tools/ingest_member_tweets.py  new file:   tools/ingestion_scheduler.py        new file:   tools/ingestion_worker.py                                                                        "
+      },
+      "issue": {
+        "id": "682ada1b-f9bd-43ad-a105-bb1ce239fd9f",
+        "identifier": "CLO-180",
+        "url": "https://linear.app/cloudcurio/issue/CLO-180/dfgdfg-new-file-dollarinputduckdb-db-path-new-file-autoclaudeclaude"
+      }
+    },
+    {
+      "commit": {
+        "hash": "synth0001",
+        "author": "automation",
+        "date": "2025-09-29T22:30:00Z",
+        "subject": "Synthesize: Add historical import notes and metadata"
+      },
+      "issue": {
+        "id": "abf30228-3770-4a2e-9b9f-ec349ebc6730",
+        "identifier": "CLO-181",
+        "url": "https://linear.app/cloudcurio/issue/CLO-181/synthesize-add-historical-import-notes-and-metadata"
+      }
+    },
+    {
+      "commit": {
+        "hash": "synth0002",
+        "author": "automation",
+        "date": "2025-09-29T22:30:10Z",
+        "subject": "Synthesize: Backfill README entries for ingestion"
+      },
+      "issue": {
+        "id": "828a298c-1792-4719-a3d0-31ac25e3ba4c",
+        "identifier": "CLO-182",
+        "url": "https://linear.app/cloudcurio/issue/CLO-182/synthesize-backfill-readme-entries-for-ingestion"
+      }
+    },
+    {
+      "commit": {
+        "hash": "synth0003",
+        "author": "automation",
+        "date": "2025-09-29T22:30:20Z",
+        "subject": "Synthesize: Audit tools/govinfo scripts for args"
+      },
+      "issue": {
+        "id": "e1eb9b67-3476-4fb9-8dca-67568073e789",
+        "identifier": "CLO-183",
+        "url": "https://linear.app/cloudcurio/issue/CLO-183/synthesize-audit-toolsgovinfo-scripts-for-args"
+      }
+    },
+    {
+      "commit": {
+        "hash": "synth0004",
+        "author": "automation",
+        "date": "2025-09-29T22:30:30Z",
+        "subject": "Synthesize: Create checklist for Flyway migrations"
+      },
+      "issue": {
+        "id": "0919b0de-4702-4a7d-bef8-580efa1afc61",
+        "identifier": "CLO-184",
+        "url": "https://linear.app/cloudcurio/issue/CLO-184/synthesize-create-checklist-for-flyway-migrations"
+      }
+    },
+    {
+      "commit": {
+        "hash": "synth0005",
+        "author": "automation",
+        "date": "2025-09-29T22:30:40Z",
+        "subject": "Synthesize: Add QA steps for member ingestion"
+      },
+      "issue": {
+        "id": "a14e54ba-d30c-4915-b76e-401cf34b45b9",
+        "identifier": "CLO-185",
+        "url": "https://linear.app/cloudcurio/issue/CLO-185/synthesize-add-qa-steps-for-member-ingestion"
+      }
+    },
+    {
+      "commit": {
+        "hash": "synth0006",
+        "author": "automation",
+        "date": "2025-09-29T22:30:50Z",
+        "subject": "Synthesize: Document expected CSV formats for batches"
+      },
+      "issue": {
+        "id": "d4285f2f-5be6-4874-acfb-87f9a5e9d62c",
+        "identifier": "CLO-186",
+        "url": "https://linear.app/cloudcurio/issue/CLO-186/synthesize-document-expected-csv-formats-for-batches"
+      }
+    },
+    {
+      "commit": {
+        "hash": "synth0007",
+        "author": "automation",
+        "date": "2025-09-29T22:31:00Z",
+        "subject": "Synthesize: Add integration test for ingest_federal_members"
+      },
+      "issue": {
+        "id": "260cd472-9f9e-4bb5-b77d-8e68f58f5787",
+        "identifier": "CLO-187",
+        "url": "https://linear.app/cloudcurio/issue/CLO-187/synthesize-add-integration-test-for-ingest-federal-members"
+      }
+    },
+    {
+      "commit": {
+        "hash": "synth0008",
+        "author": "automation",
+        "date": "2025-09-29T22:31:10Z",
+        "subject": "Synthesize: Create small sample dataset for local testing"
+      },
+      "issue": {
+        "id": "15860e82-3400-4266-a6d6-db0d63145361",
+        "identifier": "CLO-188",
+        "url": "https://linear.app/cloudcurio/issue/CLO-188/synthesize-create-small-sample-dataset-for-local-testing"
+      }
+    },
+    {
+      "commit": {
+        "hash": "synth0009",
+        "author": "automation",
+        "date": "2025-09-29T22:31:20Z",
+        "subject": "Synthesize: Add guidance for Elasticsearch schema mappings"
+      },
+      "issue": {
+        "id": "024fb440-d5a7-42f0-a51c-90520b713749",
+        "identifier": "CLO-189",
+        "url": "https://linear.app/cloudcurio/issue/CLO-189/synthesize-add-guidance-for-elasticsearch-schema-mappings"
+      }
+    },
+    {
+      "commit": {
+        "hash": "synth0010",
+        "author": "automation",
+        "date": "2025-09-29T22:31:30Z",
+        "subject": "Synthesize: Document README steps to run importer"
+      },
+      "issue": {
+        "id": "6be2c2a5-0bd8-4475-9ea8-1f9cddf1e0b2",
+        "identifier": "CLO-190",
+        "url": "https://linear.app/cloudcurio/issue/CLO-190/synthesize-document-readme-steps-to-run-importer"
+      }
+    },
+    {
+      "commit": {
+        "hash": "synth0011",
+        "author": "automation",
+        "date": "2025-09-29T22:31:40Z",
+        "subject": "Synthesize: Create issue template for ingestion bugs"
+      },
+      "issue": {
+        "id": "2fecd831-dfaf-4e24-9ce0-4ba5761e43b0",
+        "identifier": "CLO-191",
+        "url": "https://linear.app/cloudcurio/issue/CLO-191/synthesize-create-issue-template-for-ingestion-bugs"
+      }
+    },
+    {
+      "commit": {
+        "hash": "synth0012",
+        "author": "automation",
+        "date": "2025-09-29T22:31:50Z",
+        "subject": "Synthesize: Add note about rate limits to importer"
+      },
+      "issue": {
+        "id": "32138fbf-add5-4f59-aac5-321719f23d30",
+        "identifier": "CLO-192",
+        "url": "https://linear.app/cloudcurio/issue/CLO-192/synthesize-add-note-about-rate-limits-to-importer"
+      }
+    },
+    {
+      "commit": {
+        "hash": "synth0013",
+        "author": "automation",
+        "date": "2025-09-29T22:32:00Z",
+        "subject": "Synthesize: Create smoke test harness for pipelines"
+      },
+      "issue": {
+        "id": "607d97f6-46d5-4570-b82d-f740b72d620a",
+        "identifier": "CLO-193",
+        "url": "https://linear.app/cloudcurio/issue/CLO-193/synthesize-create-smoke-test-harness-for-pipelines"
+      }
+    },
+    {
+      "commit": {
+        "hash": "synth0014",
+        "author": "automation",
+        "date": "2025-09-29T22:32:10Z",
+        "subject": "Synthesize: Add cron example for regular ingestion"
+      },
+      "issue": {
+        "id": "02d70346-bf0e-48d8-9ef9-6df1b1579ce8",
+        "identifier": "CLO-194",
+        "url": "https://linear.app/cloudcurio/issue/CLO-194/synthesize-add-cron-example-for-regular-ingestion"
+      }
+    },
+    {
+      "commit": {
+        "hash": "synth0015",
+        "author": "automation",
+        "date": "2025-09-29T22:32:20Z",
+        "subject": "Synthesize: Backfill CONTRIBUTORS.md with recent contributors"
+      },
+      "issue": {
+        "id": "9d2068e7-a4ea-49aa-824d-9c37728d6068",
+        "identifier": "CLO-195",
+        "url": "https://linear.app/cloudcurio/issue/CLO-195/synthesize-backfill-contributorsmd-with-recent-contributors"
+      }
+    },
+    {
+      "commit": {
+        "hash": "synth0016",
+        "author": "automation",
+        "date": "2025-09-29T22:32:30Z",
+        "subject": "Synthesize: Add local dev environment checklist"
+      },
+      "issue": {
+        "id": "8c82c69d-979e-4349-a38e-f08d1b6780d0",
+        "identifier": "CLO-196",
+        "url": "https://linear.app/cloudcurio/issue/CLO-196/synthesize-add-local-dev-environment-checklist"
+      }
+    },
+    {
+      "commit": {
+        "hash": "synth0017",
+        "author": "automation",
+        "date": "2025-09-29T22:32:40Z",
+        "subject": "Synthesize: Create doc for handling govinfo XML edge cases"
+      },
+      "issue": {
+        "id": "1a6d2c9e-97cd-4203-8d57-14e001bcf9df",
+        "identifier": "CLO-197",
+        "url": "https://linear.app/cloudcurio/issue/CLO-197/synthesize-create-doc-for-handling-govinfo-xml-edge-cases"
+      }
+    },
+    {
+      "commit": {
+        "hash": "synth0018",
+        "author": "automation",
+        "date": "2025-09-29T22:32:50Z",
+        "subject": "Synthesize: Add retention policy notes for staged files"
+      },
+      "issue": {
+        "id": "074d2498-0b51-4622-a50b-006942316aff",
+        "identifier": "CLO-198",
+        "url": "https://linear.app/cloudcurio/issue/CLO-198/synthesize-add-retention-policy-notes-for-staged-files"
+      }
+    },
+    {
+      "commit": {
+        "hash": "synth0019",
+        "author": "automation",
+        "date": "2025-09-29T22:33:00Z",
+        "subject": "Synthesize: Add sample commit for testing importer idempotency"
+      },
+      "issue": {
+        "id": "648da51a-ea74-4b38-842f-ebbe117b4579",
+        "identifier": "CLO-199",
+        "url": "https://linear.app/cloudcurio/issue/CLO-199/synthesize-add-sample-commit-for-testing-importer-idempotency"
+      }
+    },
+    {
+      "commit": {
+        "hash": "synth0020",
+        "author": "automation",
+        "date": "2025-09-29T22:33:10Z",
+        "subject": "Synthesize: Misc housekeeping: remove temp files script"
+      },
+      "issue": {
+        "id": "a13e2c1e-afe8-4486-9062-38bbc428f9cb",
+        "identifier": "CLO-200",
+        "url": "https://linear.app/cloudcurio/issue/CLO-200/synthesize-misc-housekeeping-remove-temp-files-script"
+      }
+    }
+  ],
+  "failed": []
+}

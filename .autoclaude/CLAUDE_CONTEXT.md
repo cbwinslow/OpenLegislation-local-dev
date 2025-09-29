@@ -1,6 +1,6 @@
 # AutoClaude Project Context
 
-Generated at: 2025-09-29T05:34:13.124Z
+Generated at: 2025-09-29T23:04:20.414Z
 
 ---
 
@@ -9,26 +9,26 @@ Generated at: 2025-09-29T05:34:13.124Z
 ## Workspace
 - **Root**: /home/cbwinslow/Documents/OpenLegislation-local-dev
 - **Type**: single
-- **Last Updated**: 2025-09-29T05:34:08.702Z
+- **Last Updated**: 2025-09-29T23:04:10.896Z
 
 ## Statistics
-- **Total Files**: 2364
-- **Estimated Lines**: 214630
-- **Average File Size**: 72035 bytes
+- **Total Files**: 2401
+- **Estimated Lines**: 219195
+- **Average File Size**: 71048 bytes
 
 ## Languages
-- **java**: 4869130 files
-- **javascript**: 752796 files
-- **python**: 671983 files
-- **sql**: 553696 files
-- **xml**: 477290 files
-- **markdown**: 344422 files
-- **shellscript**: 156531 files
-- **html**: 134009 files
-- **json**: 75456 files
-- **yaml**: 38677 files
-- **css**: 23105 files
-- **typescriptreact**: 8963 files
+- **java**: 13780440 files
+- **javascript**: 2095101 files
+- **python**: 1884047 files
+- **sql**: 1550147 files
+- **xml**: 1325495 files
+- **markdown**: 1041496 files
+- **shellscript**: 444821 files
+- **html**: 372824 files
+- **json**: 234765 files
+- **yaml**: 104557 files
+- **css**: 64280 files
+- **typescriptreact**: 25433 files
 
 ## Project Structure
 - **Main Languages**: Not detected
@@ -65,8 +65,8 @@ Generated at: 2025-09-29T05:34:13.124Z
 - **Failed**: 0
 
 ## Current Session
-- **Session ID**: mg4n2rv2-65o673y
-- **Started**: 2025-09-29T04:39:12.782Z
+- **Session ID**: mg5mdj04-lmpx2yu
+- **Started**: 2025-09-29T21:07:21.076Z
 - **Tasks in Session**: 0
 
 ## Recent Tasks
@@ -87,44 +87,46 @@ No unfinished tasks
  M .autoclaude/CLAUDE_CONTEXT.md
  M .autoclaude/cache/project-index.json
  M .autoclaude/tasks/sessions.json
- M .claude_agent_farm_state.json
+ D .claude_agent_farm_state.json
  M .heartbeats/agent00.heartbeat
- M docs/tasks.md
  M pom.xml
  M src/main/java/gov/nysenate/openleg/dao/federal/FederalMemberDao.java
- M src/main/java/gov/nysenate/openleg/dao/federal/bill/FederalBillRepository.java
  M src/main/java/gov/nysenate/openleg/model/federal/FederalMember.java
- M src/main/java/gov/nysenate/openleg/model/federal/FederalMemberCommittee.java
- M src/main/java/gov/nysenate/openleg/model/federal/FederalMemberTerm.java
-?? .claude_agent_farm_backups/settings_2025-09-29T04-39-25-793Z.json
-?? docs/java_tests.md
-?? src/main/java/gov/nysenate/openleg/dao/federal/FederalCFRDao.java
-?? src/main/java/gov/nysenate/openleg/dao/federal/FederalCommitteeDao.java
-?? src/main/java/gov/nysenate/openleg/dao/federal/FederalHearingDao.java
-?? src/main/java/gov/nysenate/openleg/dao/federal/FederalMemberCommitteeDao.java
-?? src/main/java/gov/nysenate/openleg/dao/federal/FederalMemberSocialMediaDao.java
-?? src/main/java/gov/nysenate/openleg/dao/federal/FederalRegisterDao.java
-?? src/main/java/gov/nysenate/openleg/dao/federal/FederalReportDao.java
-?? src/main/java/gov/nysenate/openleg/dao/federal/FederalSocialMediaPostDao.java
-?? src/main/java/gov/nysenate/openleg/dao/federal/FederalTranscriptDao.java
-?? src/main/java/gov/nysenate/openleg/model/federal/FederalCFR.java
-?? src/main/java/gov/nysenate/openleg/model/federal/FederalCommittee.java
-?? src/main/java/gov/nysenate/openleg/model/federal/FederalHearing.java
-?? src/main/java/gov/nysenate/openleg/model/federal/FederalRegister.java
-?? src/main/java/gov/nysenate/openleg/model/federal/FederalReport.java
-?? src/main/java/gov/nysenate/openleg/model/federal/FederalSocialMediaPost.java
-?? src/main/java/gov/nysenate/openleg/model/federal/FederalTranscript.java
-?? src/main/java/gov/nysenate/openleg/processors/federal/CongressionalRecordProcessor.java
-?? src/main/java/gov/nysenate/openleg/processors/federal/FederalCFRProcessor.java
-?? src/main/java/gov/nysenate/openleg/processors/federal/FederalHearingProcessor.java
-?? src/main/java/gov/nysenate/openleg/processors/federal/FederalRegisterProcessor.java
-?? src/main/java/gov/nysenate/openleg/scripts/
-?? src/test/java/gov/nysenate/openleg/processors/federal/CongressionalRecordProcessorTest.java
+ M tools/ingest_congress_api.py
+?? .autoclaude/work_state.json
+?? .claude_agent_farm_backups/settings_2025-09-29T12-40-05-011Z.json
+?? .claude_agent_farm_backups/settings_2025-09-29T21-07-43-553Z.json
+?? docs/linear_project_report.md
+?? docs/linear_templates/
+?? src/main/java/gov/nysenate/openleg/service/federal/CongressApiIngestionService.java
+?? src/main/resources/db/migration/V20250930.0001__federal_all_tables.sql
+?? src/test/java/gov/nysenate/openleg/processors/federal/FederalIngestionIntegrationTest.java
+?? tools/README_linear_import.md
+?? tools/batches/
+?? tools/batches_more/
+?? tools/batches_tasks/
+?? tools/bulk_ingest_congress_data.sh
+?? tools/linear_api_import.py
+?? tools/linear_commits_since_2024.csv
+?? tools/linear_import_batches.py
+?? tools/linear_import_processed.json
+?? tools/linear_import_processed_backup_20250929T224615Z.json
+?? tools/linear_import_run_20250929T221722Z.json
+?? tools/linear_import_run_20250929T221808Z.json
+?? tools/linear_import_run_20250929T222047Z.json
+?? tools/linear_import_run_20250929T222517Z.json
+?? tools/linear_import_run_20250929T224555Z.json
+?? tools/schemas/
+?? tools/tasks_as_commits.csv
+?? tools/tasks_to_commits.py
+?? tools/validate_ingestion.py
 
 ```
 
 ### Recent Commits
 ```
+3b1f31c96 dfgdfg 	new file:   DIFF_20250929_125611.md 	new file:   RECOMMENDATIONS_20250929_125611.md 	new file:   docs/federal_ingestion_procedures.md 	new file:   docs/federal_ingestion_summary.md 	new file:   docs/federal_ingestion_testing.md 	modified:   tools/ingest_congress_api.py
+7c87eaeae sdfsdf 	modified:   .autoclaude/CLAUDE_CONTEXT.md 	modified:   .autoclaude/cache/project-index.json 	modified:   .autoclaude/tasks/sessions.json 	new file:   .claude_agent_farm_backups/settings_2025-09-29T04-39-25-793Z.json 	modified:   .claude_agent_farm_state.json 	modified:   .heartbeats/agent00.heartbeat 	new file:   docs/java_tests.md 	modified:   docs/tasks.md 	modified:   pom.xml 	new file:   src/main/java/gov/nysenate/openleg/dao/federal/FederalCFRDao.java 	new file:   src/main/java/gov/nysenate/openleg/dao/federal/FederalCommitteeDao.java 	new file:   src/main/java/gov/nysenate/openleg/dao/federal/FederalHearingDao.java 	new file:   src/main/java/gov/nysenate/openleg/dao/federal/FederalMemberCommitteeDao.java 	modified:   src/main/java/gov/nysenate/openleg/dao/federal/FederalMemberDao.java 	new file:   src/main/java/gov/nysenate/openleg/dao/federal/FederalMemberSocialMediaDao.java 	new file:   src/main/java/gov/nysenate/openleg/dao/federal/FederalRegisterDao.java 	new file:   src/main/java/gov/nysenate/openleg/dao/federal/FederalReportDao.java 	new file:   src/main/java/gov/nysenate/openleg/dao/federal/FederalSocialMediaPostDao.java 	new file:   src/main/java/gov/nysenate/openleg/dao/federal/FederalTranscriptDao.java 	modified:   src/main/java/gov/nysenate/openleg/dao/federal/bill/FederalBillRepository.java 	new file:   src/main/java/gov/nysenate/openleg/model/federal/FederalCFR.java 	new file:   src/main/java/gov/nysenate/openleg/model/federal/FederalCommittee.java 	new file:   src/main/java/gov/nysenate/openleg/model/federal/FederalHearing.java 	modified:   src/main/java/gov/nysenate/openleg/model/federal/FederalMember.java 	modified:   src/main/java/gov/nysenate/openleg/model/federal/FederalMemberCommittee.java 	modified:   src/main/java/gov/nysenate/openleg/model/federal/FederalMemberTerm.java 	new file:   src/main/java/gov/nysenate/openleg/model/federal/FederalRegister.java 	new file:   src/main/java/gov/nysenate/openleg/model/federal/FederalReport.java 	new file:   src/main/java/gov/nysenate/openleg/model/federal/FederalSocialMediaPost.java 	new file:   src/main/java/gov/nysenate/openleg/model/federal/FederalTranscript.java 	new file:   src/main/java/gov/nysenate/openleg/processors/federal/CongressionalRecordProcessor.java 	new file:   src/main/java/gov/nysenate/openleg/processors/federal/FederalCFRProcessor.java 	new file:   src/main/java/gov/nysenate/openleg/processors/federal/FederalHearingProcessor.java 	new file:   src/main/java/gov/nysenate/openleg/processors/federal/FederalRegisterProcessor.java 	new file:   src/main/java/gov/nysenate/openleg/scripts/analysis/AllMembersIngester.java 	new file:   src/main/java/gov/nysenate/openleg/scripts/analysis/AppConfig.java 	new file:   src/test/java/gov/nysenate/openleg/processors/federal/CongressionalRecordProcessorTest.java
 6fe8c9509 fghfgh 	modified:   .autoclaude/CLAUDE_CONTEXT.md 	modified:   .autoclaude/cache/project-index.json
 1149a431c feat(ui): add federal members support to data ingestion view
 3feb8f541 dfgdfg 	new file:   ${input:duckdb_db_path} 	new file:   .autoclaude/CLAUDE_CONTEXT.md 	new file:   .autoclaude/cache/project-index.json 	new file:   .autoclaude/config.json 	new file:   .autoclaude/detected_problems.txt 	new file:   .autoclaude/enhanced-config.json 	new file:   .autoclaude/scripts/README.md 	new file:   .autoclaude/scripts/build-check.sh 	new file:   .autoclaude/scripts/code-understanding-check.sh 	new file:   .autoclaude/scripts/context-check.sh 	new file:   .autoclaude/scripts/dependency-check.sh 	new file:   .autoclaude/scripts/format-check.sh 	new file:   .autoclaude/scripts/github-actions.sh 	new file:   .autoclaude/scripts/integration-testing-check.sh 	new file:   .autoclaude/scripts/performance-check.sh 	new file:   .autoclaude/scripts/production-readiness.sh 	new file:   .autoclaude/scripts/security-audit-check.sh 	new file:   .autoclaude/scripts/test-check.sh 	new file:   .autoclaude/tasks/sessions.json 	new file:   .autoclaude/tasks/tasks.json 	new file:   .claude_agent_farm_backups/settings_2025-09-28T21-15-38-276Z.json 	modified:   .gitignore 	new file:   .heartbeats/agent00.heartbeat 	new file:   .specstory/.what-is-this.md 	modified:   docs/tasks.md 	new file:   frontend/app/layout.tsx 	new file:   frontend/components/DataIngestionPlatform.tsx 	new file:   frontend/components/ui/Card.tsx 	new file:   frontend/next.config.js 	new file:   requirements.txt 	new file:   src/main/resources/db/migration/V20250928.0001__ingestion_optimizations.sql 	new file:   src/main/resources/db/migration/V20250928.0002__federal_social_media_posts.sql 	new file:   src/main/webapp/WEB-INF/app/apis/ingestionApi.js 	modified:   src/main/webapp/WEB-INF/app/index.js 	new file:   src/main/webapp/WEB-INF/app/shared/Alert.js 	new file:   src/main/webapp/WEB-INF/app/shared/Badge.js 	new file:   src/main/webapp/WEB-INF/app/shared/Button.js 	new file:   src/main/webapp/WEB-INF/app/shared/Card.js 	modified:   src/main/webapp/WEB-INF/app/shared/Checkbox.js 	new file:   src/main/webapp/WEB-INF/app/shared/Collapsible.js 	modified:   src/main/webapp/WEB-INF/app/shared/Input.js 	new file:   src/main/webapp/WEB-INF/app/shared/Progress.js 	modified:   src/main/webapp/WEB-INF/app/shared/Select.js 	modified:   src/main/webapp/WEB-INF/app/shared/Tabs.js 	new file:   src/main/webapp/WEB-INF/app/shared/Textarea.js 	modified:   src/main/webapp/WEB-INF/app/views/home/NavMenu.js 	new file:   src/main/webapp/WEB-INF/app/views/ingestion/DataIngestionView.js 	new file:   tools/ingest_federal_data.py 	new file:   tools/ingest_member_tweets.py 	new file:   tools/ingestion_scheduler.py 	new file:   tools/ingestion_worker.py
@@ -133,84 +135,140 @@ No unfinished tasks
 0ce163c24 Add migrated Python models for spotcheck domain classes
 252cf3a93 Add migrated Python models for member domain classes
 f7f3d479c Add migrated Python models for committee domain classes
-1af7593d1 Add migrated Python models for agenda domain classes
-776aa50a7 Add migrated Python models for calendar domain classes
 
 ```
 
 ---
 
 ## Current File Context
-# File Context: src/test/java/gov/nysenate/openleg/processors/federal/CongressionalRecordProcessorTest.java
+# File Context: src/main/java/gov/nysenate/openleg/service/federal/CongressApiIngestionService.java
 
-- **Size**: 3817 bytes
+- **Size**: 18537 bytes
 - **Language**: java
-- **Last Modified**: 2025-09-29T05:33:53.286Z
-- **Hash**: 471d0664dad4559cbf876fa68d284dc1
+- **Last Modified**: 2025-09-29T23:04:07.078Z
+- **Hash**: 9617ae8157768bde605b45117311d5f3
 
 
 ## Symbols
-- **gov.nysenate.openleg.processors.federal** (Package)
-- **CongressionalRecordProcessorTest** (Class)
-  - **transcriptDao** (Field)
-  - **processor** (Field)
-  - **setUp()** (Method)
-  - **testProcessTranscriptFile_Success()** (Method)
-  - **testProcessTranscriptFile_FileNotFound()** (Method)
-  - **testProcessTranscriptFile_InvalidXml()** (Method)
-  - **createTestXmlFile()** (Method)
-  - **createInvalidXmlFile()** (Method)
+- **gov.nysenate.openleg.service.federal** (Package)
+- **CongressApiIngestionService** (Class)
+  - **main(String[])** (Method)
+  - **processBatch(String, int, JsonNode, boolean, boolean)** (Method)
+  - **logger** (Constant)
+  - **apiKey** (Field)
+  - **baseUrl** (Field)
+  - **batchSize** (Field)
+  - **federalMemberDao** (Field)
+  - **federalCommitteeDao** (Field)
+  - **federalBillRepository** (Field)
+  - **restTemplate** (Field)
+  - **objectMapper** (Field)
+  - **ingestAllCongressData(int, Set<String>)** (Method)
+  - **ingestSequential(int, Set<String>, CongressIngestionResult)** (Method)
+  - **ingestMembers(int)** (Method)
+  - **ingestBills(int)** (Method)
+  - **ingestCommittees(int)** (Method)
+  - **ingestVotes(int)** (Method)
+  - **ingestHearings(int)** (Method)
+  - **ingestReports(int)** (Method)
+  - **ingestTranscripts(int)** (Method)
+  - **ingestPaginatedData(String, String, BatchProcessor)** (Method)
+  - **processMemberBatch(JsonNode)** (Method)
+  - **processBillBatch(JsonNode)** (Method)
+  - **processCommitteeBatch(JsonNode)** (Method)
+  - **processVoteBatch(JsonNode)** (Method)
+  - **processHearingBatch(JsonNode)** (Method)
+  - **processReportBatch(JsonNode)** (Method)
+  - **processTranscriptBatch(JsonNode)** (Method)
+  - **mapToFederalMember(JsonNode)** (Method)
+  - **mapToFederalBill(JsonNode)** (Method)
+  - **mapToFederalCommittee(JsonNode)** (Method)
+  - **BatchProcessor** (Interface)
+    - **process(JsonNode)** (Method)
+  - **CongressIngestionResult** (Class)
+    - **congress** (Field)
+    - **dataTypes** (Field)
+    - **totalProcessed** (Field)
+    - **totalErrors** (Field)
+    - **status** (Field)
+    - **errorMessage** (Field)
+    - **completedAt** (Field)
+    - **dataTypeResults** (Field)
+    - **CongressIngestionResult(int, Set<String>, String)** (Constructor)
+    - **getCongress()** (Method)
+    - **getDataTypes()** (Method)
+    - **getTotalProcessed()** (Method)
+    - **setTotalProcessed(int)** (Method)
+    - **getTotalErrors()** (Method)
+    - **setTotalErrors(int)** (Method)
+    - **getStatus()** (Method)
+    - **setStatus(String)** (Method)
+    - **getErrorMessage()** (Method)
+    - **setErrorMessage(String)** (Method)
+    - **getCompletedAt()** (Method)
+    - **setCompletedAt(LocalDateTime)** (Method)
+    - **getDataTypeResults()** (Method)
+    - **setDataTypeResults(Map<String, DataTypeResult>)** (Method)
+  - **DataTypeResult** (Class)
+    - **processedCount** (Field)
+    - **errorCount** (Field)
+    - **status** (Field)
+    - **DataTypeResult(int, int, String)** (Constructor)
+    - **getProcessedCount()** (Method)
+    - **getErrorCount()** (Method)
+    - **getStatus()** (Method)
+- **@+ 'congressApiIngestionService' (@Service <: @Component) CongressApiIngestionService** (Class)
 
 ### Visible Content (first 50 lines)
 ```java
-package gov.nysenate.openleg.processors.federal;
+package gov.nysenate.openleg.service.federal;
 
-import gov.nysenate.openleg.dao.federal.FederalTranscriptDao;
-import gov.nysenate.openleg.model.federal.FederalChamber;
-import gov.nysenate.openleg.model.federal.FederalTranscript;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import gov.nysenate.openleg.dao.federal.FederalMemberDao;
+import gov.nysenate.openleg.dao.federal.FederalCommitteeDao;
+import gov.nysenate.openleg.dao.federal.bill.FederalBillRepository;
+import gov.nysenate.openleg.model.federal.*;
+import gov.nysenate.openleg.model.federal.bill.FederalBill;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
-import java.io.File;
-import java.time.LocalDate;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+/**
+ * Service for ingesting data from congress.gov API.
+ * Handles all data types: members, bills, committees, votes, hearings, reports, transcripts.
+ */
+@Service
+@Transactional
+public class CongressApiIngestionService {
 
-public class CongressionalRecordProcessorTest {
-
-    @Mock
-    private FederalTranscriptDao transcriptDao;
-
-    private CongressionalRecordProcessor processor;
-
-    @Before
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-        processor = new CongressionalRecordProcessor();
-        // Use reflection to set the DAO field
-        try {
-            java.lang.reflect.Field field = CongressionalRecordProcessor.class.getDeclaredField("transcriptDao");
-            field.setAccessible(true);
-            field.set(processor, transcriptDao);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+    /**
+     * Main method for CLI invocation (mvn exec:java).
+     * Args: --congress 119 --endpoint bill --input /tmp/batch.json --persist --idempotent
+     */
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);  // Bootstrap Spring context
+        // Parse args (simple, or use JCommander)
+        int congress = 119;  // Default
+        String endpoint = "bill";
+        String inputFile = null;
+        boolean persist = false;
+        boolean idempotent = true;
+        for (int i = 0; i < args.length; i++) {
+            if ("--congress".equals(args[i])) congress = Integer.parseInt(args[++i]);
+            else if ("--endpoint".equals(args[i])) endpoint = args[++i];
+            else if ("--input".equals(args[i])) inputFile = args[++i];
+            else if ("--persist".equals(args[i])) persist = true;
+            else if ("--idempotent".equals(args[i])) idempotent = Boolean.parseBoolean(args[++i]);
         }
-    }
-
-    @Test
-    void testProcessTranscriptFile_Success() throws Exception {
-        // Create a mock XML file
-        File testFile = createTestXmlFile();
-
-        when(transcriptDao.save(any(FederalTranscript.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        List<FederalTranscript> result = processor.processTranscriptFile(testFile);
-
-        assertNotNull(result);
-        assertEquals(1, result.size());
+        // Get bean and run
 ```

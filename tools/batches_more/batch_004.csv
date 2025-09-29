@@ -1,0 +1,41 @@
+hash,author,date,subject
+m0040001,automation,2025-09-29T22:49:00Z,Synthesize: Migrate federal ingestion mapping docs to new schema
+m0040002,automation,2025-09-29T22:49:10Z,Synthesize: Add end-to-end test for congress.gov bulk import
+m0040003,automation,2025-09-29T22:49:20Z,Synthesize: Add script to summarize run metrics
+m0040004,automation,2025-09-29T22:49:30Z,Synthesize: Add task to review API pagination logic
+m0040005,automation,2025-09-29T22:49:40Z,Synthesize: Add task to implement backpressure on ingestion
+m0040006,automation,2025-09-29T22:49:50Z,Synthesize: Document approach for multi-congress support
+m0040007,automation,2025-09-29T22:50:00Z,Synthesize: Create heuristics for action deduplication
+m0040008,automation,2025-09-29T22:50:10Z,Synthesize: Add monitoring dashboard for job failures
+m0040009,automation,2025-09-29T22:50:20Z,Synthesize: Add script to reconcile db vs index counts
+m0040010,automation,2025-09-29T22:50:30Z,Synthesize: Add task to improve bill text diffing
+m0040011,automation,2025-09-29T22:50:40Z,Synthesize: Add maintenance task for reindexing stale docs
+m0040012,automation,2025-09-29T22:50:50Z,Synthesize: Add issue for mapping FR references to bills
+m0040013,automation,2025-09-29T22:51:00Z,Synthesize: Add task to verify timezone handling across systems
+m0040014,automation,2025-09-29T22:51:10Z,Synthesize: Add a runbook for large-scale reingestion
+m0040015,automation,2025-09-29T22:51:20Z,Synthesize: Add a task to audit third-party dependencies
+m0040016,automation,2025-09-29T22:51:30Z,Synthesize: Add task to standardize action metadata fields
+m0040017,automation,2025-09-29T22:51:40Z,Synthesize: Add diagram showing data flow pipeline
+m0040018,automation,2025-09-29T22:51:50Z,Synthesize: Add task to implement feature flags for parsers
+m0040019,automation,2025-09-29T22:52:00Z,Synthesize: Create a sample dataset for performance testing
+m0040020,automation,2025-09-29T22:52:10Z,Synthesize: Add issue for improving contributor docs
+m0040021,automation,2025-09-29T22:52:20Z,Synthesize: Add task to consolidate duplicate source processors
+m0040022,automation,2025-09-29T22:52:30Z,Synthesize: Add policy doc for data retention schedules
+m0040023,automation,2025-09-29T22:52:40Z,Synthesize: Add tests to validate link extraction
+m0040024,automation,2025-09-29T22:52:50Z,Synthesize: Add task to document ingestion SLAs
+m0040025,automation,2025-09-29T22:53:00Z,Synthesize: Add ticket for improving logging context
+m0040026,automation,2025-09-29T22:53:10Z,Synthesize: Add automation to tag issues by area
+m0040027,automation,2025-09-29T22:53:20Z,Synthesize: Add task to explore caching strategies
+m0040028,automation,2025-09-29T22:53:30Z,Synthesize: Add performance budget for parsing
+m0040029,automation,2025-09-29T22:53:40Z,Synthesize: Add instruction to run alembic (if used)
+m0040030,automation,2025-09-29T22:53:50Z,Synthesize: Create example transform for congressional documents
+m0040031,automation,2025-09-29T22:54:00Z,Synthesize: Add task to clean up deprecated scripts
+m0040032,automation,2025-09-29T22:54:10Z,Synthesize: Add guidance for metadata enrichment
+m0040033,automation,2025-09-29T22:54:20Z,Synthesize: Add issue to review exception handling
+m0040034,automation,2025-09-29T22:54:30Z,Synthesize: Add task to improve test fixture generation
+m0040035,automation,2025-09-29T22:54:40Z,Synthesize: Add checklist for ingesting a new source
+m0040036,automation,2025-09-29T22:54:50Z,Synthesize: Add diagram for storage tiering
+m0040037,automation,2025-09-29T22:55:00Z,Synthesize: Add task to add TTL for temp indices
+m0040038,automation,2025-09-29T22:55:10Z,Synthesize: Add task to support incremental schema patches
+m0040039,automation,2025-09-29T22:55:20Z,Synthesize: Add task to audit access controls
+m0040040,automation,2025-09-29T22:55:30Z,Synthesize: Add follow-ups from engineering retro

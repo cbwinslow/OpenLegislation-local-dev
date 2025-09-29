@@ -1,0 +1,1176 @@
+{
+  "created": [
+    {
+      "commit": {
+        "hash": "m0030001",
+        "author": "automation",
+        "date": "2025-09-29T22:40:00Z",
+        "subject": "Synthesize: Data ingestion - review govinfo rate limits"
+      },
+      "issue": {
+        "id": "0f55e4c8-241c-4020-a317-bff89fe638f2",
+        "identifier": "CLO-201",
+        "url": "https://linear.app/cloudcurio/issue/CLO-201/synthesize-data-ingestion-review-govinfo-rate-limits"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030002",
+        "author": "automation",
+        "date": "2025-09-29T22:40:10Z",
+        "subject": "Synthesize: Add tests for feed deduplication"
+      },
+      "issue": {
+        "id": "f7fea647-29b8-4c4a-a7c3-a0bca174dfc5",
+        "identifier": "CLO-202",
+        "url": "https://linear.app/cloudcurio/issue/CLO-202/synthesize-add-tests-for-feed-deduplication"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030003",
+        "author": "automation",
+        "date": "2025-09-29T22:40:20Z",
+        "subject": "Synthesize: Document export CSV schemas"
+      },
+      "issue": {
+        "id": "ae161bfe-f46d-40cc-bf46-6dab356a37d6",
+        "identifier": "CLO-203",
+        "url": "https://linear.app/cloudcurio/issue/CLO-203/synthesize-document-export-csv-schemas"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030004",
+        "author": "automation",
+        "date": "2025-09-29T22:40:30Z",
+        "subject": "Synthesize: Create script to validate XML against XSD"
+      },
+      "issue": {
+        "id": "e92d0eae-9116-4239-81da-639eb6dc678b",
+        "identifier": "CLO-204",
+        "url": "https://linear.app/cloudcurio/issue/CLO-204/synthesize-create-script-to-validate-xml-against-xsd"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030005",
+        "author": "automation",
+        "date": "2025-09-29T22:40:40Z",
+        "subject": "Synthesize: Add monitoring for ingestion lag"
+      },
+      "issue": {
+        "id": "9586218b-cd11-450e-9c1c-348d42044d3e",
+        "identifier": "CLO-205",
+        "url": "https://linear.app/cloudcurio/issue/CLO-205/synthesize-add-monitoring-for-ingestion-lag"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030006",
+        "author": "automation",
+        "date": "2025-09-29T22:40:50Z",
+        "subject": "Synthesize: Implement incremental backfill plan"
+      },
+      "issue": {
+        "id": "19dfd115-398d-44fe-9cbf-fe956e01beb3",
+        "identifier": "CLO-206",
+        "url": "https://linear.app/cloudcurio/issue/CLO-206/synthesize-implement-incremental-backfill-plan"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030007",
+        "author": "automation",
+        "date": "2025-09-29T22:41:00Z",
+        "subject": "Synthesize: Add example queries for quality metrics"
+      },
+      "issue": {
+        "id": "194e1a6d-ce22-41a9-9bfc-64f0fd5abc7d",
+        "identifier": "CLO-207",
+        "url": "https://linear.app/cloudcurio/issue/CLO-207/synthesize-add-example-queries-for-quality-metrics"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030008",
+        "author": "automation",
+        "date": "2025-09-29T22:41:10Z",
+        "subject": "Synthesize: Document Elasticsearch index mappings for bills"
+      },
+      "issue": {
+        "id": "fc957078-b8fd-4d84-9d98-2190bba2cfd1",
+        "identifier": "CLO-208",
+        "url": "https://linear.app/cloudcurio/issue/CLO-208/synthesize-document-elasticsearch-index-mappings-for-bills"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030009",
+        "author": "automation",
+        "date": "2025-09-29T22:41:20Z",
+        "subject": "Synthesize: Add CI job to run schema checks"
+      },
+      "issue": {
+        "id": "4bc244af-40b8-44e6-99eb-7b357291d7d8",
+        "identifier": "CLO-209",
+        "url": "https://linear.app/cloudcurio/issue/CLO-209/synthesize-add-ci-job-to-run-schema-checks"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030010",
+        "author": "automation",
+        "date": "2025-09-29T22:41:30Z",
+        "subject": "Synthesize: Add benchmarks for parsing performance"
+      },
+      "issue": {
+        "id": "0612ea0f-99ef-4042-8ca1-dc1bf17431aa",
+        "identifier": "CLO-210",
+        "url": "https://linear.app/cloudcurio/issue/CLO-210/synthesize-add-benchmarks-for-parsing-performance"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030011",
+        "author": "automation",
+        "date": "2025-09-29T22:41:40Z",
+        "subject": "Synthesize: Add sample policy for data retention"
+      },
+      "issue": {
+        "id": "16f31e30-0cf8-49d9-a5dd-717333fcb0f9",
+        "identifier": "CLO-211",
+        "url": "https://linear.app/cloudcurio/issue/CLO-211/synthesize-add-sample-policy-for-data-retention"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030012",
+        "author": "automation",
+        "date": "2025-09-29T22:41:50Z",
+        "subject": "Synthesize: Create small Docker dev setup for ingestion"
+      },
+      "issue": {
+        "id": "715d01d8-eb87-45af-b0a5-184ee9c8667f",
+        "identifier": "CLO-212",
+        "url": "https://linear.app/cloudcurio/issue/CLO-212/synthesize-create-small-docker-dev-setup-for-ingestion"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030013",
+        "author": "automation",
+        "date": "2025-09-29T22:42:00Z",
+        "subject": "Synthesize: Add README entries for batch format"
+      },
+      "issue": {
+        "id": "f8cbcec8-a68d-4c2d-9ed6-6661b210141a",
+        "identifier": "CLO-213",
+        "url": "https://linear.app/cloudcurio/issue/CLO-213/synthesize-add-readme-entries-for-batch-format"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030014",
+        "author": "automation",
+        "date": "2025-09-29T22:42:10Z",
+        "subject": "Synthesize: Add step to archive processed XMLs"
+      },
+      "issue": {
+        "id": "599aa6f4-e91d-4347-b447-a932c07c1d25",
+        "identifier": "CLO-214",
+        "url": "https://linear.app/cloudcurio/issue/CLO-214/synthesize-add-step-to-archive-processed-xmls"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030015",
+        "author": "automation",
+        "date": "2025-09-29T22:42:20Z",
+        "subject": "Synthesize: Add idempotency tests for importer"
+      },
+      "issue": {
+        "id": "6d22395f-e539-4a74-a9eb-d7ad84fab06e",
+        "identifier": "CLO-215",
+        "url": "https://linear.app/cloudcurio/issue/CLO-215/synthesize-add-idempotency-tests-for-importer"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030016",
+        "author": "automation",
+        "date": "2025-09-29T22:42:30Z",
+        "subject": "Synthesize: Add smoke test to validate Elasticsearch indexing"
+      },
+      "issue": {
+        "id": "8ae03e18-5b56-4ad9-9f4a-c275919e002e",
+        "identifier": "CLO-216",
+        "url": "https://linear.app/cloudcurio/issue/CLO-216/synthesize-add-smoke-test-to-validate-elasticsearch-indexing"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030017",
+        "author": "automation",
+        "date": "2025-09-29T22:42:40Z",
+        "subject": "Synthesize: Add guidance for local DB migrations"
+      },
+      "issue": {
+        "id": "3aa4e827-b26b-4e04-a5d5-d0456ae8cc78",
+        "identifier": "CLO-217",
+        "url": "https://linear.app/cloudcurio/issue/CLO-217/synthesize-add-guidance-for-local-db-migrations"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030018",
+        "author": "automation",
+        "date": "2025-09-29T22:42:50Z",
+        "subject": "Synthesize: Create a list of edge-case sample files"
+      },
+      "issue": {
+        "id": "11c20b4d-2ba5-41a8-9aa2-c6b60cbd7130",
+        "identifier": "CLO-218",
+        "url": "https://linear.app/cloudcurio/issue/CLO-218/synthesize-create-a-list-of-edge-case-sample-files"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030019",
+        "author": "automation",
+        "date": "2025-09-29T22:43:00Z",
+        "subject": "Synthesize: Document the rate-limiting strategy for APIs"
+      },
+      "issue": {
+        "id": "262f4302-75d4-469f-b599-0240907f7eb5",
+        "identifier": "CLO-219",
+        "url": "https://linear.app/cloudcurio/issue/CLO-219/synthesize-document-the-rate-limiting-strategy-for-apis"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030020",
+        "author": "automation",
+        "date": "2025-09-29T22:43:10Z",
+        "subject": "Synthesize: Add sample env files and templates"
+      },
+      "issue": {
+        "id": "91a2052d-15cb-44a5-8df0-4510d49595d8",
+        "identifier": "CLO-220",
+        "url": "https://linear.app/cloudcurio/issue/CLO-220/synthesize-add-sample-env-files-and-templates"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030021",
+        "author": "automation",
+        "date": "2025-09-29T22:43:20Z",
+        "subject": "Synthesize: Add k8s manifest examples for staging"
+      },
+      "issue": {
+        "id": "cdb8486c-c56f-403f-a2c6-a33ac1da11d2",
+        "identifier": "CLO-221",
+        "url": "https://linear.app/cloudcurio/issue/CLO-221/synthesize-add-k8s-manifest-examples-for-staging"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030022",
+        "author": "automation",
+        "date": "2025-09-29T22:43:30Z",
+        "subject": "Synthesize: Add issue template for schema migration"
+      },
+      "issue": {
+        "id": "afa3d7d6-2923-48c5-8e1c-fdcb13629b61",
+        "identifier": "CLO-222",
+        "url": "https://linear.app/cloudcurio/issue/CLO-222/synthesize-add-issue-template-for-schema-migration"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030023",
+        "author": "automation",
+        "date": "2025-09-29T22:43:40Z",
+        "subject": "Synthesize: Add a task to review Flyway migrations"
+      },
+      "issue": {
+        "id": "f3bf97e5-7a6d-4174-9fe8-f7c5a07b2830",
+        "identifier": "CLO-223",
+        "url": "https://linear.app/cloudcurio/issue/CLO-223/synthesize-add-a-task-to-review-flyway-migrations"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030024",
+        "author": "automation",
+        "date": "2025-09-29T22:43:50Z",
+        "subject": "Synthesize: Create a data quality dashboard spec"
+      },
+      "issue": {
+        "id": "a1917421-f5d6-457c-8318-82e623b3c87c",
+        "identifier": "CLO-224",
+        "url": "https://linear.app/cloudcurio/issue/CLO-224/synthesize-create-a-data-quality-dashboard-spec"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030025",
+        "author": "automation",
+        "date": "2025-09-29T22:44:00Z",
+        "subject": "Synthesize: Add lint rules for XML and JSON samples"
+      },
+      "issue": {
+        "id": "584963b9-126a-4be5-b19a-e8cbc3b45453",
+        "identifier": "CLO-225",
+        "url": "https://linear.app/cloudcurio/issue/CLO-225/synthesize-add-lint-rules-for-xml-and-json-samples"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030026",
+        "author": "automation",
+        "date": "2025-09-29T22:44:10Z",
+        "subject": "Synthesize: Document rollback procedures for DB changes"
+      },
+      "issue": {
+        "id": "c1ee97bf-75bc-421f-ac4b-36ca361c310d",
+        "identifier": "CLO-226",
+        "url": "https://linear.app/cloudcurio/issue/CLO-226/synthesize-document-rollback-procedures-for-db-changes"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030027",
+        "author": "automation",
+        "date": "2025-09-29T22:44:20Z",
+        "subject": "Synthesize: Add saving raw XML artifacts to S3"
+      },
+      "issue": {
+        "id": "6fd4a452-1008-4605-a67d-8fe2389b6d25",
+        "identifier": "CLO-227",
+        "url": "https://linear.app/cloudcurio/issue/CLO-227/synthesize-add-saving-raw-xml-artifacts-to-s3"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030028",
+        "author": "automation",
+        "date": "2025-09-29T22:44:30Z",
+        "subject": "Synthesize: Add guidelines for contributor onboarding"
+      },
+      "issue": {
+        "id": "850fd5e1-ae4e-4405-aad0-bd1b156cb6e1",
+        "identifier": "CLO-228",
+        "url": "https://linear.app/cloudcurio/issue/CLO-228/synthesize-add-guidelines-for-contributor-onboarding"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030029",
+        "author": "automation",
+        "date": "2025-09-29T22:44:40Z",
+        "subject": "Synthesize: Add instructions for running integration tests"
+      },
+      "issue": {
+        "id": "17ab587f-d4b0-4008-a2a1-52f69b3193d7",
+        "identifier": "CLO-229",
+        "url": "https://linear.app/cloudcurio/issue/CLO-229/synthesize-add-instructions-for-running-integration-tests"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030030",
+        "author": "automation",
+        "date": "2025-09-29T22:44:50Z",
+        "subject": "Synthesize: Add script to generate sample fixtures"
+      },
+      "issue": {
+        "id": "ba7d5019-c6d8-4cfc-8e81-3ce071c14c9b",
+        "identifier": "CLO-230",
+        "url": "https://linear.app/cloudcurio/issue/CLO-230/synthesize-add-script-to-generate-sample-fixtures"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030031",
+        "author": "automation",
+        "date": "2025-09-29T22:45:00Z",
+        "subject": "Synthesize: Document how to run local Elasticsearch"
+      },
+      "issue": {
+        "id": "131bba47-e987-4abb-b209-024e356ad277",
+        "identifier": "CLO-231",
+        "url": "https://linear.app/cloudcurio/issue/CLO-231/synthesize-document-how-to-run-local-elasticsearch"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030032",
+        "author": "automation",
+        "date": "2025-09-29T22:45:10Z",
+        "subject": "Synthesize: Add instructions for configuring Tomcat"
+      },
+      "issue": {
+        "id": "744f6d67-1303-4129-a434-41c3c06af72b",
+        "identifier": "CLO-232",
+        "url": "https://linear.app/cloudcurio/issue/CLO-232/synthesize-add-instructions-for-configuring-tomcat"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030033",
+        "author": "automation",
+        "date": "2025-09-29T22:45:20Z",
+        "subject": "Synthesize: Add JMeter plan for ingestion load testing"
+      },
+      "issue": {
+        "id": "d6cec219-f10f-453c-9d39-0fe479d426ac",
+        "identifier": "CLO-233",
+        "url": "https://linear.app/cloudcurio/issue/CLO-233/synthesize-add-jmeter-plan-for-ingestion-load-testing"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030034",
+        "author": "automation",
+        "date": "2025-09-29T22:45:30Z",
+        "subject": "Synthesize: Add script to verify db schema after migrations"
+      },
+      "issue": {
+        "id": "5e7d5318-6d6e-4627-9ae9-4f8216271540",
+        "identifier": "CLO-234",
+        "url": "https://linear.app/cloudcurio/issue/CLO-234/synthesize-add-script-to-verify-db-schema-after-migrations"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030035",
+        "author": "automation",
+        "date": "2025-09-29T22:45:40Z",
+        "subject": "Synthesize: Add instructions for building frontend demo"
+      },
+      "issue": {
+        "id": "1fd7aefd-5e54-4ae7-ab21-9bf8be43b7c6",
+        "identifier": "CLO-235",
+        "url": "https://linear.app/cloudcurio/issue/CLO-235/synthesize-add-instructions-for-building-frontend-demo"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030036",
+        "author": "automation",
+        "date": "2025-09-29T22:45:50Z",
+        "subject": "Synthesize: Add task to review logging format"
+      },
+      "issue": {
+        "id": "7283dd97-10ee-45ac-8d7b-45b309fc5bc1",
+        "identifier": "CLO-236",
+        "url": "https://linear.app/cloudcurio/issue/CLO-236/synthesize-add-task-to-review-logging-format"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030037",
+        "author": "automation",
+        "date": "2025-09-29T22:46:00Z",
+        "subject": "Synthesize: Add a note about sensitive data handling"
+      },
+      "issue": {
+        "id": "b895c70b-12fb-4c39-af02-9a3793523876",
+        "identifier": "CLO-237",
+        "url": "https://linear.app/cloudcurio/issue/CLO-237/synthesize-add-a-note-about-sensitive-data-handling"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030038",
+        "author": "automation",
+        "date": "2025-09-29T22:46:10Z",
+        "subject": "Synthesize: Add sample SQL to check data integrity"
+      },
+      "issue": {
+        "id": "2bcf0345-0e35-4a40-b7d5-196adb3d2eb7",
+        "identifier": "CLO-238",
+        "url": "https://linear.app/cloudcurio/issue/CLO-238/synthesize-add-sample-sql-to-check-data-integrity"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030039",
+        "author": "automation",
+        "date": "2025-09-29T22:46:20Z",
+        "subject": "Synthesize: Add a guide for schema evolution"
+      },
+      "issue": {
+        "id": "befceb2b-ada3-4995-bc45-f752e22b0cb0",
+        "identifier": "CLO-239",
+        "url": "https://linear.app/cloudcurio/issue/CLO-239/synthesize-add-a-guide-for-schema-evolution"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030040",
+        "author": "automation",
+        "date": "2025-09-29T22:46:30Z",
+        "subject": "Synthesize: Add a plan for nightly incremental runs"
+      },
+      "issue": {
+        "id": "24dc1141-396e-492d-b092-404500999140",
+        "identifier": "CLO-240",
+        "url": "https://linear.app/cloudcurio/issue/CLO-240/synthesize-add-a-plan-for-nightly-incremental-runs"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030041",
+        "author": "automation",
+        "date": "2025-09-29T22:46:40Z",
+        "subject": "Synthesize: Add task to run security audit"
+      },
+      "issue": {
+        "id": "d9556878-1a9b-41cc-8c86-8bb355c2caf1",
+        "identifier": "CLO-241",
+        "url": "https://linear.app/cloudcurio/issue/CLO-241/synthesize-add-task-to-run-security-audit"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030042",
+        "author": "automation",
+        "date": "2025-09-29T22:46:50Z",
+        "subject": "Synthesize: Add documentation for CI secrets"
+      },
+      "issue": {
+        "id": "08d2728c-2f83-4e73-9db6-ec135a6ff1a7",
+        "identifier": "CLO-242",
+        "url": "https://linear.app/cloudcurio/issue/CLO-242/synthesize-add-documentation-for-ci-secrets"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030043",
+        "author": "automation",
+        "date": "2025-09-29T22:47:00Z",
+        "subject": "Synthesize: Add a checklist for release cut"
+      },
+      "issue": {
+        "id": "93e68ba7-9378-4ff5-a42d-ce34fdfa63cb",
+        "identifier": "CLO-243",
+        "url": "https://linear.app/cloudcurio/issue/CLO-243/synthesize-add-a-checklist-for-release-cut"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030044",
+        "author": "automation",
+        "date": "2025-09-29T22:47:10Z",
+        "subject": "Synthesize: Add example queries for reporting"
+      },
+      "issue": {
+        "id": "dbc4d44f-9d5d-4058-a578-f9daa15b6ea7",
+        "identifier": "CLO-244",
+        "url": "https://linear.app/cloudcurio/issue/CLO-244/synthesize-add-example-queries-for-reporting"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030045",
+        "author": "automation",
+        "date": "2025-09-29T22:47:20Z",
+        "subject": "Synthesize: Add guidance for anonymizing PII"
+      },
+      "issue": {
+        "id": "452241b3-040d-41dd-b07a-59a88e3bbd85",
+        "identifier": "CLO-245",
+        "url": "https://linear.app/cloudcurio/issue/CLO-245/synthesize-add-guidance-for-anonymizing-pii"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030046",
+        "author": "automation",
+        "date": "2025-09-29T22:47:30Z",
+        "subject": "Synthesize: Add tests for data schema compatibility"
+      },
+      "issue": {
+        "id": "9abd0e57-cd91-41a8-8c85-f0103bebfca1",
+        "identifier": "CLO-246",
+        "url": "https://linear.app/cloudcurio/issue/CLO-246/synthesize-add-tests-for-data-schema-compatibility"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030047",
+        "author": "automation",
+        "date": "2025-09-29T22:47:40Z",
+        "subject": "Synthesize: Add task to document indexing refresh strategy"
+      },
+      "issue": {
+        "id": "6c490cf9-dfd9-40df-b4ca-4063a99d18b7",
+        "identifier": "CLO-247",
+        "url": "https://linear.app/cloudcurio/issue/CLO-247/synthesize-add-task-to-document-indexing-refresh-strategy"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030048",
+        "author": "automation",
+        "date": "2025-09-29T22:47:50Z",
+        "subject": "Synthesize: Add task to evaluate crawl efficiency"
+      },
+      "issue": {
+        "id": "059f1ab9-1006-41da-90fb-1518de3058b4",
+        "identifier": "CLO-248",
+        "url": "https://linear.app/cloudcurio/issue/CLO-248/synthesize-add-task-to-evaluate-crawl-efficiency"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030049",
+        "author": "automation",
+        "date": "2025-09-29T22:48:00Z",
+        "subject": "Synthesize: Add task to inspect crawl coverage"
+      },
+      "issue": {
+        "id": "a6ffd791-3db1-4e02-a084-24a1d9f2fb7c",
+        "identifier": "CLO-249",
+        "url": "https://linear.app/cloudcurio/issue/CLO-249/synthesize-add-task-to-inspect-crawl-coverage"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0030050",
+        "author": "automation",
+        "date": "2025-09-29T22:48:10Z",
+        "subject": "Synthesize: Add follow-up items from recent meeting"
+      },
+      "issue": {
+        "id": "4da57102-5303-460b-82c9-e987557773ea",
+        "identifier": "CLO-250",
+        "url": "https://linear.app/cloudcurio/issue/CLO-250/synthesize-add-follow-up-items-from-recent-meeting"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040001",
+        "author": "automation",
+        "date": "2025-09-29T22:49:00Z",
+        "subject": "Synthesize: Migrate federal ingestion mapping docs to new schema"
+      },
+      "issue": {
+        "id": "f63ded8e-95a3-49aa-8d82-e9355972e82a",
+        "identifier": "CLO-251",
+        "url": "https://linear.app/cloudcurio/issue/CLO-251/synthesize-migrate-federal-ingestion-mapping-docs-to-new-schema"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040002",
+        "author": "automation",
+        "date": "2025-09-29T22:49:10Z",
+        "subject": "Synthesize: Add end-to-end test for congress.gov bulk import"
+      },
+      "issue": {
+        "id": "837f40fe-bfe9-47b8-9a9e-1066bbd26186",
+        "identifier": "CLO-252",
+        "url": "https://linear.app/cloudcurio/issue/CLO-252/synthesize-add-end-to-end-test-for-congressgov-bulk-import"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040003",
+        "author": "automation",
+        "date": "2025-09-29T22:49:20Z",
+        "subject": "Synthesize: Add script to summarize run metrics"
+      },
+      "issue": {
+        "id": "ff671389-92a0-409e-9df9-67c1e635023e",
+        "identifier": "CLO-253",
+        "url": "https://linear.app/cloudcurio/issue/CLO-253/synthesize-add-script-to-summarize-run-metrics"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040004",
+        "author": "automation",
+        "date": "2025-09-29T22:49:30Z",
+        "subject": "Synthesize: Add task to review API pagination logic"
+      },
+      "issue": {
+        "id": "4f8c6c3b-f8d4-4b7e-a81c-bfa2ac4953c3",
+        "identifier": "CLO-254",
+        "url": "https://linear.app/cloudcurio/issue/CLO-254/synthesize-add-task-to-review-api-pagination-logic"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040005",
+        "author": "automation",
+        "date": "2025-09-29T22:49:40Z",
+        "subject": "Synthesize: Add task to implement backpressure on ingestion"
+      },
+      "issue": {
+        "id": "80fb4b59-72b9-44a6-8c21-b4fb5b5a290a",
+        "identifier": "CLO-255",
+        "url": "https://linear.app/cloudcurio/issue/CLO-255/synthesize-add-task-to-implement-backpressure-on-ingestion"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040006",
+        "author": "automation",
+        "date": "2025-09-29T22:49:50Z",
+        "subject": "Synthesize: Document approach for multi-congress support"
+      },
+      "issue": {
+        "id": "35ea8c39-1568-4507-afcc-f7ad6b72ca0a",
+        "identifier": "CLO-256",
+        "url": "https://linear.app/cloudcurio/issue/CLO-256/synthesize-document-approach-for-multi-congress-support"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040007",
+        "author": "automation",
+        "date": "2025-09-29T22:50:00Z",
+        "subject": "Synthesize: Create heuristics for action deduplication"
+      },
+      "issue": {
+        "id": "8caedffc-aefb-4caa-9c0c-e369e016e1a2",
+        "identifier": "CLO-257",
+        "url": "https://linear.app/cloudcurio/issue/CLO-257/synthesize-create-heuristics-for-action-deduplication"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040008",
+        "author": "automation",
+        "date": "2025-09-29T22:50:10Z",
+        "subject": "Synthesize: Add monitoring dashboard for job failures"
+      },
+      "issue": {
+        "id": "7dc6a93d-08f7-4817-9e7d-63264499fc78",
+        "identifier": "CLO-258",
+        "url": "https://linear.app/cloudcurio/issue/CLO-258/synthesize-add-monitoring-dashboard-for-job-failures"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040009",
+        "author": "automation",
+        "date": "2025-09-29T22:50:20Z",
+        "subject": "Synthesize: Add script to reconcile db vs index counts"
+      },
+      "issue": {
+        "id": "ee922667-c5fa-4c71-b596-dd29611630fa",
+        "identifier": "CLO-259",
+        "url": "https://linear.app/cloudcurio/issue/CLO-259/synthesize-add-script-to-reconcile-db-vs-index-counts"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040010",
+        "author": "automation",
+        "date": "2025-09-29T22:50:30Z",
+        "subject": "Synthesize: Add task to improve bill text diffing"
+      },
+      "issue": {
+        "id": "0e7e65f9-651e-4826-badc-232985967708",
+        "identifier": "CLO-260",
+        "url": "https://linear.app/cloudcurio/issue/CLO-260/synthesize-add-task-to-improve-bill-text-diffing"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040011",
+        "author": "automation",
+        "date": "2025-09-29T22:50:40Z",
+        "subject": "Synthesize: Add maintenance task for reindexing stale docs"
+      },
+      "issue": {
+        "id": "2830c572-d4cc-4a54-a65f-71dbbb195d58",
+        "identifier": "CLO-261",
+        "url": "https://linear.app/cloudcurio/issue/CLO-261/synthesize-add-maintenance-task-for-reindexing-stale-docs"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040012",
+        "author": "automation",
+        "date": "2025-09-29T22:50:50Z",
+        "subject": "Synthesize: Add issue for mapping FR references to bills"
+      },
+      "issue": {
+        "id": "a83a7fa4-e98f-4492-bb12-beba476e231e",
+        "identifier": "CLO-262",
+        "url": "https://linear.app/cloudcurio/issue/CLO-262/synthesize-add-issue-for-mapping-fr-references-to-bills"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040013",
+        "author": "automation",
+        "date": "2025-09-29T22:51:00Z",
+        "subject": "Synthesize: Add task to verify timezone handling across systems"
+      },
+      "issue": {
+        "id": "ac320f9e-77ac-4c01-98f2-ed76a4d245dd",
+        "identifier": "CLO-263",
+        "url": "https://linear.app/cloudcurio/issue/CLO-263/synthesize-add-task-to-verify-timezone-handling-across-systems"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040014",
+        "author": "automation",
+        "date": "2025-09-29T22:51:10Z",
+        "subject": "Synthesize: Add a runbook for large-scale reingestion"
+      },
+      "issue": {
+        "id": "7194856d-cb15-4387-9049-e6904fdeb53a",
+        "identifier": "CLO-264",
+        "url": "https://linear.app/cloudcurio/issue/CLO-264/synthesize-add-a-runbook-for-large-scale-reingestion"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040015",
+        "author": "automation",
+        "date": "2025-09-29T22:51:20Z",
+        "subject": "Synthesize: Add a task to audit third-party dependencies"
+      },
+      "issue": {
+        "id": "2ff9d03b-1579-427d-b318-7c340746113e",
+        "identifier": "CLO-265",
+        "url": "https://linear.app/cloudcurio/issue/CLO-265/synthesize-add-a-task-to-audit-third-party-dependencies"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040016",
+        "author": "automation",
+        "date": "2025-09-29T22:51:30Z",
+        "subject": "Synthesize: Add task to standardize action metadata fields"
+      },
+      "issue": {
+        "id": "6bf6982b-0c89-458c-af97-f9dec5246d7e",
+        "identifier": "CLO-266",
+        "url": "https://linear.app/cloudcurio/issue/CLO-266/synthesize-add-task-to-standardize-action-metadata-fields"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040017",
+        "author": "automation",
+        "date": "2025-09-29T22:51:40Z",
+        "subject": "Synthesize: Add diagram showing data flow pipeline"
+      },
+      "issue": {
+        "id": "5140245c-49f6-4c72-b13f-2b701b3511b5",
+        "identifier": "CLO-267",
+        "url": "https://linear.app/cloudcurio/issue/CLO-267/synthesize-add-diagram-showing-data-flow-pipeline"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040018",
+        "author": "automation",
+        "date": "2025-09-29T22:51:50Z",
+        "subject": "Synthesize: Add task to implement feature flags for parsers"
+      },
+      "issue": {
+        "id": "9842ba1a-abc8-4116-99fc-acd06b13335e",
+        "identifier": "CLO-268",
+        "url": "https://linear.app/cloudcurio/issue/CLO-268/synthesize-add-task-to-implement-feature-flags-for-parsers"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040019",
+        "author": "automation",
+        "date": "2025-09-29T22:52:00Z",
+        "subject": "Synthesize: Create a sample dataset for performance testing"
+      },
+      "issue": {
+        "id": "ed768768-6805-4ab8-8287-08b5d5d431ac",
+        "identifier": "CLO-269",
+        "url": "https://linear.app/cloudcurio/issue/CLO-269/synthesize-create-a-sample-dataset-for-performance-testing"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040020",
+        "author": "automation",
+        "date": "2025-09-29T22:52:10Z",
+        "subject": "Synthesize: Add issue for improving contributor docs"
+      },
+      "issue": {
+        "id": "b70d40f9-6a02-4e7e-a52e-474665440755",
+        "identifier": "CLO-270",
+        "url": "https://linear.app/cloudcurio/issue/CLO-270/synthesize-add-issue-for-improving-contributor-docs"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040021",
+        "author": "automation",
+        "date": "2025-09-29T22:52:20Z",
+        "subject": "Synthesize: Add task to consolidate duplicate source processors"
+      },
+      "issue": {
+        "id": "cec91268-3ed3-4bc2-8e80-10eda8b60d0f",
+        "identifier": "CLO-271",
+        "url": "https://linear.app/cloudcurio/issue/CLO-271/synthesize-add-task-to-consolidate-duplicate-source-processors"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040022",
+        "author": "automation",
+        "date": "2025-09-29T22:52:30Z",
+        "subject": "Synthesize: Add policy doc for data retention schedules"
+      },
+      "issue": {
+        "id": "5a221513-5409-4e04-91b0-0a0b05bc2d2f",
+        "identifier": "CLO-272",
+        "url": "https://linear.app/cloudcurio/issue/CLO-272/synthesize-add-policy-doc-for-data-retention-schedules"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040023",
+        "author": "automation",
+        "date": "2025-09-29T22:52:40Z",
+        "subject": "Synthesize: Add tests to validate link extraction"
+      },
+      "issue": {
+        "id": "61f2febc-e1ff-45a0-93cd-8e8cf8a3f70d",
+        "identifier": "CLO-273",
+        "url": "https://linear.app/cloudcurio/issue/CLO-273/synthesize-add-tests-to-validate-link-extraction"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040024",
+        "author": "automation",
+        "date": "2025-09-29T22:52:50Z",
+        "subject": "Synthesize: Add task to document ingestion SLAs"
+      },
+      "issue": {
+        "id": "3d2e621d-0415-426e-bfda-6831d4aa8862",
+        "identifier": "CLO-274",
+        "url": "https://linear.app/cloudcurio/issue/CLO-274/synthesize-add-task-to-document-ingestion-slas"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040025",
+        "author": "automation",
+        "date": "2025-09-29T22:53:00Z",
+        "subject": "Synthesize: Add ticket for improving logging context"
+      },
+      "issue": {
+        "id": "fbc2602b-3e3a-42be-813a-a7f31c60ddbc",
+        "identifier": "CLO-275",
+        "url": "https://linear.app/cloudcurio/issue/CLO-275/synthesize-add-ticket-for-improving-logging-context"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040026",
+        "author": "automation",
+        "date": "2025-09-29T22:53:10Z",
+        "subject": "Synthesize: Add automation to tag issues by area"
+      },
+      "issue": {
+        "id": "07cc26dd-7e8d-4aff-845d-21d9131ddb35",
+        "identifier": "CLO-276",
+        "url": "https://linear.app/cloudcurio/issue/CLO-276/synthesize-add-automation-to-tag-issues-by-area"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040027",
+        "author": "automation",
+        "date": "2025-09-29T22:53:20Z",
+        "subject": "Synthesize: Add task to explore caching strategies"
+      },
+      "issue": {
+        "id": "d267aa16-b8b6-4971-b1bd-cd7339850489",
+        "identifier": "CLO-277",
+        "url": "https://linear.app/cloudcurio/issue/CLO-277/synthesize-add-task-to-explore-caching-strategies"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040028",
+        "author": "automation",
+        "date": "2025-09-29T22:53:30Z",
+        "subject": "Synthesize: Add performance budget for parsing"
+      },
+      "issue": {
+        "id": "99b71b36-b5b8-43be-8d65-c99ab9f23d11",
+        "identifier": "CLO-278",
+        "url": "https://linear.app/cloudcurio/issue/CLO-278/synthesize-add-performance-budget-for-parsing"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040029",
+        "author": "automation",
+        "date": "2025-09-29T22:53:40Z",
+        "subject": "Synthesize: Add instruction to run alembic (if used)"
+      },
+      "issue": {
+        "id": "0c260894-0076-4e9f-a03c-b3a4279c5e6f",
+        "identifier": "CLO-279",
+        "url": "https://linear.app/cloudcurio/issue/CLO-279/synthesize-add-instruction-to-run-alembic-if-used"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040030",
+        "author": "automation",
+        "date": "2025-09-29T22:53:50Z",
+        "subject": "Synthesize: Create example transform for congressional documents"
+      },
+      "issue": {
+        "id": "91e8b78e-1d46-4592-a197-8874d0d80a20",
+        "identifier": "CLO-280",
+        "url": "https://linear.app/cloudcurio/issue/CLO-280/synthesize-create-example-transform-for-congressional-documents"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040031",
+        "author": "automation",
+        "date": "2025-09-29T22:54:00Z",
+        "subject": "Synthesize: Add task to clean up deprecated scripts"
+      },
+      "issue": {
+        "id": "b4b2ad4b-a526-4e3b-9238-fff2d9b9a75a",
+        "identifier": "CLO-281",
+        "url": "https://linear.app/cloudcurio/issue/CLO-281/synthesize-add-task-to-clean-up-deprecated-scripts"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040032",
+        "author": "automation",
+        "date": "2025-09-29T22:54:10Z",
+        "subject": "Synthesize: Add guidance for metadata enrichment"
+      },
+      "issue": {
+        "id": "50843def-1ae2-4534-998f-e78919ff2916",
+        "identifier": "CLO-282",
+        "url": "https://linear.app/cloudcurio/issue/CLO-282/synthesize-add-guidance-for-metadata-enrichment"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040033",
+        "author": "automation",
+        "date": "2025-09-29T22:54:20Z",
+        "subject": "Synthesize: Add issue to review exception handling"
+      },
+      "issue": {
+        "id": "7832e9a8-bb22-46b8-9f7a-7062f4dacf81",
+        "identifier": "CLO-283",
+        "url": "https://linear.app/cloudcurio/issue/CLO-283/synthesize-add-issue-to-review-exception-handling"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040034",
+        "author": "automation",
+        "date": "2025-09-29T22:54:30Z",
+        "subject": "Synthesize: Add task to improve test fixture generation"
+      },
+      "issue": {
+        "id": "59984204-0de7-4be5-98a0-1ca88931280f",
+        "identifier": "CLO-284",
+        "url": "https://linear.app/cloudcurio/issue/CLO-284/synthesize-add-task-to-improve-test-fixture-generation"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040035",
+        "author": "automation",
+        "date": "2025-09-29T22:54:40Z",
+        "subject": "Synthesize: Add checklist for ingesting a new source"
+      },
+      "issue": {
+        "id": "a6f52029-a9f2-48e4-97ed-f9ca5378406b",
+        "identifier": "CLO-285",
+        "url": "https://linear.app/cloudcurio/issue/CLO-285/synthesize-add-checklist-for-ingesting-a-new-source"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040036",
+        "author": "automation",
+        "date": "2025-09-29T22:54:50Z",
+        "subject": "Synthesize: Add diagram for storage tiering"
+      },
+      "issue": {
+        "id": "bc4ffce9-6a55-4147-9a19-0c1fdb1aba07",
+        "identifier": "CLO-286",
+        "url": "https://linear.app/cloudcurio/issue/CLO-286/synthesize-add-diagram-for-storage-tiering"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040037",
+        "author": "automation",
+        "date": "2025-09-29T22:55:00Z",
+        "subject": "Synthesize: Add task to add TTL for temp indices"
+      },
+      "issue": {
+        "id": "76d51944-9520-4f40-b1ef-78549b138a88",
+        "identifier": "CLO-287",
+        "url": "https://linear.app/cloudcurio/issue/CLO-287/synthesize-add-task-to-add-ttl-for-temp-indices"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040038",
+        "author": "automation",
+        "date": "2025-09-29T22:55:10Z",
+        "subject": "Synthesize: Add task to support incremental schema patches"
+      },
+      "issue": {
+        "id": "b294bd92-7407-4e16-bf88-bb18f943b01b",
+        "identifier": "CLO-288",
+        "url": "https://linear.app/cloudcurio/issue/CLO-288/synthesize-add-task-to-support-incremental-schema-patches"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040039",
+        "author": "automation",
+        "date": "2025-09-29T22:55:20Z",
+        "subject": "Synthesize: Add task to audit access controls"
+      },
+      "issue": {
+        "id": "7a31a6bc-70e9-4025-b035-2d304ba9360b",
+        "identifier": "CLO-289",
+        "url": "https://linear.app/cloudcurio/issue/CLO-289/synthesize-add-task-to-audit-access-controls"
+      }
+    },
+    {
+      "commit": {
+        "hash": "m0040040",
+        "author": "automation",
+        "date": "2025-09-29T22:55:30Z",
+        "subject": "Synthesize: Add follow-ups from engineering retro"
+      },
+      "issue": {
+        "id": "cd408844-0283-451c-9fb4-21dd49b6e30f",
+        "identifier": "CLO-290",
+        "url": "https://linear.app/cloudcurio/issue/CLO-290/synthesize-add-follow-ups-from-engineering-retro"
+      }
+    }
+  ],
+  "failed": [],
+  "skipped": []
+}

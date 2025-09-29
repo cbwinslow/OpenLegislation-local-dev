@@ -1,0 +1,51 @@
+hash,author,date,subject
+m0030001,automation,2025-09-29T22:40:00Z,Synthesize: Data ingestion - review govinfo rate limits
+m0030002,automation,2025-09-29T22:40:10Z,Synthesize: Add tests for feed deduplication
+m0030003,automation,2025-09-29T22:40:20Z,Synthesize: Document export CSV schemas
+m0030004,automation,2025-09-29T22:40:30Z,Synthesize: Create script to validate XML against XSD
+m0030005,automation,2025-09-29T22:40:40Z,Synthesize: Add monitoring for ingestion lag
+m0030006,automation,2025-09-29T22:40:50Z,Synthesize: Implement incremental backfill plan
+m0030007,automation,2025-09-29T22:41:00Z,Synthesize: Add example queries for quality metrics
+m0030008,automation,2025-09-29T22:41:10Z,Synthesize: Document Elasticsearch index mappings for bills
+m0030009,automation,2025-09-29T22:41:20Z,Synthesize: Add CI job to run schema checks
+m0030010,automation,2025-09-29T22:41:30Z,Synthesize: Add benchmarks for parsing performance
+m0030011,automation,2025-09-29T22:41:40Z,Synthesize: Add sample policy for data retention
+m0030012,automation,2025-09-29T22:41:50Z,Synthesize: Create small Docker dev setup for ingestion
+m0030013,automation,2025-09-29T22:42:00Z,Synthesize: Add README entries for batch format
+m0030014,automation,2025-09-29T22:42:10Z,Synthesize: Add step to archive processed XMLs
+m0030015,automation,2025-09-29T22:42:20Z,Synthesize: Add idempotency tests for importer
+m0030016,automation,2025-09-29T22:42:30Z,Synthesize: Add smoke test to validate Elasticsearch indexing
+m0030017,automation,2025-09-29T22:42:40Z,Synthesize: Add guidance for local DB migrations
+m0030018,automation,2025-09-29T22:42:50Z,Synthesize: Create a list of edge-case sample files
+m0030019,automation,2025-09-29T22:43:00Z,Synthesize: Document the rate-limiting strategy for APIs
+m0030020,automation,2025-09-29T22:43:10Z,Synthesize: Add sample env files and templates
+m0030021,automation,2025-09-29T22:43:20Z,Synthesize: Add k8s manifest examples for staging
+m0030022,automation,2025-09-29T22:43:30Z,Synthesize: Add issue template for schema migration
+m0030023,automation,2025-09-29T22:43:40Z,Synthesize: Add a task to review Flyway migrations
+m0030024,automation,2025-09-29T22:43:50Z,Synthesize: Create a data quality dashboard spec
+m0030025,automation,2025-09-29T22:44:00Z,Synthesize: Add lint rules for XML and JSON samples
+m0030026,automation,2025-09-29T22:44:10Z,Synthesize: Document rollback procedures for DB changes
+m0030027,automation,2025-09-29T22:44:20Z,Synthesize: Add saving raw XML artifacts to S3
+m0030028,automation,2025-09-29T22:44:30Z,Synthesize: Add guidelines for contributor onboarding
+m0030029,automation,2025-09-29T22:44:40Z,Synthesize: Add instructions for running integration tests
+m0030030,automation,2025-09-29T22:44:50Z,Synthesize: Add script to generate sample fixtures
+m0030031,automation,2025-09-29T22:45:00Z,Synthesize: Document how to run local Elasticsearch
+m0030032,automation,2025-09-29T22:45:10Z,Synthesize: Add instructions for configuring Tomcat
+m0030033,automation,2025-09-29T22:45:20Z,Synthesize: Add JMeter plan for ingestion load testing
+m0030034,automation,2025-09-29T22:45:30Z,Synthesize: Add script to verify db schema after migrations
+m0030035,automation,2025-09-29T22:45:40Z,Synthesize: Add instructions for building frontend demo
+m0030036,automation,2025-09-29T22:45:50Z,Synthesize: Add task to review logging format
+m0030037,automation,2025-09-29T22:46:00Z,Synthesize: Add a note about sensitive data handling
+m0030038,automation,2025-09-29T22:46:10Z,Synthesize: Add sample SQL to check data integrity
+m0030039,automation,2025-09-29T22:46:20Z,Synthesize: Add a guide for schema evolution
+m0030040,automation,2025-09-29T22:46:30Z,Synthesize: Add a plan for nightly incremental runs
+m0030041,automation,2025-09-29T22:46:40Z,Synthesize: Add task to run security audit
+m0030042,automation,2025-09-29T22:46:50Z,Synthesize: Add documentation for CI secrets
+m0030043,automation,2025-09-29T22:47:00Z,Synthesize: Add a checklist for release cut
+m0030044,automation,2025-09-29T22:47:10Z,Synthesize: Add example queries for reporting
+m0030045,automation,2025-09-29T22:47:20Z,Synthesize: Add guidance for anonymizing PII
+m0030046,automation,2025-09-29T22:47:30Z,Synthesize: Add tests for data schema compatibility
+m0030047,automation,2025-09-29T22:47:40Z,Synthesize: Add task to document indexing refresh strategy
+m0030048,automation,2025-09-29T22:47:50Z,Synthesize: Add task to evaluate crawl efficiency
+m0030049,automation,2025-09-29T22:48:00Z,Synthesize: Add task to inspect crawl coverage
+m0030050,automation,2025-09-29T22:48:10Z,Synthesize: Add follow-up items from recent meeting

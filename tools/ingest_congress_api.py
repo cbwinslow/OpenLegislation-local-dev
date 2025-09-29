@@ -17,6 +17,9 @@ focuses on the following goals:
 The script is intentionally conservative – it does not attempt to mutate the
 database during unit tests and defaults to reading configuration from the same
 environment variables used by the Java ingestion pipeline.
+
+Extended to support all Congress.gov v3 endpoints: bill, amendment, member, committee, hearing, congressional-record,
+federal-register, law, nomination, treaty. Generic mapping for new types; specific for core (bill, member, committee).
 """
 
 from __future__ import annotations
@@ -41,13 +44,11 @@ from urllib3.util.retry import Retry
 LOGGER = logging.getLogger("federal_ingestion")
 
 # ---------------------------------------------------------------------------
-# Mapping helpers
+# Mapping helpers (extended for all types)
 # ---------------------------------------------------------------------------
 
-
 def map_congress_member(payload: Mapping[str, Any]) -> Dict[str, Any]:
-    """Normalise a congress.gov member response for ``master.federal_member``."""
-
+    """Normalise a congress.gov member response for ``master.federal_members``."""
     member = payload.get("member", {})
     social_media = {
         "twitter": member.get("twitterAccount"),
@@ -67,16 +68,24 @@ def map_congress_member(payload: Mapping[str, Any]) -> Dict[str, Any]:
         "committees": json.dumps(member.get("committees", [])),
         "social_media": json.dumps(social_media),
         "source": "federal",
+        "document_type": "member"
     }
     return mapped
 
-
 def map_congress_bill(payload: Mapping[str, Any]) -> Dict[str, Any]:
-    """Normalise a congress.gov bill response for ``master.bills``."""
-
+    """Normalise a congress.gov bill/amendment/resolution response for ``master.federal_bills``."""
     bill = payload.get("bill", {})
     sponsors = bill.get("sponsors", []) or []
     actions = bill.get("actions", []) or []
+    doc_type = "bill"
+    amends_url = None
+    amendment_num = None
+    if "amendment" in payload:
+        doc_type = "amendment"
+        amends_url = payload.get("amendsBill", {}).get("url")
+        amendment_num = payload.get("amendmentNumber")
+    elif bill.get("type") in ["hres", "sres", "hjres", "sjres"]:
+        doc_type = "resolution"
     mapped = {
         "print_no": f"{bill.get('type', '')}{bill.get('number', '')}",
         "session_year": payload.get("sessionYear") or payload.get("session_year"),
@@ -85,62 +94,125 @@ def map_congress_bill(payload: Mapping[str, Any]) -> Dict[str, Any]:
         "actions": json.dumps([{"text": a.get("text")} for a in actions]),
         "federal_congress": payload.get("congress"),
         "source": "federal",
+        "document_type": doc_type,
+        "amends_source_url": amends_url,
+        "amendment_number": amendment_num
     }
     return mapped
 
-
-def map_openstates_member(payload: Mapping[str, Any]) -> Dict[str, Any]:
-    """Normalise an OpenStates legislator response for ``master.federal_member``."""
-
-    committees = payload.get("committees", []) or []
-    roles = payload.get("roles", []) or []
-    social_media = {
-        "twitter": payload.get("twitter_id"),
-        "facebook": payload.get("facebook_id"),
-        "website": payload.get("url"),
-    }
+def map_congress_committee(payload: Mapping[str, Any]) -> Dict[str, Any]:
+    """Normalise committee response."""
+    committee = payload.get("committee", {})
+    members = committee.get("members", []) or []
     mapped = {
-        "openstates_id": payload.get("id"),
-        "full_name": payload.get("name"),
-        "first_name": payload.get("given_name"),
-        "last_name": payload.get("family_name"),
-        "party": payload.get("party"),
-        "state": (payload.get("state") or "").upper() or None,
-        "chamber": (payload.get("chamber") or "").lower() or None,
-        "current_member": bool(payload.get("active", True)),
-        "terms": json.dumps([
-            {"state": role.get("state"), "type": role.get("type")}
-            for role in roles
-            if role.get("type") == "member"
-        ]),
-        "committees": json.dumps(committees),
-        "social_media": json.dumps(social_media),
-        "source": "state",
+        "committee_code": committee.get("committeeCode"),
+        "name": committee.get("name"),
+        "chamber": committee.get("chamber", "").lower(),
+        "type": committee.get("type"),
+        "members": json.dumps([{"name": m.get("name"), "role": m.get("role")} for m in members]),
+        "source": "federal",
+        "document_type": "committee"
     }
     return mapped
 
-
-def map_openstates_bill(payload: Mapping[str, Any]) -> Dict[str, Any]:
-    """Normalise an OpenStates bill response for ``master.bills``."""
-
-    sponsors = payload.get("sponsors", []) or []
-    actions = payload.get("actions", []) or []
+def map_congress_hearing(payload: Mapping[str, Any]) -> Dict[str, Any]:
+    """Normalise hearing response."""
+    hearing = payload.get("hearing", {})
+    witnesses = hearing.get("witnesses", []) or []
     mapped = {
-        "bill_id": payload.get("id"),
-        "print_no": payload.get("bill_id"),
-        "session_year": int(payload.get("session")) if payload.get("session") else None,
-        "title": payload.get("title"),
-        "sponsors": json.dumps([{"name": s.get("name")} for s in sponsors]),
-        "actions": json.dumps([{"text": a.get("description")} for a in actions]),
-        "source": "state",
+        "hearing_id": hearing.get("hearingId"),
+        "date": hearing.get("hearingDate"),
+        "committee": hearing.get("committee"),
+        "witnesses": json.dumps([{"name": w.get("name"), "title": w.get("title")} for w in witnesses]),
+        "text": hearing.get("summary"),
+        "source": "federal",
+        "document_type": "hearing"
     }
     return mapped
 
+def map_congress_record(payload: Mapping[str, Any]) -> Dict[str, Any]:
+    """Normalise congressional record response."""
+    record = payload.get("congressionalRecord", {})
+    mapped = {
+        "record_id": record.get("recordId"),
+        "date": record.get("date"),
+        "speakers": json.dumps(record.get("speakers", [])),
+        "text": record.get("text"),
+        "source": "federal",
+        "document_type": "record"
+    }
+    return mapped
+
+def map_congress_register(payload: Mapping[str, Any]) -> Dict[str, Any]:
+    """Normalise federal register response."""
+    register = payload.get("federalRegister", {})
+    agencies = register.get("agencies", []) or []
+    mapped = {
+        "docket_id": register.get("docketId"),
+        "agencies": json.dumps([{"name": a.get("name")} for a in agencies]),
+        "text": register.get("text"),
+        "date": register.get("publicationDate"),
+        "source": "federal",
+        "document_type": "register"
+    }
+    return mapped
+
+def map_congress_law(payload: Mapping[str, Any]) -> Dict[str, Any]:
+    """Normalise law response."""
+    law = payload.get("law", {})
+    sections = law.get("sections", []) or []
+    mapped = {
+        "public_law_number": law.get("publicLawNumber"),
+        "sections": json.dumps([{"number": s.get("number"), "text": s.get("text")} for s in sections]),
+        "enacted_date": law.get("enactedDate"),
+        "source": "federal",
+        "document_type": "law"
+    }
+    return mapped
+
+def map_congress_nomination(payload: Mapping[str, Any]) -> Dict[str, Any]:
+    """Normalise nomination response."""
+    nomination = payload.get("nomination", {})
+    mapped = {
+        "nomination_number": nomination.get("nominationNumber"),
+        "nominee_name": nomination.get("nomineeName"),
+        "position": nomination.get("position"),
+        "status": nomination.get("status"),
+        "source": "federal",
+        "document_type": "nomination"
+    }
+    return mapped
+
+def map_congress_treaty(payload: Mapping[str, Any]) -> Dict[str, Any]:
+    """Normalise treaty response."""
+    treaty = payload.get("treaty", {})
+    signatories = treaty.get("signatories", []) or []
+    mapped = {
+        "treaty_doc_number": treaty.get("treatyDocNumber"),
+        "title": treaty.get("title"),
+        "status": treaty.get("status"),
+        "signatories": json.dumps([{"country": s.get("country"), "date": s.get("date")} for s in signatories]),
+        "source": "federal",
+        "document_type": "treaty"
+    }
+    return mapped
+
+# Generic mapper for unknown types (fallback)
+def map_generic(payload: Mapping[str, Any], doc_type: str) -> Dict[str, Any]:
+    """Generic mapping for new endpoints."""
+    mapped = {
+        "source_url": payload.get("url", ""),
+        "title": payload.get("title", ""),
+        "date": payload.get("date"),
+        "metadata": json.dumps(payload),
+        "source": "federal",
+        "document_type": doc_type
+    }
+    return mapped
 
 # ---------------------------------------------------------------------------
-# Configuration
+# Configuration (extended for all endpoints)
 # ---------------------------------------------------------------------------
-
 
 API_KEYS = {
     "congress": os.getenv("CONGRESS_API_KEY", "DEMO_KEY"),
@@ -153,7 +225,6 @@ DEFAULT_BATCH_SIZE = int(os.getenv("BATCH_SIZE", "50"))
 
 LOG_FILE = Path("tools/ingestion_log.json")
 
-
 @dataclass(frozen=True)
 class EndpointConfig:
     path: str
@@ -161,44 +232,111 @@ class EndpointConfig:
     pk_col: str
     mapper: Callable[[Mapping[str, Any]], Dict[str, Any]]
     item_key: str
-
+    doc_type: str  # For generic handling
 
 def build_endpoint_config() -> Dict[str, Dict[str, EndpointConfig]]:
     return {
         "congress": {
             "member": EndpointConfig(
                 path="/member",
-                table="master.federal_member",
+                table="federal_members",
                 pk_col="bioguide_id",
                 mapper=map_congress_member,
                 item_key="members",
+                doc_type="member"
             ),
             "bill": EndpointConfig(
                 path="/bill",
-                table="master.bills",
+                table="federal_bills",
                 pk_col="print_no",
                 mapper=map_congress_bill,
                 item_key="bills",
+                doc_type="bill"
+            ),
+            "amendment": EndpointConfig(
+                path="/amendment",
+                table="federal_bills",
+                pk_col="amendment_number",
+                mapper=map_congress_bill,  # Reuse with amendment logic
+                item_key="amendments",
+                doc_type="amendment"
+            ),
+            "committee": EndpointConfig(
+                path="/committee",
+                table="federal_committees",
+                pk_col="committee_code",
+                mapper=map_congress_committee,
+                item_key="committees",
+                doc_type="committee"
+            ),
+            "hearing": EndpointConfig(
+                path="/hearing",
+                table="federal_hearings",
+                pk_col="hearing_id",
+                mapper=map_congress_hearing,
+                item_key="hearings",
+                doc_type="hearing"
+            ),
+            "congressional-record": EndpointConfig(
+                path="/congressional-record",
+                table="federal_records",
+                pk_col="record_id",
+                mapper=map_congress_record,
+                item_key="records",
+                doc_type="record"
+            ),
+            "federal-register": EndpointConfig(
+                path="/federal-register",
+                table="federal_register_docs",
+                pk_col="docket_id",
+                mapper=map_congress_register,
+                item_key="documents",
+                doc_type="register"
+            ),
+            "law": EndpointConfig(
+                path="/law",
+                table="federal_laws",
+                pk_col="public_law_number",
+                mapper=map_congress_law,
+                item_key="laws",
+                doc_type="law"
+            ),
+            "nomination": EndpointConfig(
+                path="/nomination",
+                table="federal_nominations",
+                pk_col="nomination_number",
+                mapper=map_congress_nomination,
+                item_key="nominations",
+                doc_type="nomination"
+            ),
+            "treaty": EndpointConfig(
+                path="/treaty",
+                table="federal_treaties",
+                pk_col="treaty_doc_number",
+                mapper=map_congress_treaty,
+                item_key="treaties",
+                doc_type="treaty"
             ),
         },
         "openstates": {
             "member": EndpointConfig(
                 path="/legislators/",
-                table="master.federal_member",
+                table="federal_members",
                 pk_col="openstates_id",
                 mapper=map_openstates_member,
                 item_key="results",
+                doc_type="member"
             ),
             "bill": EndpointConfig(
                 path="/bills/",
-                table="master.bills",
+                table="federal_bills",
                 pk_col="bill_id",
                 mapper=map_openstates_bill,
                 item_key="results",
+                doc_type="bill"
             ),
         },
     }
-
 
 ENDPOINTS: Dict[str, Dict[str, EndpointConfig]] = build_endpoint_config()
 
@@ -207,14 +345,12 @@ BASE_URLS = {
     "openstates": "https://openstates.org/api/v1",
 }
 
-
 # ---------------------------------------------------------------------------
-# Core ingester
+# Core ingester (extended for all endpoints)
 # ---------------------------------------------------------------------------
-
 
 class CongressAPIIngester:
-    """Stateful helper that orchestrates pagination, mapping, and persistence."""
+    """Stateful helper that orchestrates pagination, mapping, and persistence for all endpoints."""
 
     def __init__(
         self,
@@ -341,7 +477,7 @@ class CongressAPIIngester:
             return True
 
         if self.dry_run:
-            LOGGER.info("Dry-run: %s rows mapped for %s", len(rows), self.endpoint_config.table)
+            LOGGER.info("Dry-run: %s rows mapped for %s (%s)", len(rows), self.endpoint_config.table, self.endpoint_config.doc_type)
             if self.output_file:
                 self._append_to_output(rows)
             return True
@@ -358,7 +494,7 @@ class CongressAPIIngester:
                 conn.commit()
             return True
         except Exception as exc:  # pragma: no cover - exercised in integration
-            LOGGER.error("Database upsert failed: %s", exc)
+            LOGGER.error("Database upsert failed for %s: %s", self.endpoint_config.doc_type, exc)
             self.metrics["errors"] += len(rows)
             return False
 
@@ -392,10 +528,10 @@ class CongressAPIIngester:
 
         pre_count = self._pre_count()
         if pre_count is not None:
-            LOGGER.info("Existing records: %s", pre_count)
+            LOGGER.info("Existing records for %s: %s", self.endpoint_config.doc_type, pre_count)
 
         while True:
-            LOGGER.info("Fetching %s batch at offset %s", self.source, params["offset"])
+            LOGGER.info("Fetching %s batch at offset %s for %s", self.source, params["offset"], self.endpoint_config.doc_type)
             response = self.session.get(endpoint_url, params=params, timeout=60)
             if response.status_code != 200:
                 self._handle_error(response)
@@ -404,10 +540,15 @@ class CongressAPIIngester:
             payload = response.json()
             items = payload.get(self.endpoint_config.item_key, [])
             if not items:
-                LOGGER.info("No more items returned; ingestion complete")
+                LOGGER.info("No more items for %s; ingestion complete", self.endpoint_config.doc_type)
                 break
 
-            mapped_rows = [self.endpoint_config.mapper(item) for item in items]
+            # Use mapper (specific or generic)
+            if self.endpoint_config.mapper == map_generic:
+                mapped_rows = [self.endpoint_config.mapper(item, self.endpoint_config.doc_type) for item in items]
+            else:
+                mapped_rows = [self.endpoint_config.mapper(item) for item in items]
+            
             success = self._upsert_batch(mapped_rows)
             self.metrics["total"] += len(items)
             self.metrics["ingested"] += len(items) if success else 0
@@ -418,12 +559,12 @@ class CongressAPIIngester:
             self._persist_log_state(params["offset"])
 
             if self.dry_run:
-                LOGGER.info("Dry-run requested; stopping after first batch")
+                LOGGER.info("Dry-run requested; stopping after first batch for %s", self.endpoint_config.doc_type)
                 break
 
         post_count = self._post_count()
         if post_count is not None and pre_count is not None:
-            LOGGER.info("Records delta: %s", post_count - pre_count)
+            LOGGER.info("Records delta for %s: %s", self.endpoint_config.doc_type, post_count - pre_count)
         self._persist_log_state(params["offset"])
 
     # ------------------------------------------------------------------
@@ -432,22 +573,21 @@ class CongressAPIIngester:
 
     def _handle_error(self, response: Response) -> None:
         LOGGER.error(
-            "API responded with %s: %s",
+            "API responded with %s for %s: %s",
             response.status_code,
+            self.endpoint_config.doc_type,
             response.text[:200],
         )
         self.metrics["errors"] += 1
 
-
 # ---------------------------------------------------------------------------
-# CLI
+# CLI (extended for all endpoints)
 # ---------------------------------------------------------------------------
-
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Ingest data from congress.gov APIs")
+    parser = argparse.ArgumentParser(description="Ingest data from congress.gov APIs (all types)")
     parser.add_argument("--source", choices=sorted(ENDPOINTS.keys()), default="congress")
-    parser.add_argument("--endpoint", choices=["member", "bill"], default="member")
+    parser.add_argument("--endpoint", choices=list(ENDPOINTS["congress"].keys()) + ["all"], default="all")
     parser.add_argument("--batch", type=int, default=DEFAULT_BATCH_SIZE)
     parser.add_argument("--dry-run", action="store_true", help="Do not write to the database")
     parser.add_argument("--output", type=Path, help="Optional JSON output for dry-run batches")
@@ -463,7 +603,6 @@ def parse_args() -> argparse.Namespace:
 
     return parser.parse_args()
 
-
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
     args = parse_args()
@@ -475,16 +614,29 @@ def main() -> None:
         if args.session_year:
             params["session_year"] = args.session_year
 
-    ingester = CongressAPIIngester(
-        source=args.source,
-        endpoint=args.endpoint,
-        params=params,
-        batch_size=args.batch,
-        dry_run=args.dry_run,
-        output_file=args.output,
-    )
-    ingester.ingest()
-
+    if args.endpoint == "all":
+        for endpoint_name, config in ENDPOINTS[args.source].items():
+            if endpoint_name in ["member", "bill"]:  # Skip openstates in congress all
+                continue
+            ingester = CongressAPIIngester(
+                source=args.source,
+                endpoint=endpoint_name,
+                params=params,
+                batch_size=args.batch,
+                dry_run=args.dry_run,
+                output_file=args.output,
+            )
+            ingester.ingest()
+    else:
+        ingester = CongressAPIIngester(
+            source=args.source,
+            endpoint=args.endpoint,
+            params=params,
+            batch_size=args.batch,
+            dry_run=args.dry_run,
+            output_file=args.output,
+        )
+        ingester.ingest()
 
 if __name__ == "__main__":  # pragma: no cover - CLI entry point
     main()

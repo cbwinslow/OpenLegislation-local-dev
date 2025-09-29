@@ -1,0 +1,21 @@
+hash,author,date,subject
+synth0001,automation,2025-09-29T22:30:00Z,Synthesize: Add historical import notes and metadata
+synth0002,automation,2025-09-29T22:30:10Z,Synthesize: Backfill README entries for ingestion
+synth0003,automation,2025-09-29T22:30:20Z,Synthesize: Audit tools/govinfo scripts for args
+synth0004,automation,2025-09-29T22:30:30Z,Synthesize: Create checklist for Flyway migrations
+synth0005,automation,2025-09-29T22:30:40Z,Synthesize: Add QA steps for member ingestion
+synth0006,automation,2025-09-29T22:30:50Z,Synthesize: Document expected CSV formats for batches
+synth0007,automation,2025-09-29T22:31:00Z,Synthesize: Add integration test for ingest_federal_members
+synth0008,automation,2025-09-29T22:31:10Z,Synthesize: Create small sample dataset for local testing
+synth0009,automation,2025-09-29T22:31:20Z,Synthesize: Add guidance for Elasticsearch schema mappings
+synth0010,automation,2025-09-29T22:31:30Z,Synthesize: Document README steps to run importer
+synth0011,automation,2025-09-29T22:31:40Z,Synthesize: Create issue template for ingestion bugs
+synth0012,automation,2025-09-29T22:31:50Z,Synthesize: Add note about rate limits to importer
+synth0013,automation,2025-09-29T22:32:00Z,Synthesize: Create smoke test harness for pipelines
+synth0014,automation,2025-09-29T22:32:10Z,Synthesize: Add cron example for regular ingestion
+synth0015,automation,2025-09-29T22:32:20Z,Synthesize: Backfill CONTRIBUTORS.md with recent contributors
+synth0016,automation,2025-09-29T22:32:30Z,Synthesize: Add local dev environment checklist
+synth0017,automation,2025-09-29T22:32:40Z,Synthesize: Create doc for handling govinfo XML edge cases
+synth0018,automation,2025-09-29T22:32:50Z,Synthesize: Add retention policy notes for staged files
+synth0019,automation,2025-09-29T22:33:00Z,Synthesize: Add sample commit for testing importer idempotency
+synth0020,automation,2025-09-29T22:33:10Z,Synthesize: Misc housekeeping: remove temp files script
