@@ -1,28 +1,27 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../shared/Card';
-import { Button } from '../shared/Button';
-import { Input } from '../shared/Input';
-import { Select } from '../shared/Select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../shared/Tabs';
-import { Progress } from '../shared/Progress';
-import { Alert, AlertDescription } from '../shared/Alert';
-import { Badge } from '../shared/Badge';
-import { Calendar } from '../shared/Calendar';
-import { Checkbox } from '../shared/Checkbox';
-import { Textarea } from '../shared/Textarea';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../shared/Collapsible';
+import { Card, CardContent, CardHeader, CardTitle } from 'app/shared/Card';
+import { Button } from 'app/shared/Button';
+import { Input } from 'app/shared/Input';
+import { Select } from 'app/shared/Select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from 'app/shared/Tabs';
+import { Progress } from 'app/shared/Progress';
+import { Alert, AlertDescription } from 'app/shared/Alert';
+import { Badge } from 'app/shared/Badge';
+import { Checkbox } from 'app/shared/Checkbox';
+import { Textarea } from 'app/shared/Textarea';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from 'app/shared/Collapsible';
 import { ChevronDown, ChevronRight, Database, Globe, Settings, Play, Pause, Square, Download, Upload, Calendar as CalendarIcon, Filter, BarChart3 } from 'lucide-react';
 
 const DataIngestionView = () => {
   // Configuration state
   const [dataSources, setDataSources] = useState([
-    { id: 'govinfo', name: 'GovInfo', type: 'api', enabled: true },
-    { id: 'congress_gov', name: 'Congress.gov', type: 'website', enabled: true },
-    { id: 'house_gov', name: 'House.gov', type: 'website', enabled: false },
-    { id: 'senate_gov', name: 'Senate.gov', type: 'website', enabled: false },
-    { id: 'federal_register', name: 'Federal Register', type: 'website', enabled: true },
-    { id: 'whitehouse', name: 'WhiteHouse.gov', type: 'website', enabled: false },
-    { id: 'state_databases', name: 'State Databases', type: 'database', enabled: false }
+    { id: 'govinfo', name: 'GovInfo', type: 'api', enabled: true, description: 'Federal bills, laws, and documents' },
+    { id: 'congress_gov', name: 'Congress.gov', type: 'website', enabled: true, description: 'Congressional information and legislation' },
+    { id: 'house_gov', name: 'House.gov', type: 'website', enabled: false, description: 'House of Representatives data' },
+    { id: 'senate_gov', name: 'Senate.gov', type: 'website', enabled: false, description: 'Senate data and information' },
+    { id: 'federal_register', name: 'Federal Register', type: 'website', enabled: true, description: 'Federal rules and notices' },
+    { id: 'whitehouse', name: 'WhiteHouse.gov', type: 'website', enabled: false, description: 'Executive branch information' },
+    { id: 'state_databases', name: 'State Databases', type: 'database', enabled: false, description: 'State legislative data' }
   ]);
 
   const [selectedDataTypes, setSelectedDataTypes] = useState({
@@ -33,7 +32,13 @@ const DataIngestionView = () => {
     agendas: false,
     transcripts: false,
     laws: false,
-    amendments: false
+    amendments: false,
+    federal_bills: true,
+    federal_members: true,
+    federal_committees: false,
+    federal_laws: false,
+    social_media: false,
+    press_releases: false
   });
 
   const [dateRange, setDateRange] = useState({
@@ -132,24 +137,45 @@ const DataIngestionView = () => {
       addLog(`Enabled data sources: ${enabledSources.map(s => s.name).join(', ')}`, 'info');
       addLog(`Enabled data types: ${enabledTypes.join(', ')}`, 'info');
 
-      // Simulate progress updates
+      // Set total operations for progress tracking
+      const totalOperations = enabledTypes.length * enabledSources.length;
+      setProgress(prev => ({
+        ...prev,
+        total: totalOperations
+      }));
+
+      // Simulate progress updates with federal data specifics
+      let completedOps = 0;
       for (let i = 0; i < enabledTypes.length; i++) {
         const dataType = enabledTypes[i];
-        setProgress(prev => ({
-          ...prev,
-          currentDataType: dataType,
-          currentOperation: `Processing ${dataType}...`
-        }));
 
-        // Simulate processing time
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        for (let j = 0; j < enabledSources.length; j++) {
+          const source = enabledSources[j];
 
-        setProgress(prev => ({
-          ...prev,
-          completed: prev.completed + 1
-        }));
+          setProgress(prev => ({
+            ...prev,
+            currentDataType: dataType,
+            currentOperation: `Processing ${dataType} from ${source.name}...`,
+            completed: completedOps
+          }));
 
-        addLog(`${dataType} processing completed`, 'success');
+          // Simulate processing time (longer for federal data)
+          const processingTime = dataType.includes('federal') ? 3000 : 2000;
+          await new Promise(resolve => setTimeout(resolve, processingTime));
+
+          completedOps++;
+          setProgress(prev => ({
+            ...prev,
+            completed: completedOps
+          }));
+
+          addLog(`${dataType} from ${source.name} processing completed`, 'success');
+
+          // Add federal-specific log messages
+          if (dataType.includes('federal')) {
+            addLog(`Federal data validation completed for ${dataType}`, 'info');
+          }
+        }
       }
 
       addLog('Data ingestion completed successfully!', 'success');
@@ -248,9 +274,10 @@ const DataIngestionView = () => {
 
       {/* Main Configuration Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="configuration">Configuration</TabsTrigger>
           <TabsTrigger value="sources">Data Sources</TabsTrigger>
+          <TabsTrigger value="federal">Federal Members</TabsTrigger>
           <TabsTrigger value="deployment">Deployment</TabsTrigger>
           <TabsTrigger value="scheduling">Scheduling</TabsTrigger>
           <TabsTrigger value="monitoring">Monitoring</TabsTrigger>
@@ -451,6 +478,98 @@ const DataIngestionView = () => {
               </CardContent>
             </Card>
 
+            {/* Federal Data Configuration */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Globe className="w-5 h-5 mr-2" />
+                  Federal Data Configuration
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="federalBills"
+                      checked={selectedDataTypes.federal_bills}
+                      onCheckedChange={(checked) =>
+                        setSelectedDataTypes(prev => ({ ...prev, federal_bills: checked }))
+                      }
+                    />
+                    <label htmlFor="federalBills" className="text-sm font-medium">
+                      Federal Bills (BILLS Collection)
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="federalMembers"
+                      checked={selectedDataTypes.federal_members}
+                      onCheckedChange={(checked) =>
+                        setSelectedDataTypes(prev => ({ ...prev, federal_members: checked }))
+                      }
+                    />
+                    <label htmlFor="federalMembers" className="text-sm font-medium">
+                      Federal Members (MEMBERS Collection)
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="federalCommittees"
+                      checked={selectedDataTypes.federal_committees}
+                      onCheckedChange={(checked) =>
+                        setSelectedDataTypes(prev => ({ ...prev, federal_committees: checked }))
+                      }
+                    />
+                    <label htmlFor="federalCommittees" className="text-sm font-medium">
+                      Federal Committees (COMMITTEES Collection)
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="federalLaws"
+                      checked={selectedDataTypes.federal_laws}
+                      onCheckedChange={(checked) =>
+                        setSelectedDataTypes(prev => ({ ...prev, federal_laws: checked }))
+                      }
+                    />
+                    <label htmlFor="federalLaws" className="text-sm font-medium">
+                      Federal Laws (LAWS Collection)
+                    </label>
+                  </div>
+                </div>
+
+                <div className="border-t pt-4">
+                  <h4 className="text-sm font-medium mb-2">Federal-Specific Options</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="includeSocialMedia"
+                        checked={selectedDataTypes.social_media}
+                        onCheckedChange={(checked) =>
+                          setSelectedDataTypes(prev => ({ ...prev, social_media: checked }))
+                        }
+                      />
+                      <label htmlFor="includeSocialMedia" className="text-sm">
+                        Include social media data
+                      </label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="includePressReleases"
+                        checked={selectedDataTypes.press_releases}
+                        onCheckedChange={(checked) =>
+                          setSelectedDataTypes(prev => ({ ...prev, press_releases: checked }))
+                        }
+                      />
+                      <label htmlFor="includePressReleases" className="text-sm">
+                        Include press releases
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Quick Actions */}
             <Card>
               <CardHeader>
@@ -490,6 +609,7 @@ const DataIngestionView = () => {
                       <div>
                         <h3 className="font-medium">{source.name}</h3>
                         <p className="text-sm text-gray-500 capitalize">{source.type}</p>
+                        <p className="text-xs text-gray-400">{source.description}</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -511,6 +631,179 @@ const DataIngestionView = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="federal" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Federal Member Search */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Database className="w-5 h-5 mr-2" />
+                  Federal Member Search
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium">Search by Name</label>
+                    <Input placeholder="Enter member name..." />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">State</label>
+                    <Select>
+                      <option value="">All States</option>
+                      <option value="AL">Alabama</option>
+                      <option value="AK">Alaska</option>
+                      <option value="AZ">Arizona</option>
+                      <option value="AR">Arkansas</option>
+                      <option value="CA">California</option>
+                      <option value="CO">Colorado</option>
+                      <option value="CT">Connecticut</option>
+                      <option value="DE">Delaware</option>
+                      <option value="FL">Florida</option>
+                      <option value="GA">Georgia</option>
+                      <option value="HI">Hawaii</option>
+                      <option value="ID">Idaho</option>
+                      <option value="IL">Illinois</option>
+                      <option value="IN">Indiana</option>
+                      <option value="IA">Iowa</option>
+                      <option value="KS">Kansas</option>
+                      <option value="KY">Kentucky</option>
+                      <option value="LA">Louisiana</option>
+                      <option value="ME">Maine</option>
+                      <option value="MD">Maryland</option>
+                      <option value="MA">Massachusetts</option>
+                      <option value="MI">Michigan</option>
+                      <option value="MN">Minnesota</option>
+                      <option value="MS">Mississippi</option>
+                      <option value="MO">Missouri</option>
+                      <option value="MT">Montana</option>
+                      <option value="NE">Nebraska</option>
+                      <option value="NV">Nevada</option>
+                      <option value="NH">New Hampshire</option>
+                      <option value="NJ">New Jersey</option>
+                      <option value="NM">New Mexico</option>
+                      <option value="NY">New York</option>
+                      <option value="NC">North Carolina</option>
+                      <option value="ND">North Dakota</option>
+                      <option value="OH">Ohio</option>
+                      <option value="OK">Oklahoma</option>
+                      <option value="OR">Oregon</option>
+                      <option value="PA">Pennsylvania</option>
+                      <option value="RI">Rhode Island</option>
+                      <option value="SC">South Carolina</option>
+                      <option value="SD">South Dakota</option>
+                      <option value="TN">Tennessee</option>
+                      <option value="TX">Texas</option>
+                      <option value="UT">Utah</option>
+                      <option value="VT">Vermont</option>
+                      <option value="VA">Virginia</option>
+                      <option value="WA">Washington</option>
+                      <option value="WV">West Virginia</option>
+                      <option value="WI">Wisconsin</option>
+                      <option value="WY">Wyoming</option>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium">Party</label>
+                    <Select>
+                      <option value="">All Parties</option>
+                      <option value="D">Democrat</option>
+                      <option value="R">Republican</option>
+                      <option value="I">Independent</option>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Chamber</label>
+                    <Select>
+                      <option value="">Both Chambers</option>
+                      <option value="House">House</option>
+                      <option value="Senate">Senate</option>
+                    </Select>
+                  </div>
+                </div>
+                <Button className="w-full">
+                  Search Members
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Member Data Quality */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <BarChart3 className="w-5 h-5 mr-2" />
+                  Data Quality Metrics
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex justify-between text-sm">
+                      <span>Total Federal Members</span>
+                      <span className="font-medium">535</span>
+                    </div>
+                    <Progress value={100} className="mt-1" />
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm">
+                      <span>With Complete Contact Info</span>
+                      <span className="font-medium">98%</span>
+                    </div>
+                    <Progress value={98} className="mt-1" />
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm">
+                      <span>With Social Media Links</span>
+                      <span className="font-medium">87%</span>
+                    </div>
+                    <Progress value={87} className="mt-1" />
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm">
+                      <span>Committee Assignments</span>
+                      <span className="font-medium">92%</span>
+                    </div>
+                    <Progress value={92} className="mt-1" />
+                  </div>
+                </div>
+                <div className="pt-4 border-t">
+                  <h4 className="text-sm font-medium mb-2">Recent Updates</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>Committee changes</span>
+                      <Badge variant="outline">+12</Badge>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>New social media</span>
+                      <Badge variant="outline">+8</Badge>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Contact updates</span>
+                      <Badge variant="outline">+15</Badge>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Member Detail View Placeholder */}
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle>Federal Member Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 text-gray-500">
+                  <Database className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>Select a member from search results to view detailed information</p>
+                  <p className="text-sm mt-2">Including terms, committees, social media, and contact information</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="deployment" className="space-y-6">

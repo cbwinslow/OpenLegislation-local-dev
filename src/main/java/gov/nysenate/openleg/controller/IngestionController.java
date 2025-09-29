@@ -30,7 +30,8 @@ public class IngestionController {
     @SendTo("/topic/progress")
     public Map<String, Object> getProgress() {
         // Broadcast current progress (called periodically or on event)
-        return Map.of("ingested", ingestionService.getIngestedRecords(), "total", ingestionService.getTotalRecords(), "successRate", ingestionService.getSuccessRate());
+        // TODO: Implement actual progress tracking
+        return Map.of("ingested", 0, "total", 0, "successRate", 0.0);
     }
 
     private String getRssUrl(String site, String collection, String congress) {

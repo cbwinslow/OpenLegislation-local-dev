@@ -155,8 +155,8 @@ If you want, I can now run the enumerator at scale and download a year's worth o
 - [x] Add triggers for updated_at, vector extension for embeddings, JSONB indexing for raw payloads
 - [x] Include partitioning comments for high-volume (e.g., by congress)
 - [x] Create ingestion_stats view for verification
-- [ ] Validate optimizations (run ANALYZE, check query plans)
-- [ ] Deploy migration (mvn flyway:migrate or psql apply)
+- [-] Validate optimizations (run ANALYZE, check query plans)
+- [-] Deploy migration (mvn flyway:migrate or psql apply)
 
 ### Ingestion Implementation
 - [x] Create tools/ingest_federal_data.py as unified script for bills, amendments, committees
@@ -177,3 +177,52 @@ If you want, I can now run the enumerator at scale and download a year's worth o
 - [ ] Test pipeline with sample data (e.g., --type bills --volume 10 --congress 118)
 - [ ] Update docs (congress_gov_integration.md, govinfo_ingestion_pipeline.md with script usage)
 - [ ] Add to production_ingest.sh for orchestration
+
+## Phase 10: Frontend Integration & UI Enhancement
+
+### Task 10.1: Enhance Data Ingestion UI
+**Description**: Improve the existing DataIngestionView.js to support federal data ingestion
+**Criteria for Completion**:
+- [ ] Add federal data source selection to ingestion UI
+- [ ] Implement progress tracking for federal data ingestion
+- [ ] Add filtering options for congress/session selection
+- [ ] Create status indicators for different collection types
+- [ ] Add error reporting and retry functionality
+
+### Task 10.2: Create Federal Member Management Interface
+**Description**: Build UI components for managing federal member data
+**Criteria for Completion**:
+- [ ] Create federal member search and display components
+- [ ] Add member detail view with term/committee information
+- [ ] Implement social media links display
+- [ ] Add data quality indicators and conflict resolution
+- [ ] Create bulk operations interface
+
+### Task 10.3: Implement Real-time Ingestion Monitoring
+**Description**: Add real-time monitoring dashboard for ingestion processes
+**Criteria for Completion**:
+- [ ] Create WebSocket connection for real-time updates
+- [ ] Implement progress bars and status indicators
+- [ ] Add error logging and alerting system
+- [ ] Create historical ingestion reports
+- [ ] Add performance metrics display
+
+## Phase 11: Testing & Quality Assurance
+
+### Task 11.1: Comprehensive Testing Suite
+**Description**: Create thorough test coverage for federal data ingestion
+**Criteria for Completion**:
+- [ ] Unit tests for all ingestion components
+- [ ] Integration tests for end-to-end workflows
+- [ ] Performance tests for large datasets
+- [ ] Error handling and recovery tests
+- [ ] Data validation and quality tests
+
+### Task 11.2: Data Quality Validation
+**Description**: Implement automated data quality checks
+**Criteria for Completion**:
+- [ ] Schema validation for all collections
+- [ ] Cross-reference validation between collections
+- [ ] Duplicate detection and resolution
+- [ ] Data completeness verification
+- [ ] Historical data consistency checks
