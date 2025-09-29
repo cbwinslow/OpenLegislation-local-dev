@@ -1,308 +1,490 @@
 #!/usr/bin/env python3
+"""Utility for ingesting data from congress.gov and api.congress.gov.
+
+The original repository contained a proof-of-concept script that referenced
+mapping helpers before they were defined, mixed configuration and behaviour,
+and lacked guard rails for dry-runs and automated testing.  The rewrite below
+focuses on the following goals:
+
+* Keep the mapping logic testable in isolation by exposing pure functions.
+* Allow the ingestion routine to operate in dry-run mode while emitting the
+  exact payload that would be persisted to the SQL migrations.
+* Support resumable pagination and deterministic logging so the Java services
+  can rely on consistent offsets when ingesting federal data.
+* Provide a lightweight validation layer that mirrors the expectations of the
+  federal data models introduced elsewhere in the code base.
+
+The script is intentionally conservative – it does not attempt to mutate the
+database during unit tests and defaults to reading configuration from the same
+environment variables used by the Java ingestion pipeline.
 """
-Extended congress.gov/OpenStates API ingestion script.
-Now supports --source congress/openstates (US federal/states), --endpoint member/bill.
-For OpenStates: /legislators?state=ca → map to federal_member (source='state', country='US').
-Configurable: --congress 119 (federal), --state ca (OpenStates), --batch 50, --dry-run.
-Trackable: ingestion_log.json per source.
-Measurable: Pre/post counts, rate.
-Repeatable: Resume from offset (log.json per source).
-Uses psycopg2 upsert to federal_member/bills.
-"""
+
+from __future__ import annotations
 
 import argparse
 import json
+import logging
 import os
-import sys
+from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, Any, List, Optional
-import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
+from pathlib import Path
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional
+
 import psycopg2
 from psycopg2.extras import execute_values
-from pathlib import Path
-import logging
+import requests
+from requests import Response
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
-# Config from .env
-API_KEYS = {
-    'congress': os.getenv('CONGRESS_API_KEY', 'DEMO_KEY'),
-    'openstates': os.getenv('OPENSTATES_API_KEY', '')  # Get from https://openstates.org/register/apikey/
-}
-DB_URL = os.getenv('DB_URL', 'postgresql://user:pass@localhost:5432/openleg')
-LOG_FILE = Path('tools/ingestion_log.json')
-BATCH_SIZE = int(os.getenv('BATCH_SIZE', '50'))
 
-ENDPOINTS = {
-    'congress': {
-        'member': {'url': '/member', 'table': 'master.federal_member', 'pk_col': 'bioguide_id', 'map_func': _map_congress_member},
-        'bill': {'url': '/bill', 'table': 'master.bills', 'pk_col': 'print_no', 'map_func': _map_congress_bill}  # Composite PK in SQL
-    },
-    'openstates': {
-        'legislator': {'url': '/legislators/', 'table': 'master.federal_member', 'pk_col': 'openstates_id', 'map_func': _map_openstates_legislator},
-        'bill': {'url': '/bills/', 'table': 'master.bills', 'pk_col': 'bill_id', 'map_func': _map_openstates_bill}
+LOGGER = logging.getLogger("federal_ingestion")
+
+# ---------------------------------------------------------------------------
+# Mapping helpers
+# ---------------------------------------------------------------------------
+
+
+def map_congress_member(payload: Mapping[str, Any]) -> Dict[str, Any]:
+    """Normalise a congress.gov member response for ``master.federal_member``."""
+
+    member = payload.get("member", {})
+    social_media = {
+        "twitter": member.get("twitterAccount"),
+        "facebook": member.get("facebookAccount"),
+        "youtube": member.get("youtubeAccount"),
     }
+    mapped = {
+        "bioguide_id": member.get("bioguideId"),
+        "full_name": member.get("name"),
+        "first_name": member.get("firstName"),
+        "last_name": member.get("lastName"),
+        "party": member.get("party"),
+        "state": member.get("state"),
+        "chamber": (member.get("chamber") or "").lower() or None,
+        "current_member": bool(member.get("currentMember", False)),
+        "terms": json.dumps(member.get("terms", [])),
+        "committees": json.dumps(member.get("committees", [])),
+        "social_media": json.dumps(social_media),
+        "source": "federal",
+    }
+    return mapped
+
+
+def map_congress_bill(payload: Mapping[str, Any]) -> Dict[str, Any]:
+    """Normalise a congress.gov bill response for ``master.bills``."""
+
+    bill = payload.get("bill", {})
+    sponsors = bill.get("sponsors", []) or []
+    actions = bill.get("actions", []) or []
+    mapped = {
+        "print_no": f"{bill.get('type', '')}{bill.get('number', '')}",
+        "session_year": payload.get("sessionYear") or payload.get("session_year"),
+        "title": bill.get("title"),
+        "sponsors": json.dumps([{"name": s.get("name")} for s in sponsors]),
+        "actions": json.dumps([{"text": a.get("text")} for a in actions]),
+        "federal_congress": payload.get("congress"),
+        "source": "federal",
+    }
+    return mapped
+
+
+def map_openstates_member(payload: Mapping[str, Any]) -> Dict[str, Any]:
+    """Normalise an OpenStates legislator response for ``master.federal_member``."""
+
+    committees = payload.get("committees", []) or []
+    roles = payload.get("roles", []) or []
+    social_media = {
+        "twitter": payload.get("twitter_id"),
+        "facebook": payload.get("facebook_id"),
+        "website": payload.get("url"),
+    }
+    mapped = {
+        "openstates_id": payload.get("id"),
+        "full_name": payload.get("name"),
+        "first_name": payload.get("given_name"),
+        "last_name": payload.get("family_name"),
+        "party": payload.get("party"),
+        "state": (payload.get("state") or "").upper() or None,
+        "chamber": (payload.get("chamber") or "").lower() or None,
+        "current_member": bool(payload.get("active", True)),
+        "terms": json.dumps([
+            {"state": role.get("state"), "type": role.get("type")}
+            for role in roles
+            if role.get("type") == "member"
+        ]),
+        "committees": json.dumps(committees),
+        "social_media": json.dumps(social_media),
+        "source": "state",
+    }
+    return mapped
+
+
+def map_openstates_bill(payload: Mapping[str, Any]) -> Dict[str, Any]:
+    """Normalise an OpenStates bill response for ``master.bills``."""
+
+    sponsors = payload.get("sponsors", []) or []
+    actions = payload.get("actions", []) or []
+    mapped = {
+        "bill_id": payload.get("id"),
+        "print_no": payload.get("bill_id"),
+        "session_year": int(payload.get("session")) if payload.get("session") else None,
+        "title": payload.get("title"),
+        "sponsors": json.dumps([{"name": s.get("name")} for s in sponsors]),
+        "actions": json.dumps([{"text": a.get("description")} for a in actions]),
+        "source": "state",
+    }
+    return mapped
+
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+
+API_KEYS = {
+    "congress": os.getenv("CONGRESS_API_KEY", "DEMO_KEY"),
+    "openstates": os.getenv("OPENSTATES_API_KEY", ""),
 }
+
+DB_URL = os.getenv("DB_URL", "postgresql://user:pass@localhost:5432/openleg")
+
+DEFAULT_BATCH_SIZE = int(os.getenv("BATCH_SIZE", "50"))
+
+LOG_FILE = Path("tools/ingestion_log.json")
+
+
+@dataclass(frozen=True)
+class EndpointConfig:
+    path: str
+    table: str
+    pk_col: str
+    mapper: Callable[[Mapping[str, Any]], Dict[str, Any]]
+    item_key: str
+
+
+def build_endpoint_config() -> Dict[str, Dict[str, EndpointConfig]]:
+    return {
+        "congress": {
+            "member": EndpointConfig(
+                path="/member",
+                table="master.federal_member",
+                pk_col="bioguide_id",
+                mapper=map_congress_member,
+                item_key="members",
+            ),
+            "bill": EndpointConfig(
+                path="/bill",
+                table="master.bills",
+                pk_col="print_no",
+                mapper=map_congress_bill,
+                item_key="bills",
+            ),
+        },
+        "openstates": {
+            "member": EndpointConfig(
+                path="/legislators/",
+                table="master.federal_member",
+                pk_col="openstates_id",
+                mapper=map_openstates_member,
+                item_key="results",
+            ),
+            "bill": EndpointConfig(
+                path="/bills/",
+                table="master.bills",
+                pk_col="bill_id",
+                mapper=map_openstates_bill,
+                item_key="results",
+            ),
+        },
+    }
+
+
+ENDPOINTS: Dict[str, Dict[str, EndpointConfig]] = build_endpoint_config()
 
 BASE_URLS = {
-    'congress': 'https://api.congress.gov/v3',
-    'openstates': 'https://openstates.org/api/v1'
+    "congress": "https://api.congress.gov/v3",
+    "openstates": "https://openstates.org/api/v1",
 }
 
-def _map_congress_member(data: Dict[str, Any]) -> Dict[str, Any]:
-    """Map congress.gov /member JSON to federal_member schema."""
-    member = data['member']
-    return {
-        'bioguide_id': member.get('bioguideId'),
-        'full_name': member.get('name'),
-        'first_name': member.get('firstName'),
-        'last_name': member.get('lastName'),
-        'party': member.get('party'),
-        'state': member.get('state'),
-        'chamber': member.get('chamber', 'member').lower() if member.get('chamber') else None,
-        'current_member': member.get('currentMember', False),
-        'terms': json.dumps(member.get('terms', [])),
-        'committees': json.dumps(member.get('committees', [])),
-        'social_media': json.dumps({
-            'twitter': member.get('twitterAccount'),
-            'facebook': member.get('facebookAccount'),
-            'youtube': member.get('youtubeAccount')
-        }),
-        'source': 'federal'  # From congress.gov
-    }
 
-def _map_congress_bill(data: Dict[str, Any]) -> Dict[str, Any]:
-    """Map congress.gov /bill JSON to bills schema."""
-    bill = data['bill']
-    return {
-        'print_no': f"{bill.get('type', 'HR')}{bill.get('number', '')}",
-        'session_year': 2025,  # Map congress to year (e.g., 119 → 2025)
-        'title': bill.get('title'),
-        'sponsors': json.dumps([{'name': s.get('name')} for s in bill.get('sponsors', [])]),
-        'actions': json.dumps([{'text': a.get('text')} for a in bill.get('actions', [])]),
-        'federal_congress': data.get('congress'),  # From endpoint
-        'source': 'federal'
-    }
+# ---------------------------------------------------------------------------
+# Core ingester
+# ---------------------------------------------------------------------------
 
-def _map_openstates_legislator(data: Dict[str, Any]) -> Dict[str, Any]:
-    """Map OpenStates /legislators JSON to federal_member (state focus)."""
-    legislator = data
-    return {
-        'openstates_id': legislator.get('id'),  # PK for states
-        'full_name': legislator.get('name'),
-        'first_name': legislator.get('given_name'),
-        'last_name': legislator.get('family_name'),
-        'party': legislator.get('party'),
-        'state': legislator.get('state').upper(),
-        'chamber': legislator.get('chamber').lower() if legislator.get('chamber') else None,
-        'current_member': legislator.get('active', True),
-        'terms': json.dumps([{'state': t.get('state')} for t in legislator.get('roles', []) if t.get('type') == 'member']),  # Simplified
-        'committees': json.dumps(legislator.get('committees', [])),
-        'social_media': json.dumps({
-            'twitter': legislator.get('twitter_id'),
-            'facebook': legislator.get('facebook_id'),
-            'website': legislator.get('url')
-        }),
-        'source': 'state'  # From OpenStates (US states)
-    }
-
-def _map_openstates_bill(data: Dict[str, Any]) -> Dict[str, Any]:
-    """Map OpenStates /bills JSON to bills schema (state focus)."""
-    bill = data
-    return {
-        'bill_id': bill.get('id'),  # PK for OpenStates
-        'print_no': bill.get('bill_id'),
-        'session_year': int(bill.get('session')),
-        'title': bill.get('title'),
-        'sponsors': json.dumps([{'name': s.get('name')} for s in bill.get('sponsors', [])]),
-        'actions': json.dumps([{'text': a.get('description')} for a in bill.get('actions', [])]),
-        'source': 'state'
-    }
 
 class CongressAPIIngester:
-    def __init__(self, source: str, endpoint: str, params: Dict[str, Any], batch_size: int, dry_run: bool = False):
+    """Stateful helper that orchestrates pagination, mapping, and persistence."""
+
+    def __init__(
+        self,
+        source: str,
+        endpoint: str,
+        params: Mapping[str, Any],
+        batch_size: int,
+        dry_run: bool = False,
+        output_file: Optional[Path] = None,
+    ) -> None:
         if source not in ENDPOINTS:
-            raise ValueError(f"Source '{source}' not supported (use 'congress' or 'openstates')")
+            raise ValueError(f"Unsupported source '{source}'.")
         if endpoint not in ENDPOINTS[source]:
-            raise ValueError(f"Endpoint '{endpoint}' not supported for source '{source}'")
+            raise ValueError(f"Unsupported endpoint '{endpoint}' for source '{source}'.")
+
         self.source = source
         self.endpoint_config = ENDPOINTS[source][endpoint]
-        self.params = params  # e.g., {'congress': 119} or {'state': 'ca'}
+        self.params = dict(params)
         self.batch_size = batch_size
         self.dry_run = dry_run
+        self.output_file = output_file
         self.base_url = BASE_URLS[source]
-        self.session = self._get_requests_session()
+        self.session = self._build_session()
         self.api_key = API_KEYS[source]
-        self.log = self._load_log(source)
-        self.metrics = {'start': datetime.now(), 'batches': 0, 'ingested': 0, 'errors': 0, 'rate': 0.0}
-
-    def _get_requests_session(self) -> requests.Session:
-        session = requests.Session()
-        retry_strategy = Retry(total=3, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])
-        adapter = HTTPAdapter(max_retries=retry_strategy)
-        session.mount('http://', adapter)
-        session.mount('https://', adapter)
-        return session
-
-    def _load_log(self, source: str) -> Dict[str, Any]:
-        log = {'runs': [], 'checkpoints': {'offset': 0}}
-        if LOG_FILE.exists():
-            with open(LOG_FILE, 'r') as f:
-                try:
-                    log = json.load(f)
-                    # Per-source log if multiple runs
-                    source_logs = log.get('sources', {})
-                    return source_logs.get(source, {'offset': 0})
-                except json.JSONDecodeError:
-                    print("Corrupted log.json; starting fresh.")
-        return {'offset': 0}
-
-    def _save_log(self, source: str, offset: int):
-        run_end = datetime.now().isoformat()
-        duration = (datetime.now() - datetime.fromisoformat(self.metrics['start'])).total_seconds()
-        self.metrics['end'] = run_end
-        self.metrics['duration_s'] = int(duration)
-        self.metrics['success_rate'] = (self.metrics['ingested'] / self.metrics['total'] * 100) if self.metrics['total'] > 0 else 0
-
-        run_entry = {
-            'run_id': datetime.now().isoformat(),
-            'source': source,
-            'endpoint': self.endpoint_config['url'].split('/')[-1],
-            **self.params,  # congress/state etc.
-            'offset_end': offset,
-            'ingested': self.metrics['ingested'],
-            'errors': self.metrics['errors'],
-            'rate': self.metrics['success_rate'],
-            'duration_s': self.metrics['duration_s']
+        self.log_state = self._load_log_state()
+        self.metrics: Dict[str, Any] = {
+            "start": datetime.now().isoformat(),
+            "batches": 0,
+            "ingested": 0,
+            "errors": 0,
+            "total": 0,
         }
 
+    # ------------------------------------------------------------------
+    # Session helpers
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _build_session() -> requests.Session:
+        retry = Retry(total=3, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])
+        adapter = HTTPAdapter(max_retries=retry)
+        session = requests.Session()
+        session.mount("http://", adapter)
+        session.mount("https://", adapter)
+        return session
+
+    # ------------------------------------------------------------------
+    # Logging helpers
+    # ------------------------------------------------------------------
+
+    def _load_log_state(self) -> Dict[str, Any]:
         if LOG_FILE.exists():
-            with open(LOG_FILE, 'r') as f:
-                log = json.load(f)
-        else:
-            log = {'runs': [], 'sources': {}}
-        log['runs'] = log.get('runs', []) + [run_entry]
-        log['sources'][source] = {'offset': offset}
-        with open(LOG_FILE, 'w') as f:
-            json.dump(log, f, indent=2)
-        print(f"Log saved ({source}): ingested={self.metrics['ingested']}, rate={self.metrics['success_rate']:.1f}%, time={duration:.0f}s")
+            try:
+                with LOG_FILE.open("r", encoding="utf-8") as handle:
+                    data = json.load(handle)
+                    return data.get("sources", {}).get(self.source, {"offset": 0})
+            except json.JSONDecodeError:
+                LOGGER.warning("ingestion_log.json is malformed. Starting with a clean state.")
+        return {"offset": 0}
 
-    def _pre_count(self, table: str, extra_filters: Dict[str, Any] = {}) -> int:
-        with psycopg2.connect(DB_URL) as conn:
-            with conn.cursor() as cur:
-                where_parts = [f"congress = %(congress)s"] if self.source == 'congress' else [f"state = %(state)s"]
-                for k, v in extra_filters.items():
-                    where_parts.append(f"{k} = %({k})s")
-                where_clause = ' AND '.join(where_parts) if where_parts else ''
-                cur.execute(f"SELECT COUNT(*) FROM {table} WHERE {where_clause}", {**self.params, **extra_filters})
-                return cur.fetchone()[0]
+    def _persist_log_state(self, offset: int) -> None:
+        entry = {
+            "run_id": datetime.now().isoformat(),
+            "source": self.source,
+            "endpoint": self.endpoint_config.path,
+            "params": self.params,
+            "offset": offset,
+            "metrics": {k: v for k, v in self.metrics.items() if k != "start"},
+        }
 
-    def _post_count(self, table: str, extra_filters: Dict[str, Any] = {}) -> int:
-        with psycopg2.connect(DB_URL) as conn:
-            with conn.cursor() as cur:
-                where_parts = [f"congress = %(congress)s"] if self.source == 'congress' else [f"state = %(state)s"]
-                for k, v in extra_filters.items():
-                    where_parts.append(f"{k} = %({k})s")
-                where_clause = ' AND '.join(where_parts) if where_parts else ''
-                cur.execute(f"SELECT COUNT(*) FROM {table} WHERE {where_clause}", {**self.params, **extra_filters})
-                return cur.fetchone()[0]
+        payload = {"runs": [], "sources": {}}
+        if LOG_FILE.exists():
+            with LOG_FILE.open("r", encoding="utf-8") as handle:
+                try:
+                    payload = json.load(handle)
+                except json.JSONDecodeError:
+                    LOGGER.warning("ingestion_log.json is malformed. Recreating file.")
 
-    def _upsert_batch(self, batch_data: List[Dict[str, Any]]) -> bool:
+        payload.setdefault("runs", []).append(entry)
+        payload.setdefault("sources", {})[self.source] = {"offset": offset}
+
+        with LOG_FILE.open("w", encoding="utf-8") as handle:
+            json.dump(payload, handle, indent=2)
+
+    # ------------------------------------------------------------------
+    # Database helpers
+    # ------------------------------------------------------------------
+
+    def _pre_count(self) -> Optional[int]:
+        return self._count_records("pre")
+
+    def _post_count(self) -> Optional[int]:
+        return self._count_records("post")
+
+    def _count_records(self, label: str) -> Optional[int]:
         if self.dry_run:
-            print(f"[DRY-RUN] Would upsert {len(batch_data)} rows to {self.endpoint_config['table']}.")
+            LOGGER.debug("Skipping %s-count in dry-run mode.", label)
+            return None
+
+        filters = dict(self.params)
+        where_clause_parts = [f"{key} = %({key})s" for key in filters]
+        where_clause = f" WHERE {' AND '.join(where_clause_parts)}" if where_clause_parts else ""
+
+        query = f"SELECT COUNT(*) FROM {self.endpoint_config.table}{where_clause}"
+        try:
+            with psycopg2.connect(DB_URL) as conn:
+                with conn.cursor() as cursor:
+                    cursor.execute(query, filters)
+                    result = cursor.fetchone()
+                    return int(result[0]) if result else 0
+        except Exception as exc:  # pragma: no cover - exercised in integration
+            LOGGER.error("%s-count failed: %s", label.capitalize(), exc)
+            self.metrics["errors"] += 1
+            return None
+
+    # ------------------------------------------------------------------
+    # Upsert helpers
+    # ------------------------------------------------------------------
+
+    def _upsert_batch(self, batch: Iterable[Dict[str, Any]]) -> bool:
+        rows = [row for row in batch if row.get(self.endpoint_config.pk_col)]
+        if not rows:
+            LOGGER.info("No valid rows in batch; skipping")
             return True
 
-        table = self.endpoint_config['table']
-        # Columns based on schema (extend for bills: composite PK on bills)
-        if table == 'master.federal_member':
-            columns = ['bioguide_id', 'full_name', 'first_name', 'last_name', 'party', 'state', 'chamber', 'current_member', 'terms', 'committees', 'social_media', 'source']
-        elif table == 'master.bills':
-            columns = ['print_no', 'session_year', 'title', 'sponsors', 'actions', 'federal_congress', 'source']
-        else:
-            raise ValueError(f"Table {table} not supported.")
+        if self.dry_run:
+            LOGGER.info("Dry-run: %s rows mapped for %s", len(rows), self.endpoint_config.table)
+            if self.output_file:
+                self._append_to_output(rows)
+            return True
+
+        columns = list(rows[0].keys())
+        query = f"INSERT INTO {self.endpoint_config.table} ({', '.join(columns)}) VALUES %s "
+        query += f"ON CONFLICT ({self.endpoint_config.pk_col}) DO UPDATE SET "
+        query += ", ".join(f"{col}=EXCLUDED.{col}" for col in columns if col != self.endpoint_config.pk_col)
 
         try:
             with psycopg2.connect(DB_URL) as conn:
-                with conn.cursor() as cur:
-                    values = [tuple(row.get(col) for col in columns) for row in batch_data if row[self.endpoint_config['pk_col']]]
-                    if not values:
-                        return True
-                    where_clause = f"{self.endpoint_config['pk_col']} = EXCLUDED.{self.endpoint_config['pk_col']}"
-                    update_clause = ', '.join([f"{col}=EXCLUDED.{col}" for col in columns if col != self.endpoint_config['pk_col']])
-                    execute_values(cur, f"""
-                        INSERT INTO {table} ({', '.join(columns)})
-                        VALUES %s
-                        ON CONFLICT ({self.endpoint_config['pk_col']}) DO UPDATE SET {update_clause}
-                    """, values)
-                    conn.commit()
+                with conn.cursor() as cursor:
+                    execute_values(cursor, query, [tuple(row[col] for col in columns) for row in rows])
+                conn.commit()
             return True
-        except Exception as e:
-            print(f"DB upsert error: {e}")
-            self.metrics['errors'] += len(batch_data)
+        except Exception as exc:  # pragma: no cover - exercised in integration
+            LOGGER.error("Database upsert failed: %s", exc)
+            self.metrics["errors"] += len(rows)
             return False
 
-    def ingest(self):
-        url = f"{self.base_url}{self.endpoint_config['url']}"
-        params = {'api_key': self.api_key, **self.params, 'format': 'json', 'limit': self.batch_size, 'offset': self.log['offset']}
-        self.metrics['pre_count'] = self._pre_count(self.endpoint_config['table'])
-        self.metrics['total'] = 0
+    def _append_to_output(self, rows: Iterable[Dict[str, Any]]) -> None:
+        if not self.output_file:
+            return
+        records: List[Dict[str, Any]] = []
+        if self.output_file.exists():
+            with self.output_file.open("r", encoding="utf-8") as handle:
+                try:
+                    records = json.load(handle)
+                except json.JSONDecodeError:
+                    LOGGER.warning("Output file is malformed. Overwriting with fresh payload.")
+        records.extend(rows)
+        with self.output_file.open("w", encoding="utf-8") as handle:
+            json.dump(records, handle, indent=2)
+
+    # ------------------------------------------------------------------
+    # Public API
+    # ------------------------------------------------------------------
+
+    def ingest(self) -> None:
+        endpoint_url = f"{self.base_url}{self.endpoint_config.path}"
+        params = {
+            **self.params,
+            "api_key": self.api_key,
+            "format": "json",
+            "limit": self.batch_size,
+            "offset": self.log_state.get("offset", 0),
+        }
+
+        pre_count = self._pre_count()
+        if pre_count is not None:
+            LOGGER.info("Existing records: %s", pre_count)
 
         while True:
-            print(f"Fetching batch ({self.source}): offset={self.log['offset']}")
-            resp = self.session.get(url, params=params)
-            if resp.status_code != 200:
-                print(f"API error ({resp.status_code}): {resp.text[:200]}...")
-                self.metrics['errors'] += self.batch_size
+            LOGGER.info("Fetching %s batch at offset %s", self.source, params["offset"])
+            response = self.session.get(endpoint_url, params=params, timeout=60)
+            if response.status_code != 200:
+                self._handle_error(response)
                 break
 
-            data = resp.json()
-            items_key = self.endpoint_config['url'].lstrip('/').rstrip('s')  # e.g., 'member' or 'legislator'
-            items = data.get(items_key, [])
-            self.metrics['total'] += len(items)
+            payload = response.json()
+            items = payload.get(self.endpoint_config.item_key, [])
             if not items:
-                print("No more items; complete.")
+                LOGGER.info("No more items returned; ingestion complete")
                 break
 
-            batch_data = [self.endpoint_config['map_func'](item) for item in items]
+            mapped_rows = [self.endpoint_config.mapper(item) for item in items]
+            success = self._upsert_batch(mapped_rows)
+            self.metrics["total"] += len(items)
+            self.metrics["ingested"] += len(items) if success else 0
+            self.metrics["batches"] += 1
 
-            success = self._upsert_batch(batch_data)
-            ingested_delta = len(items) if success else 0
-            self.metrics['ingested'] += ingested_delta
-            self.metrics['batches'] += 1
-            print(f"Batch ({self.source}): {len(items)} fetched ({ingested_delta} mapped), success={success}")
+            params["offset"] += self.batch_size
+            self.log_state["offset"] = params["offset"]
+            self._persist_log_state(params["offset"])
 
-            self.log['offset'] += self.batch_size
-            self._save_log(self.source, self.log['offset'])
             if self.dry_run:
-                print("Dry-run: Stopping after 1 batch.")
+                LOGGER.info("Dry-run requested; stopping after first batch")
                 break
 
-        post_count = self._post_count(self.endpoint_config['table'])
-        print(f"Pre-count: {self.metrics['pre_count']}, Post-count: {post_count}, Delta: {post_count - self.metrics['pre_count']}")
-        self._save_log(self.source, self.log['offset'])  # Final save
-        print(f"Completed ({self.source}): {self.metrics}")
+        post_count = self._post_count()
+        if post_count is not None and pre_count is not None:
+            LOGGER.info("Records delta: %s", post_count - pre_count)
+        self._persist_log_state(params["offset"])
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Ingest from congress.gov or OpenStates API.')
-    parser.add_argument('--source', default='congress', choices=list(BASE_URLS.keys()), help='Source API (congress/openstates)')
-    parser.add_argument('--endpoint', default='member', choices=['member', 'bill'], help='Endpoint (member/bill)')
-    subparsers = parser.add_subparsers(dest='subcommand', help='Subcommands')
-    
-    congress_parser = subparsers.add_parser('congress', help='Congress options')
-    congress_parser.add_argument('--congress', type=int, required=True, help='Congress number (e.g., 119)')
-    
-    openstates_parser = subparsers.add_parser('openstates', help='OpenStates options')
-    openstates_parser.add_argument('--state', required=True, help='State abbr (e.g., ca for California)')
-    
-    common_parser = parser.add_argument_group('common')
-    common_parser.add_argument('--batch', type=int, default=BATCH_SIZE, help='Batch size')
-    common_parser.add_argument('--dry-run', action='store_true', help='Simulate ingestion')
+    # ------------------------------------------------------------------
+    # Error handling
+    # ------------------------------------------------------------------
 
-    args = parser.parse_args()
-    if args.source == 'openstates':
-        params = {'state': args.state}
+    def _handle_error(self, response: Response) -> None:
+        LOGGER.error(
+            "API responded with %s: %s",
+            response.status_code,
+            response.text[:200],
+        )
+        self.metrics["errors"] += 1
+
+
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Ingest data from congress.gov APIs")
+    parser.add_argument("--source", choices=sorted(ENDPOINTS.keys()), default="congress")
+    parser.add_argument("--endpoint", choices=["member", "bill"], default="member")
+    parser.add_argument("--batch", type=int, default=DEFAULT_BATCH_SIZE)
+    parser.add_argument("--dry-run", action="store_true", help="Do not write to the database")
+    parser.add_argument("--output", type=Path, help="Optional JSON output for dry-run batches")
+
+    subparsers = parser.add_subparsers(dest="subcommand", required=True)
+
+    congress_parser = subparsers.add_parser("congress", help="Options for congress.gov")
+    congress_parser.add_argument("--congress", type=int, required=True, help="Congress number (e.g. 119)")
+    congress_parser.add_argument("--session-year", type=int, help="Override session year for bills")
+
+    openstates_parser = subparsers.add_parser("openstates", help="Options for OpenStates")
+    openstates_parser.add_argument("--state", required=True, help="Two letter state code")
+
+    return parser.parse_args()
+
+
+def main() -> None:
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+    args = parse_args()
+
+    if args.source == "openstates":
+        params = {"state": args.state}
     else:
-        params = {'congress': args.congress}
+        params = {"congress": args.congress}
+        if args.session_year:
+            params["session_year"] = args.session_year
 
-    ingester = CongressAPIIngester(args.source, args.endpoint, params, args.batch, args.dry_run)
+    ingester = CongressAPIIngester(
+        source=args.source,
+        endpoint=args.endpoint,
+        params=params,
+        batch_size=args.batch,
+        dry_run=args.dry_run,
+        output_file=args.output,
+    )
     ingester.ingest()
+
+
+if __name__ == "__main__":  # pragma: no cover - CLI entry point
+    main()
