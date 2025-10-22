@@ -32,11 +32,12 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     /**
      * Perform a fuzzy keyword search across title, description and content fields.
      */
-    @Query("SELECT d FROM Document d " +
-            "WHERE LOWER(d.title) LIKE LOWER(CONCAT('%', :query, '%')) " +
-            "   OR LOWER(d.description) LIKE LOWER(CONCAT('%', :query, '%')) " +
-            "   OR LOWER(d.content) LIKE LOWER(CONCAT('%', :query, '%')) " +
-            "ORDER BY d.pubDate DESC")
+    @Query(
+        value = "SELECT * FROM document d " +
+                "WHERE to_tsvector('english', coalesce(d.title,'') || ' ' || coalesce(d.description,'') || ' ' || coalesce(d.content,'')) " +
+                "   @@ to_tsquery('english', :query) " +
+                "ORDER BY d.pub_date DESC",
+        nativeQuery = true)
     List<Document> searchByKeyword(@Param("query") String query, Pageable pageable);
 
     /**
