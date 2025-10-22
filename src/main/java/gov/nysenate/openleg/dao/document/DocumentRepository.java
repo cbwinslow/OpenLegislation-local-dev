@@ -1,6 +1,7 @@
 package gov.nysenate.openleg.dao.document;
 
 import gov.nysenate.openleg.model.document.Document;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -27,6 +28,16 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
      */
     @Query("SELECT d FROM Document d WHERE d.source = :source ORDER BY d.pubDate DESC")
     List<Document> findRecentBySource(@Param("source") String source, int limit);
+
+    /**
+     * Perform a fuzzy keyword search across title, description and content fields.
+     */
+    @Query("SELECT d FROM Document d " +
+            "WHERE LOWER(d.title) LIKE LOWER(CONCAT('%', :query, '%')) " +
+            "   OR LOWER(d.description) LIKE LOWER(CONCAT('%', :query, '%')) " +
+            "   OR LOWER(d.content) LIKE LOWER(CONCAT('%', :query, '%')) " +
+            "ORDER BY d.pubDate DESC")
+    List<Document> searchByKeyword(@Param("query") String query, Pageable pageable);
 
     /**
      * Check if document exists by URL to ensure idempotency.
