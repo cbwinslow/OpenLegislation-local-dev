@@ -178,7 +178,7 @@
     <commons-cli.version>1.6.0</commons-cli.version>
     <commons-csv.version>1.10.0</commons-csv.version>
     <commons-io.version>2.16.1</commons-io.version>
-    <commons-lang3.version>3.15.0</commons-lang3.version>
+    <commons-lang3.version>3.18.0</commons-lang3.version>
     <commons-text.version>1.11.0</commons-text.version>
     <commons-validator.version>1.8.0</commons-validator.version>
     <ehcache.version>3.10.8</ehcache.version>
@@ -192,18 +192,18 @@
     <javax-cache.version>1.1.1</javax-cache.version>
     <javax.xml.bind.version>3.0.0</javax.xml.bind.version>
     <jbcrypt.version>0.4</jbcrypt.version>
-    <jsoup.version>1.14.3</jsoup.version>
+    <jsoup.version>1.15.3</jsoup.version>
     <jstl.version>1.2</jstl.version>
     <junit.version>4.13.2</junit.version>
     <log4j.version>2.23.1</log4j.version>
     <mail.version>1.6.2</mail.version>
     <mockito.version>4.6.1</mockito.version>
     <pdfbox.version>2.0.26</pdfbox.version>
-    <postgres-jdbc.version>42.7.4</postgres-jdbc.version>
+    <postgres-jdbc.version>42.7.7</postgres-jdbc.version>
     <shiro.version>2.0.0</shiro.version>
     <slf4j.version>2.0.13</slf4j.version>
     <spring.version>5.3.39</spring.version>
-    <tomcat.version>9.0.84</tomcat.version>
+    <tomcat.version>9.0.108</tomcat.version>
     <woodstox.version>4.4.1</woodstox.version>
   </properties>
 
