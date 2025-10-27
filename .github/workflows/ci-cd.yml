@@ -110,7 +110,7 @@ jobs:
       run: mvn checkstyle:check
 
     - name: SonarCloud Scan
-      uses: SonarSource/sonarqube-scan-action@v2
+      uses: SonarSource/sonarqube-scan-action@v6
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
