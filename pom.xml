@@ -185,7 +185,7 @@
     <elasticsearch.version>8.15.2</elasticsearch.version>
     <flying-saucer.version>9.1.22</flying-saucer.version>
     <gson.version>2.9.0</gson.version>
-    <guava.version>33.3.1-jre</guava.version>
+    <guava.version>33.4.8-jre</guava.version>
     <http-client.version>4.5.14</http-client.version>
     <jackson.version>2.17.2</jackson.version>
     <javax-activation.version>1.1.1</javax-activation.version>
