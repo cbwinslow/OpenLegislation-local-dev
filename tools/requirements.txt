@@ -6,4 +6,4 @@ pandas==2.2.2
 numpy==1.26.4
 scikit-learn==1.5.2
 nltk==3.9.1
-networkx==3.3
+networkx==3.4.2
