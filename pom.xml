@@ -201,7 +201,7 @@
     <pdfbox.version>2.0.26</pdfbox.version>
     <postgres-jdbc.version>42.7.4</postgres-jdbc.version>
     <shiro.version>2.0.0</shiro.version>
-    <slf4j.version>2.0.13</slf4j.version>
+    <slf4j.version>2.0.17</slf4j.version>
     <spring.version>5.3.39</spring.version>
     <tomcat.version>9.0.84</tomcat.version>
     <woodstox.version>4.4.1</woodstox.version>
