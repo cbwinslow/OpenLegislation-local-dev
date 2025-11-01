@@ -34,25 +34,6 @@
       </plugin>
       <!-- JAXB2 Maven Plugin for generating classes from XSD -->
       <plugin>
-          <groupId>org.jvnet.jaxb</groupId>
-          <artifactId>jaxb-maven-plugin</artifactId>
-          <version>2.6.1</version>
-          <executions>
-              <execution>
-                  <id>xjc</id>
-                  <goals>
-                      <goal>xjc</goal>
-                  </goals>
-              </execution>
-          </executions>
-          <configuration>
-              <sources>
-                  <source>src/main/resources/schema/uslm-bill.xsd</source>
-                  <source>src/main/resources/schema/uslm-law.xsd</source>
-              </sources>
-              <packageName>gov.nysenate.openleg.processors.federal.jaxb</packageName>
-              <clearOutputDir>false</clearOutputDir>
-          </configuration>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>jaxb2-maven-plugin</artifactId>
         <version>3.2.0</version>
