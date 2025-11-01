@@ -5,10 +5,8 @@ import gov.nysenate.openleg.model.document.Document;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Provides semantic retrieval primitives that can later be wired into
@@ -28,11 +26,7 @@ public class AIRetrievalAgent {
     }
 
     public List<Document> findRecentBySource(String source, int limit) {
-        return documentRepository.findBySource(source).stream()
-                .sorted(Comparator.comparing(Document::getPubDate, Comparator.nullsLast(Comparator.reverseOrder()))
-                        .thenComparing(Document::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
-                .limit(limit)
-                .collect(Collectors.toList());
+        return documentRepository.findRecentBySource(source, PageRequest.of(0, limit));
     }
 
     public List<Document> search(String query, int limit) {

@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Performs data model manipulations on behalf of orchestration layers.
@@ -26,9 +25,7 @@ public class AIOperationsAgent {
     }
 
     public Map<String, Long> countDocumentsBySource() {
-        return dataContext.getAllDocuments().stream()
-                .filter(doc -> doc.getSource() != null)
-                .collect(Collectors.groupingBy(Document::getSource, Collectors.counting()));
+        return dataContext.countDocumentsBySource();
     }
 
     public Optional<Document> updateMetadata(Long id, String metadataJson) {
@@ -36,7 +33,6 @@ public class AIOperationsAgent {
 
         maybeDoc.ifPresent(doc -> {
             doc.setMetadata(metadataJson);
-            doc.setCreatedAt(Optional.ofNullable(doc.getCreatedAt()).orElse(LocalDateTime.now()));
             dataContext.saveDocument(doc);
             logger.info("Updated metadata for document {}", id);
         });
@@ -44,8 +40,6 @@ public class AIOperationsAgent {
     }
 
     public List<Document> getDocumentsNeedingAttention(LocalDateTime threshold) {
-        return dataContext.getAllDocuments().stream()
-                .filter(doc -> doc.getPubDate() == null || doc.getPubDate().isBefore(threshold))
-                .collect(Collectors.toList());
+        return dataContext.getDocumentsNeedingAttention(threshold);
     }
 }
