@@ -32,12 +32,25 @@ public class AIAgentOrchestrator {
         this.operationsAgent = operationsAgent;
     }
 
+    /**
+     * Ingest documents from an external RSS feed.
+     * @param url RSS feed URL (must not be null or empty)
+     * @param source Source identifier (must not be null or empty)
+     * @throws IllegalArgumentException if url or source is null or empty
+     */
     public void ingestExternalFeed(String url, String source) {
+        if (url == null || url.isBlank() || source == null || source.isBlank()) {
+            throw new IllegalArgumentException("URL and source must not be null or empty");
+        }
         logger.info("Orchestrator ingesting feed {}", source);
         ingestionAgent.ingestFeed(url, source);
     }
 
+    /**
+     * Refresh all curated document sources configured in the ingestion service.
+     */
     public void refreshCuratedSources() {
+        logger.info("Orchestrator refreshing curated sources");
         ingestionAgent.ingestKnownSources();
     }
 
