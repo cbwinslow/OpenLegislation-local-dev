@@ -54,7 +54,15 @@ public class FederalBillXmlProcessorTest {
 
     @Test(expected = ParseError.class)
     public void testProcessInvalidXml() throws Exception {
-        File invalidFile = new File("nonexistent.xml");
-        processor.parseXml(invalidFile); // Throws
+        // Create a temporary file with invalid XML content
+        File tempFile = File.createTempFile("invalid-xml", ".xml");
+        try (java.io.FileWriter writer = new java.io.FileWriter(tempFile)) {
+            writer.write("<root><invalid></root>"); // Malformed XML
+        }
+        try {
+            processor.parseXml(tempFile); // Should throw ParseError
+        } finally {
+            tempFile.delete();
+        }
     }
 }
