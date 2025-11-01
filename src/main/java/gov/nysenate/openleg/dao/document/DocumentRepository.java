@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,4 +45,17 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
      * Check if document exists by URL to ensure idempotency.
      */
     boolean existsByUrl(String url);
+
+    /**
+     * Count documents grouped by source.
+     * Returns a native query result that needs to be processed.
+     */
+    @Query(value = "SELECT d.source, COUNT(*) as count FROM document d WHERE d.source IS NOT NULL GROUP BY d.source", nativeQuery = true)
+    List<Object[]> countDocumentsBySource();
+
+    /**
+     * Find documents published before a given threshold date.
+     */
+    @Query("SELECT d FROM Document d WHERE d.pubDate IS NULL OR d.pubDate < :threshold")
+    List<Document> findDocumentsBeforeDate(@Param("threshold") LocalDateTime threshold);
 }

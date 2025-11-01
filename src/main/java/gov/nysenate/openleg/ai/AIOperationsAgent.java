@@ -1,5 +1,6 @@
 package gov.nysenate.openleg.ai;
 
+import gov.nysenate.openleg.dao.document.DocumentRepository;
 import gov.nysenate.openleg.model.document.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,15 +21,23 @@ public class AIOperationsAgent {
     private static final Logger logger = LoggerFactory.getLogger(AIOperationsAgent.class);
 
     private final AIDataContext dataContext;
+    private final DocumentRepository documentRepository;
 
-    public AIOperationsAgent(AIDataContext dataContext) {
+    public AIOperationsAgent(AIDataContext dataContext, DocumentRepository documentRepository) {
         this.dataContext = dataContext;
+        this.documentRepository = documentRepository;
     }
 
+    /**
+     * Count documents grouped by source using database aggregation.
+     */
     public Map<String, Long> countDocumentsBySource() {
-        return dataContext.getAllDocuments().stream()
-                .filter(doc -> doc.getSource() != null)
-                .collect(Collectors.groupingBy(Document::getSource, Collectors.counting()));
+        List<Object[]> results = documentRepository.countDocumentsBySource();
+        return results.stream()
+                .collect(Collectors.toMap(
+                        row -> (String) row[0],
+                        row -> ((Number) row[1]).longValue()
+                ));
     }
 
     public Optional<Document> updateMetadata(Long id, String metadataJson) {
@@ -43,9 +52,10 @@ public class AIOperationsAgent {
         return maybeDoc;
     }
 
+    /**
+     * Get documents needing attention using database filtering.
+     */
     public List<Document> getDocumentsNeedingAttention(LocalDateTime threshold) {
-        return dataContext.getAllDocuments().stream()
-                .filter(doc -> doc.getPubDate() == null || doc.getPubDate().isBefore(threshold))
-                .collect(Collectors.toList());
+        return documentRepository.findDocumentsBeforeDate(threshold);
     }
 }
