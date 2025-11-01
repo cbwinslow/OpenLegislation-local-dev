@@ -37,11 +37,22 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    /**
+     * Indicates which LegDataFragmentType this processor handles.
+     *
+     * @return the supported fragment type: {@link LegDataFragmentType#BILL}
+     */
     @Override
     public LegDataFragmentType getSupportedType() {
         return LegDataFragmentType.BILL;
     }
 
+    /**
+     * Process a federal bill XML fragment by unmarshalling the XML, mapping it into a Bill model, and persisting the result.
+     *
+     * @param fragment a LegDataFragment whose source file is a FederalBillXmlFile containing the bill XML to process
+     * @throws ParseError if unmarshalling, mapping, or persistence fails; the thrown error wraps the underlying exception
+     */
     @Override
     public void process(LegDataFragment fragment) {
         FederalBillXmlFile federalFile = (FederalBillXmlFile) fragment.getSourceFile();
@@ -58,11 +69,30 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
         }
     }
 
+    /**
+     * Unmarshals the given federal bill XML file into a BillJaxb object.
+     *
+     * @param xmlFile the XML file containing the federal bill data
+     * @return the root BillJaxb object deserialized from the file
+     * @throws Exception if an error occurs during JAXB unmarshalling
+     */
     private BillJaxb unmarshalBill(File xmlFile) throws Exception {
         Unmarshaller unmarshaller = JAXB_CONTEXT.createUnmarshaller();
         return (BillJaxb) unmarshaller.unmarshal(xmlFile);
     }
 
+    /**
+     * Map a JAXB-parsed federal bill and its source metadata into the internal Bill model.
+     *
+     * <p>Constructs a Bill populated with its identifier and session, official title, sponsors
+     * (mapped to placeholder session members when detailed person mapping is unavailable),
+     * chronological actions, concatenated bill text, and federal metadata including published
+     * date/time, congress number, and source.</p>
+     *
+     * @param jaxb the JAXB representation of the federal bill XML
+     * @param sourceFile source file metadata providing publication date/time and provenance
+     * @return the populated Bill instance ready for persistence
+     */
     private Bill mapToBill(BillJaxb jaxb, FederalBillXmlFile sourceFile) {
         LegislationIdJaxb legIdJaxb = jaxb.getLegislationId();
         int congress = legIdJaxb.getCongress();
@@ -116,6 +146,12 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
         return bill;
     }
 
+    /**
+     * Computes the starting calendar year of the given U.S. Congress.
+     *
+     * @param congress the ordinal number of the Congress (for example, 119)
+     * @return the calendar year in which that Congress's first session begins (for example, 2025 for the 119th Congress)
+     */
     private int congressToSessionYear(int congress) {
         return 1789 + (congress - 1) * 2; // Starting year of congress, e.g., 119th = 2025
     }

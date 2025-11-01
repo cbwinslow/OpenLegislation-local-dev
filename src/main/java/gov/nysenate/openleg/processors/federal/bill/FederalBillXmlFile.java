@@ -23,11 +23,29 @@ public class FederalBillXmlFile extends XmlFile {
         Pattern.CASE_INSENSITIVE
     );
 
+    /**
+     * Creates a FederalBillXmlFile for the given file and parses its filename to extract
+     * the congress number, bill type, and bill number.
+     *
+     * @param file the XML file to represent; its filename will be parsed for metadata
+     * @throws IOException if an I/O error occurs while initializing the underlying XmlFile
+     */
     public FederalBillXmlFile(File file) throws IOException {
         super(file);
         parseFilename(file.getName());
     }
 
+    /**
+     * Parse the federal bill filename and populate the congress, billType, and billNumber fields.
+     *
+     * If the filename matches the expected pattern, sets:
+     * - congress to the parsed 3-digit congress number,
+     * - billType to the uppercased bill type or an empty string if absent,
+     * - billNumber to the parsed bill number or an empty string if absent.
+     *
+     * @param fileName the filename to parse
+     * @throws IllegalArgumentException if the filename does not match the expected federal bill pattern
+     */
     private void parseFilename(String fileName) {
         Matcher matcher = FILENAME_PATTERN.matcher(fileName);
         if (matcher.matches()) {
@@ -39,24 +57,48 @@ public class FederalBillXmlFile extends XmlFile {
         }
     }
 
-    // Getters
+    /**
+     * Get the congress number parsed from the file name.
+     *
+     * @return the congress number extracted from the filename
+     */
     public int getCongress() {
         return congress;
     }
 
+    /**
+     * The bill type parsed from the filename.
+     *
+     * @return the bill type in uppercase (e.g., "HR", "S"), or an empty string if no type was present in the filename
+     */
     public String getBillType() {
         return billType;
     }
 
+    /**
+     * The bill number parsed from the file name.
+     *
+     * @return the bill number parsed from the filename, or an empty string if not present
+     */
     public String getBillNumber() {
         return billNumber;
     }
 
+    /**
+     * Provides the SourceType for federal bill XML files.
+     *
+     * @return the source type SourceType.FEDERAL_BILL_XML
+     */
     @Override
     public SourceType getSourceType() {
         return SourceType.FEDERAL_BILL_XML;
     }
 
+    /**
+     * String representation including the parsed congress number, bill type, bill number, and superclass file info.
+     *
+     * @return a string containing the congress number, bill type, bill number, and the superclass's string representation
+     */
     @Override
     public String toString() {
         return "FederalBillXmlFile{" +

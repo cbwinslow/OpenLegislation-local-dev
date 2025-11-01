@@ -50,7 +50,19 @@ public class BillActionParser
     /** The expected format for actions recorded in the bill events [4] block. e.g. 02/04/13 Event Text Here */
     protected static final Pattern billEventPattern = Pattern.compile("([0-9]{2}/[0-9]{2}/[0-9]{2}) (.*)");
 
-    /** --- Methods --- */
+    /**
+     * Parses a plain-text actions block into a list of BillAction objects.
+     *
+     * Each line of the input must match the expected event pattern (date followed by action text, e.g. "MM/dd/yy ACTION TEXT").
+     * For each line a BillAction is produced with the parsed event date, the action text uppercased, the chamber inferred
+     * from the action text casing (all-letters uppercase => SENATE, otherwise ASSEMBLY), a sequence number of 0, a
+     * BillId constructed from the provided billId with Version.ORIGINAL, and a status of "UNKNOWN".
+     *
+     * @param billId the base BillId used to construct an ORIGINAL-version BillId for each parsed action
+     * @param data   the plain-text actions block, with one action per line
+     * @return       a list of BillAction objects parsed from the input, in the order encountered
+     * @throws ParseError if a line does not match the expected pattern or if an event date cannot be parsed
+     */
 
     public static List<BillAction> parseActionsList(BillId billId, String data) throws ParseError {
         List<BillAction> billActions = new ArrayList<>();

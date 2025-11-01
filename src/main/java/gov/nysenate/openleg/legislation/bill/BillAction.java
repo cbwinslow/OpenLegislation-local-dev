@@ -36,21 +36,23 @@ public class BillAction implements Serializable, Comparable<BillAction>
     /** The type of the action (e.g., federal, state, etc.) */
     private String type;
 
-    /** --- Constructors --- */
+    /**
+     * Creates an empty BillAction instance with default field values.
+     */
 
     public BillAction() {
         super();
     }
 
     /**
-     * Fully constructs a new action.
+     * Create a BillAction with the specified date, text, chamber, sequence number, bill id, and type.
      *
-     * @param date LocalDate - The date of the action
-     * @param text String - The text of the action
-     * @param chamber Chamber - The chamber this bill action occurred in
-     * @param sequenceNo int - Indicates the ordering of this action
-     * @param billId BillId - The id of the bill the action was performed on
-     * @param type String - The type of the action
+     * @param date the date of the action
+     * @param text the action description
+     * @param chamber the chamber where the action occurred
+     * @param sequenceNo ordering index for the action (lower values occur earlier)
+     * @param billId the identifier of the bill this action pertains to
+     * @param type the action type
      */
     public BillAction(LocalDate date, String text, Chamber chamber, int sequenceNo, BillId billId, String type) {
         super();
@@ -151,14 +153,29 @@ public class BillAction implements Serializable, Comparable<BillAction>
         return text;
     }
 
+    /**
+     * Sets the descriptive text for this bill action.
+     *
+     * @param text the action description
+     */
     public void setText(String text) {
         this.text = text;
     }
 
+    /**
+     * Gets the type of this bill action.
+     *
+     * @return the action type, or {@code null} if not set
+     */
     public String getType() {
         return type;
     }
 
+    /**
+     * Sets the action's type.
+     *
+     * @param type the descriptive type or category of the action
+     */
     public void setType(String type) {
         this.type = type;
     }

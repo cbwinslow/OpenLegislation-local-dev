@@ -27,6 +27,12 @@ public class SSHIntegrationIT extends BaseTests {
     private static final String TEST_LOCAL_FILE = "/tmp/ssh_test_file.txt";
     private static final String TEST_CONTENT = "SSH Test Content - " + System.currentTimeMillis();
 
+    /**
+     * Verifies basic SSH connectivity to TEST_HOST by executing a simple remote echo command.
+     *
+     * Asserts that the SSH process completes within 30 seconds, exits with code 0, and its stdout
+     * contains the string "SSH connection successful"; fails the test on I/O or interruption errors.
+     */
     @Test
     public void testSSHConnectivity() {
         // Test basic SSH connectivity to localhost
@@ -60,6 +66,14 @@ public class SSHIntegrationIT extends BaseTests {
         }
     }
 
+    /**
+     * Verifies that a local file can be uploaded to the test host via SCP and that the uploaded file exists remotely.
+     *
+     * Creates a local test file, uploads it to TEST_HOST using the system scp command, verifies the file's presence on the remote
+     * host, and ensures local and remote test artifacts are cleaned up.
+     *
+     * @throws IOException if creating or removing the local test file fails
+     */
     @Test
     public void testSCPFileTransfer() throws IOException {
         // Test SCP file transfer
@@ -118,6 +132,11 @@ public class SSHIntegrationIT extends BaseTests {
         }
     }
 
+    /****
+     * Executes a compound command on the test SSH host and verifies it completes successfully and emits a specific marker string.
+     *
+     * <p>The test asserts the remote process finishes within 30 seconds, exits with code 0, and that the command output contains "Remote execution test".</p>
+     */
     @Test
     public void testRemoteCommandExecution() {
         // Test executing commands on remote server
@@ -158,6 +177,13 @@ public class SSHIntegrationIT extends BaseTests {
         }
     }
 
+    /**
+     * Tests local SSH port forwarding by creating an SSH tunnel from localhost:9999 to the remote host's port 80
+     * and probing the forwarded port with an HTTP request.
+     *
+     * The test attempts to establish the tunnel, issues a curl request to http://localhost:9999 to verify connectivity,
+     * prints a success message if the probe returns exit code 0, and then terminates the SSH tunnel.
+     */
     @Test
     public void testSSHPortForwarding() {
         // Test SSH port forwarding (local port forwarding)
@@ -234,6 +260,11 @@ public class SSHIntegrationIT extends BaseTests {
         }
     }
 
+    /**
+     * Verifies creation, permission setting, listing, and removal of a temporary file on the remote test host via SSH.
+     *
+     * Executes remote commands to create a temp file, set its permissions to 644, list the file, and remove it, and asserts that the SSH command completes within the test timeout and exits with code 0.
+     */
     @Test
     public void testFilePermissionsAndOwnership() {
         // Test file permissions and ownership for deployment
@@ -260,6 +291,13 @@ public class SSHIntegrationIT extends BaseTests {
         }
     }
 
+    /**
+     * Checks whether SSH connection multiplexing (ControlMaster) can be established to the test host.
+     *
+     * <p>Starts an SSH process configured for connection multiplexing and prints a brief result to standard output:
+     * either that multiplexing is working or that it is not supported/not configured. Exceptions during the check
+     * are caught and logged to standard output.</p>
+     */
     @Test
     public void testSSHConnectionPooling() {
         // Test SSH connection reuse (connection multiplexing)
@@ -288,6 +326,18 @@ public class SSHIntegrationIT extends BaseTests {
         }
     }
 
+    /**
+     * Assess SSH user-switching and privilege escalation capabilities on the test host.
+     *
+     * <p>Performs several checks over SSH from the test user against TEST_HOST:
+     * 1) a non-interactive `sudo` probe to detect root elevation or password requirements;
+     * 2) an `su` invocation to check availability of interactive user switching;
+     * 3) a user-context probe (`id`, `whoami`, `groups`) that is asserted to complete successfully;
+     * 4) a check for alternative escalation tools (e.g., `doas`).</p>
+     *
+     * <p>Outputs informational messages for each sub-check; only the user-context probe uses assertions
+     * that will fail the test if the expected completion marker is not present.</p>
+     */
     @Test
     public void testUserSwitching() {
         // Test user switching capabilities (sudo and su commands)
@@ -431,13 +481,22 @@ public class SSHIntegrationIT extends BaseTests {
         System.out.println("User switching capability assessment completed");
     }
 
-    // Helper methods
+    /**
+     * Creates or overwrites the local test file at TEST_LOCAL_FILE with TEST_CONTENT.
+     *
+     * @throws IOException if the file cannot be written
+     */
 
     private void createTestFile() throws IOException {
         Path testFile = Paths.get(TEST_LOCAL_FILE);
         Files.write(testFile, TEST_CONTENT.getBytes());
     }
 
+    /**
+     * Verifies that the test file exists on the configured remote host and fails the test if it does not or if verification fails.
+     *
+     * Performs an SSH check for the presence of TEST_REMOTE_DIR/ssh_test_file.txt on TEST_HOST and asserts that the remote command reports "File exists".
+     */
     private void verifyRemoteFileExists() {
         ProcessBuilder pb = new ProcessBuilder("ssh",
             "-o", "StrictHostKeyChecking=no",
@@ -460,6 +519,14 @@ public class SSHIntegrationIT extends BaseTests {
         }
     }
 
+    /**
+     * Removes the local test file and attempts to remove the corresponding remote test file.
+     *
+     * The method deletes the local TEST_LOCAL_FILE if present and issues an SSH command to remove
+     * TEST_REMOTE_DIR/ssh_test_file.txt on the remote host, waiting up to 5 seconds for the remote
+     * cleanup to complete. Failures during either local or remote cleanup are written as warnings
+     * to standard error but do not propagate exceptions.
+     */
     private void cleanupTestFile() {
         try {
             Files.deleteIfExists(Paths.get(TEST_LOCAL_FILE));
@@ -480,6 +547,13 @@ public class SSHIntegrationIT extends BaseTests {
         }
     }
 
+    /**
+     * Removes the specified directory on the remote test host recursively.
+     *
+     * Attempts to run `rm -rf` on the given remote path over SSH; failures are caught and logged as a warning.
+     *
+     * @param remoteDir the absolute or relative path of the remote directory to remove
+     */
     private void cleanupRemoteDirectory(String remoteDir) {
         try {
             ProcessBuilder pb = new ProcessBuilder("ssh",
