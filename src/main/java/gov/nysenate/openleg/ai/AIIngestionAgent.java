@@ -31,12 +31,33 @@ public class AIIngestionAgent {
 
     /**
      * Use the curated ingestion jobs that already exist in {@link IngestionService}.
+     * Each ingestion is wrapped in error handling to ensure remaining sources are processed.
      */
     public void ingestKnownSources() {
         logger.info("AIIngestionAgent ingesting known sources");
-        ingestionService.ingestWikiLeaks();
-        ingestionService.ingestCDC();
-        ingestionService.ingestWhiteHouse();
-        ingestionService.ingestReuters();
+        
+        try {
+            ingestionService.ingestWikiLeaks();
+        } catch (Exception e) {
+            logger.error("Failed to ingest WikiLeaks", e);
+        }
+        
+        try {
+            ingestionService.ingestCDC();
+        } catch (Exception e) {
+            logger.error("Failed to ingest CDC", e);
+        }
+        
+        try {
+            ingestionService.ingestWhiteHouse();
+        } catch (Exception e) {
+            logger.error("Failed to ingest White House", e);
+        }
+        
+        try {
+            ingestionService.ingestReuters();
+        } catch (Exception e) {
+            logger.error("Failed to ingest Reuters", e);
+        }
     }
 }
