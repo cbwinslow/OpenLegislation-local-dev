@@ -47,8 +47,8 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
         FederalBillXmlFile federalFile = (FederalBillXmlFile) fragment.getSourceFile();
         File xmlFile = federalFile.getFile();
         try {
-            BillJaxb jaxb = unmarshalBill(xmlFile);
-            Bill bill = mapToBill(jaxb, federalFile);
+            Document doc = parseXml(xmlFile);
+            Bill bill = mapToBill(doc, federalFile);
             // Persistence via base class or DAO
             super.saveLegData(bill);
             logger.info("Processed federal bill: {}", federalFile.getFileName());
@@ -58,16 +58,20 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
         }
     }
 
-    private BillJaxb unmarshalBill(File xmlFile) throws Exception {
-        Unmarshaller unmarshaller = JAXB_CONTEXT.createUnmarshaller();
-        return (BillJaxb) unmarshaller.unmarshal(xmlFile);
+    Document parseXml(File xmlFile) throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        return builder.parse(xmlFile);
     }
 
-    private Bill mapToBill(BillJaxb jaxb, FederalBillXmlFile sourceFile) {
-        LegislationIdJaxb legIdJaxb = jaxb.getLegislationId();
-        int congress = legIdJaxb.getCongress();
-        String type = legIdJaxb.getType();
-        String number = legIdJaxb.getNumber();
+    Bill mapToBill(Document doc, FederalBillXmlFile sourceFile) {
+        Element root = doc.getDocumentElement();
+        
+        // Extract congress number and bill type from XML
+        int congress = Integer.parseInt(getElementTextContent(root, "congress"));
+        String type = getElementTextContent(root, "type");
+        String number = getElementTextContent(root, "number");
+        
         Chamber chamber = type.startsWith("H") ? Chamber.HOUSE : Chamber.SENATE;
         BillType billType = BillType.fromString(type.toUpperCase());
         int sessionYear = congressToSessionYear(congress);
@@ -75,13 +79,15 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
         BaseBillId baseBillId = new BaseBillId(number, session);
 
         Bill bill = new Bill(baseBillId);
-        bill.setTitle(jaxb.getOfficialTitle());
+        bill.setTitle(getElementTextContent(root, "title"));
 
         // Sponsors
         List<BillSponsor> sponsors = new ArrayList<>();
-        for (SponsorJaxb sponsorJaxb : jaxb.getSponsors()) {
-            String name = sponsorJaxb.getFullName();
-            String party = sponsorJaxb.getParty();
+        NodeList sponsorNodes = root.getElementsByTagName("sponsor");
+        for (int i = 0; i < sponsorNodes.getLength(); i++) {
+            Element sponsorEl = (Element) sponsorNodes.item(i);
+            String name = getElementTextContent(sponsorEl, "fullName");
+            String party = getElementTextContent(sponsorEl, "party");
             Member member = new Member("Federal Sponsor", "Doe", "John", null); // Map from bioguide if available
             SessionMember sessionMember = new SessionMember(0, member, "SPONSOR", session, null, true);
             BillSponsor sponsor = new BillSponsor(sessionMember);
@@ -91,21 +97,28 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
 
         // Actions
         List<BillAction> actions = new ArrayList<>();
-        for (ActionJaxb actionJaxb : jaxb.getActions()) {
-            LocalDate date = LocalDate.parse(actionJaxb.getDate(), DATE_FORMAT);
-            Chamber actionChamber = "HOUSE".equals(actionJaxb.getChamber()) ? Chamber.HOUSE : Chamber.SENATE;
-            String text = actionJaxb.getText();
-            BillId billId = new BillId(baseBillId, Version.ORIGINAL);
-            BillAction action = new BillAction(date, text, actionChamber, 0, billId, "UNKNOWN");
-            actions.add(action);
+        NodeList actionNodes = root.getElementsByTagName("action");
+        for (int i = 0; i < actionNodes.getLength(); i++) {
+            Element actionEl = (Element) actionNodes.item(i);
+            String dateStr = getElementTextContent(actionEl, "date");
+            if (dateStr != null && !dateStr.isEmpty()) {
+                LocalDate date = LocalDate.parse(dateStr, DATE_FORMAT);
+                Chamber actionChamber = "HOUSE".equals(getElementTextContent(actionEl, "chamber")) ? Chamber.HOUSE : Chamber.SENATE;
+                String text = getElementTextContent(actionEl, "text");
+                BillId billId = new BillId(baseBillId, Version.ORIGINAL);
+                BillAction action = new BillAction(date, text, actionChamber, i, billId, "UNKNOWN");
+                actions.add(action);
+            }
         }
         bill.actions = actions;
 
         // Text
         BillText billText = new BillText();
         StringBuilder textBuilder = new StringBuilder();
-        for (TextJaxb textJaxb : jaxb.getTexts()) {
-            textBuilder.append(textJaxb.getContent()).append("\n");
+        NodeList textNodes = root.getElementsByTagName("text");
+        for (int i = 0; i < textNodes.getLength(); i++) {
+            Element textEl = (Element) textNodes.item(i);
+            textBuilder.append(textEl.getTextContent()).append("\n");
         }
         billText.setText(PLAIN, textBuilder.toString());
         bill.setText(billText);
@@ -114,6 +127,14 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
         bill.setFederalCongress(congress);
         bill.setFederalSource("govinfo");
         return bill;
+    }
+    
+    private String getElementTextContent(Element parent, String tagName) {
+        NodeList nodeList = parent.getElementsByTagName(tagName);
+        if (nodeList.getLength() > 0) {
+            return nodeList.item(0).getTextContent();
+        }
+        return null;
     }
 
     private int congressToSessionYear(int congress) {

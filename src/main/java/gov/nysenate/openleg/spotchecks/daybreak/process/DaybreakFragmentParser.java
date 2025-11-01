@@ -87,7 +87,7 @@ public class DaybreakFragmentParser {
                                                 Chamber.SENATE : Chamber.ASSEMBLY ;
                     BillId billId = new BillId(daybreakBill.getBaseBillId(), Version.ORIGINAL);
                     billActions.add(
-                            new BillAction(actionDate, actionText, actionChamber, 0, billId, "UNKNOWN")
+                            new BillAction(actionDate, actionText, actionChamber, i, billId, "UNKNOWN")
                     );
                 } catch (DateTimeParseException ex) {
                     logger.error("Could not parse date " + billActionMatcher.group(1) + " for " + daybreakBill.getDaybreakBillId());
