@@ -1,6 +1,7 @@
 package gov.nysenate.openleg.processors.federal.bill;
 
 import gov.nysenate.openleg.common.util.XmlHelper;
+import gov.nysenate.openleg.legislation.SessionYear;
 import gov.nysenate.openleg.legislation.bill.*;
 import gov.nysenate.openleg.legislation.committee.Chamber;
 import gov.nysenate.openleg.processors.ParseError;
@@ -8,6 +9,7 @@ import gov.nysenate.openleg.processors.bill.LegDataFragment;
 import gov.nysenate.openleg.processors.bill.LegDataFragmentType;
 import gov.nysenate.openleg.processors.bill.AbstractBillProcessor;
 import gov.nysenate.openleg.legislation.member.Member;
+import gov.nysenate.openleg.legislation.member.Person;
 import gov.nysenate.openleg.legislation.member.SessionMember;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +56,7 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
 
     @Override
     public void process(LegDataFragment fragment) {
-        FederalBillXmlFile federalFile = (FederalBillXmlFile) fragment.getSourceFile();
+        FederalBillXmlFile federalFile = (FederalBillXmlFile) fragment.getParentLegDataFile();
         File xmlFile = federalFile.getFile();
         try {
             Document doc = xmlHelper.parse(xmlFile);
@@ -89,18 +91,10 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
         setTitle(bill, title, fragment);
 
         // Parse sponsors
-        List<BillSponsor> sponsors = new ArrayList<>();
-        NodeList sponsorNodes = xmlHelper.getNodeList("//sponsors/sponsor", doc);
-        for (int i = 0; i < sponsorNodes.getLength(); i++) {
-            Node sponsorNode = sponsorNodes.item(i);
-            String name = xmlHelper.getString("fullName", sponsorNode);
-            String party = xmlHelper.getString("party", sponsorNode);
-            Member member = new Member("Federal Sponsor", "Doe", "John", null); // Map from bioguide if available
-            SessionMember sessionMember = new SessionMember(0, member, "SPONSOR", session, null, true);
-            BillSponsor sponsor = new BillSponsor(sessionMember);
-            sponsors.add(sponsor);
-        }
-        bill.setSponsor(sponsors.isEmpty() ? new BillSponsor() : sponsors.get(0));
+        // TODO: Map federal sponsors properly using bioguide IDs
+        BillSponsor sponsor = new BillSponsor();
+        sponsor.setMember(null); // Placeholder - federal sponsor mapping not yet implemented
+        bill.setSponsor(sponsor);
 
         // Parse actions
         List<BillAction> actions = new ArrayList<>();
@@ -110,7 +104,8 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
             String dateStr = xmlHelper.getString("date", actionNode);
             LocalDate date = LocalDate.parse(dateStr, DATE_FORMAT);
             String actionChamberStr = xmlHelper.getString("chamber", actionNode);
-            Chamber actionChamber = "HOUSE".equals(actionChamberStr) ? Chamber.HOUSE : Chamber.SENATE;
+            // Map federal chambers to OpenLeg chambers (HOUSE and SENATE both map to SENATE for now)
+            Chamber actionChamber = "ASSEMBLY".equalsIgnoreCase(actionChamberStr) ? Chamber.ASSEMBLY : Chamber.SENATE;
             String text = xmlHelper.getString("text", actionNode);
             BillId actionBillId = new BillId(baseBillId, Version.ORIGINAL);
             BillAction action = new BillAction(date, text, actionChamber, 0, actionBillId, "UNKNOWN");
@@ -119,14 +114,13 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
         bill.setActions(actions);
 
         // Parse text
-        BillText billText = new BillText();
         StringBuilder textBuilder = new StringBuilder();
         NodeList textNodes = xmlHelper.getNodeList("//texts/text", doc);
         for (int i = 0; i < textNodes.getLength(); i++) {
             Node textNode = textNodes.item(i);
             textBuilder.append(textNode.getTextContent()).append("\n");
         }
-        billText.setText(PLAIN, textBuilder.toString());
+        BillText billText = new BillText(textBuilder.toString());
         amendment.setBillText(billText);
 
         setModifiedDateTime(bill, fragment);
