@@ -32,7 +32,7 @@
           <encoding>utf-8</encoding>
         </configuration>
       </plugin>
-      <!-- JAXB2 Maven Plugin for generating classes from XSD -->
+      <!-- JAXB2 Maven Plugin for generating classes from XSD - Commented out as we use DOM parsing instead
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>jaxb2-maven-plugin</artifactId>
@@ -62,6 +62,7 @@
           </dependency>
         </dependencies>
       </plugin>
+      -->
       <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-war-plugin</artifactId>
@@ -378,6 +379,8 @@
       <groupId>org.glassfish.jaxb</groupId>
       <artifactId>jaxb-runtime</artifactId>
       <version>${javax.xml.bind.version}</version>
+    </dependency>
+    <dependency>
       <groupId>jakarta.xml.bind</groupId>
       <artifactId>jakarta.xml.bind-api</artifactId>
       <version>3.0.1</version>
