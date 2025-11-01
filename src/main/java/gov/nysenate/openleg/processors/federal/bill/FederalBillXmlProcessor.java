@@ -9,6 +9,7 @@ import gov.nysenate.openleg.processors.bill.LegDataFragmentType;
 import gov.nysenate.openleg.processors.bill.AbstractBillProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -28,6 +29,7 @@ import static gov.nysenate.openleg.legislation.bill.BillTextFormat.PLAIN;
  * Processor for federal bill XML from congress.gov/govinfo.
  * Parses XML to Bill model using DOM parsing.
  */
+@Service
 public class FederalBillXmlProcessor extends AbstractBillProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(FederalBillXmlProcessor.class);
