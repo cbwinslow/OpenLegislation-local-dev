@@ -53,6 +53,8 @@
           <packageName>gov.nysenate.openleg.processors.federal.jaxb</packageName>
           <clearOutputDir>false</clearOutputDir>
           <outputDirectory>${project.build.directory}/generated-sources/xjc</outputDirectory>
+          <noPackageLevelAnnotations>true</noPackageLevelAnnotations>
+          <failOnNoSchemas>false</failOnNoSchemas>
         </configuration>
         <dependencies>
           <dependency>
@@ -378,6 +380,8 @@
       <groupId>org.glassfish.jaxb</groupId>
       <artifactId>jaxb-runtime</artifactId>
       <version>${javax.xml.bind.version}</version>
+    </dependency>
+    <dependency>
       <groupId>jakarta.xml.bind</groupId>
       <artifactId>jakarta.xml.bind-api</artifactId>
       <version>3.0.1</version>
