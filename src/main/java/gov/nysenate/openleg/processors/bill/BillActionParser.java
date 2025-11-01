@@ -76,8 +76,8 @@ public class BillActionParser
                 // Uppercase the action text to aid with regex matching
                 eventText = eventText.toUpperCase();
                 // Construct and append bill action to list.
-                BillId billId = new BillId(billId, Version.ORIGINAL);
-                BillAction action = new BillAction(eventDate, eventText, eventChamber, 0, billId, "UNKNOWN");
+                BillId originalBillId = new BillId(billId, Version.ORIGINAL);
+                BillAction action = new BillAction(eventDate, eventText, eventChamber, 0, originalBillId, "UNKNOWN");
                 billActions.add(action);
             }
             else {
