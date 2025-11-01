@@ -53,11 +53,4 @@ public class AIDataContext {
     public List<Document> getDocumentsBySource(String source) {
         return documentRepository.findBySource(source);
     }
-
-    /**
-     * Convenience wrapper for returning the most recently created documents.
-     */
-    public List<Document> getAllDocuments() {
-        return documentRepository.findAll();
-    }
 }
