@@ -148,9 +148,15 @@ resource "digitalocean_spaces_bucket" "data" {
 }
 
 # CDN for Spaces (optional)
+variable "certificate_id" {
+  description = "DigitalOcean certificate ID for CDN custom domain (optional)"
+  type        = string
+  default     = null
+}
+
 resource "digitalocean_cdn_endpoint" "spaces_cdn" {
   origin       = digitalocean_spaces_bucket.data.bucket_domain_name
-  certificate_id = digitalocean_certificate.main.id  # Assume cert created
+  certificate_id = var.certificate_id
 
   custom_domain {
     hostname = "cdn.${var.zone_name}"  # Integrate with Cloudflare
