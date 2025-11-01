@@ -1,11 +1,12 @@
 package gov.nysenate.openleg.processors.federal.report;
 
 import gov.nysenate.openleg.processors.federal.bill.FederalBillXmlFile;
-import gov.nysenate.openleg.processors.bill.XmlFile;
+import gov.nysenate.openleg.processors.bill.xml.XmlFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,7 +25,7 @@ public class FederalReportXmlFile extends XmlFile {
     private final String reportType; // e.g., HRPT, SRPT
     private final String reportNumber;
 
-    public FederalReportXmlFile(File file) {
+    public FederalReportXmlFile(File file) throws IOException {
         super(file);
         Matcher matcher = REPORT_PATTERN.matcher(getFileName());
         if (matcher.matches()) {
