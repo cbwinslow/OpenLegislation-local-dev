@@ -38,4 +38,4 @@ COMMENT ON COLUMN master.ingestion_status.table_name IS 'Name of the target tabl
 COMMENT ON COLUMN master.ingestion_status.record_id IS 'Unique identifier for the record being processed';
 COMMENT ON COLUMN master.ingestion_status.source IS 'Data source identifier (govinfo, congress_api, etc.)';
 COMMENT ON COLUMN master.ingestion_status.ingestion_status IS 'Current processing status';
-COMMENT ON COLUMN master.ingestion_status.metadata IS 'Additional JSON data about the record';</parameter>
+COMMENT ON COLUMN master.ingestion_status.metadata IS 'Additional JSON data about the record';
