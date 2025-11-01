@@ -33,6 +33,12 @@ public class ConnectionIntegrationIT extends BaseTests {
     private static final String GOOGLE_DNS = "8.8.8.8";
     private static final int HTTP_TIMEOUT_MS = 10000;
 
+    /**
+     * Verifies the GovInfo bulk data endpoint is reachable and returns a successful HTTP status.
+     *
+     * <p>Asserts that an HTTP response code in the range 200–399 is returned for the configured
+     * GovInfo bulk data URL.</p>
+     */
     @Test
     public void testGovInfoBulkDataConnectivity() {
         // Test connectivity to GovInfo bulk data service
@@ -55,6 +61,12 @@ public class ConnectionIntegrationIT extends BaseTests {
         }
     }
 
+    /**
+     * Verifies that the Congress.gov API endpoint responds with an HTTP status in the 200–399 range.
+     *
+     * Attempts an HTTP GET to the configured Congress.gov URL and fails the test if the endpoint is
+     * unreachable or returns a status outside the 200–399 range.
+     */
     @Test
     public void testCongressApiConnectivity() {
         // Test connectivity to Congress.gov API
@@ -77,6 +89,11 @@ public class ConnectionIntegrationIT extends BaseTests {
         }
     }
 
+    /**
+     * Verifies basic internet connectivity by resolving a well-known DNS host and checking reachability.
+     *
+     * Asserts that the DNS name resolves to an InetAddress and that the address is reachable within 5 seconds.
+     */
     @Test
     public void testInternetConnectivity() {
         // Test basic internet connectivity
@@ -94,6 +111,15 @@ public class ConnectionIntegrationIT extends BaseTests {
         }
     }
 
+    /**
+     * Validates the DataSource connection pool by acquiring multiple connections and measuring acquisition time.
+     *
+     * Acquires a fixed number of connections from the injected DataSource, asserts each connection is non-null and open,
+     * measures the total time to obtain all connections and asserts the acquisition completes within 5 seconds, then
+     * closes all acquired connections in a finally block.
+     *
+     * @throws SQLException if a database access error occurs while acquiring or closing connections
+     */
     @Test
     public void testDatabaseConnectionPool() throws SQLException {
         // Test database connection pool functionality
@@ -133,6 +159,13 @@ public class ConnectionIntegrationIT extends BaseTests {
         }
     }
 
+    /**
+     * Measures HTTP latency to GovInfo Bulk Data and the Congress.gov API and asserts that each service
+     * responds successfully and within the configured latency threshold.
+     *
+     * <p>Fails the test if a response code is outside the 200–399 range or if measured latency exceeds
+     * the allowed limit.</p>
+     */
     @Test
     public void testNetworkLatency() {
         // Test network latency to key services
@@ -140,6 +173,13 @@ public class ConnectionIntegrationIT extends BaseTests {
         testServiceLatency("Congress.gov API", CONGRESS_API_URL);
     }
 
+    /**
+     * Checks whether an HTTP proxy is configured and, if present, verifies that network access works through it.
+     *
+     * If proxy settings are detected via system properties, the test prints the proxy host and port and re-runs
+     * the GovInfo bulk data connectivity check through the configured proxy. If no proxy is configured, the test
+     * reports that no proxy configuration was detected.
+     */
     @Test
     public void testProxyConfiguration() {
         // Test if proxy settings are properly configured (if needed)
@@ -157,6 +197,12 @@ public class ConnectionIntegrationIT extends BaseTests {
         }
     }
 
+    /**
+     * Validates the SSL/TLS certificate for the GovInfo bulk data HTTPS endpoint.
+     *
+     * Attempts an HTTPS connection to the configured GovInfo bulk URL and fails the test if the certificate
+     * is invalid or if an I/O error prevents successful validation.
+     */
     @Test
     public void testSSLCertificateValidation() {
         // Test SSL certificate validation for HTTPS endpoints
@@ -177,6 +223,12 @@ public class ConnectionIntegrationIT extends BaseTests {
         }
     }
 
+    /**
+     * Verifies that HTTP connection timeouts are enforced and handled.
+     *
+     * Attempts to connect to an endpoint that deliberately delays its response using short
+     * connect and read timeouts; the test fails if no timeout or related IOException occurs.
+     */
     @Test
     public void testConnectionTimeoutHandling() {
         // Test that connection timeouts are handled properly
@@ -202,6 +254,14 @@ public class ConnectionIntegrationIT extends BaseTests {
         }
     }
 
+    /**
+     * Verifies that multiple concurrent calls to the GovInfo bulk API complete successfully.
+     *
+     * Spawns several threads that each invoke the GovInfo connectivity test, waits for each thread
+     * to finish (up to 10 seconds per thread), and asserts that every thread reported success.
+     *
+     * @throws InterruptedException if the current thread is interrupted while waiting for a worker thread to join
+     */
     @Test
     public void testConcurrentApiCalls() throws InterruptedException {
         // Test making concurrent API calls to ensure thread safety
@@ -237,6 +297,11 @@ public class ConnectionIntegrationIT extends BaseTests {
         System.out.println("Concurrent API calls completed successfully");
     }
 
+    /**
+     * Verifies TCP port accessibility for critical external and local services.
+     *
+     * Checks HTTPS (port 443) on GovInfo and Congress.gov and PostgreSQL (port 5432) on localhost.
+     */
     @Test
     public void testFirewallAndSecurity() {
         // Test that necessary ports are open and accessible
@@ -245,7 +310,15 @@ public class ConnectionIntegrationIT extends BaseTests {
         testPortAccessibility("PostgreSQL", "localhost", 5432); // Assuming local DB
     }
 
-    // Helper methods
+    /**
+     * Measures HTTP latency to a named service and asserts that the service responds successfully and within acceptable latency.
+     *
+     * Performs a HEAD request to the given URL, asserts the HTTP response code is between 200 and 399, and asserts the measured
+     * round-trip latency is less than 10 seconds. On failure, the test is failed with a descriptive message.
+     *
+     * @param serviceName a human-readable name used in assertion and log messages for the service being tested
+     * @param urlString the full URL to send the HEAD request to
+     */
 
     private void testServiceLatency(String serviceName, String urlString) {
         try {
@@ -273,6 +346,17 @@ public class ConnectionIntegrationIT extends BaseTests {
         }
     }
 
+    /**
+     * Verifies that a TCP connection can be established to the given host and port and reports the result.
+     *
+     * Attempts to open a socket to the specified host and port with a 5-second timeout. If the connection is
+     * established, an assertion ensures the socket is connected and a success message is printed. If an
+     * I/O error occurs, a warning message is printed and the test is not failed.
+     *
+     * @param serviceName human-readable name of the service being checked (used in messages)
+     * @param host        hostname or IP address to connect to
+     * @param port        TCP port number to test
+     */
     private void testPortAccessibility(String serviceName, String host, int port) {
         try (Socket socket = new Socket()) {
             socket.connect(new InetSocketAddress(host, port), 5000);

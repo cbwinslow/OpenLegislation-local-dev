@@ -69,9 +69,14 @@ public class DaybreakFragmentParser {
     }
 
     /**
-     * Parses the action lines of a daybreak fragment, yielding a list of BillActions for a daybreak bill
-     * @param daybreakBill
-     * @param actionLines
+     * Parse action lines and assign the resulting list of BillAction objects to the provided DaybreakBill.
+     *
+     * Processes each string in {@code actionLines} as an action record; successfully parsed actions are collected
+     * and set on {@code daybreakBill} via {@code setActions}. Parsing stops when a non-matching line is encountered
+     * after at least one valid action has been read. Lines with unparseable dates are skipped and an error is logged.
+     *
+     * @param daybreakBill the DaybreakBill to populate with parsed actions
+     * @param actionLines  the lines containing action date/text entries to parse
      */
     private static void parseActions(DaybreakBill daybreakBill, String[] actionLines){
         List<BillAction> billActions = new ArrayList<>();

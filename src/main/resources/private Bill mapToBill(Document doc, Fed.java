@@ -1,3 +1,13 @@
+/**
+ * Constructs a Bill from an XML Document representing a single federal bill.
+ *
+ * Parses the first <bill> element to populate the Bill's identifier, title, sponsors,
+ * actions, plain-text body, and publish date/time.
+ *
+ * @param doc         XML Document containing a single <bill> element in the expected federal bill schema
+ * @param sourceFile  source file metadata used to obtain the bill's publish date/time
+ * @return            a Bill populated with identifiers, title, sponsors, actions, text, and publish date/time
+ */
 private Bill mapToBill(Document doc, FederalBillXmlFile sourceFile) {
     Element billElem = (Element) doc.getElementsByTagName("bill").item(0);
 
