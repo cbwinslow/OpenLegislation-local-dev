@@ -18,8 +18,11 @@ public class FederalBillXmlFile extends XmlFile {
     private String billType; // e.g., "hr", "s"
     private String billNumber;
 
+    /** Regex pattern for matching federal bill XML filenames */
+    public static final String FILENAME_REGEX = "(BILLS?|BILLSTATUS?|BILL-SUMMARIES?)-(\\d{3})thCongress(?:-(HR|S|HJ|SJ|HConRes|SConRes|HJRes|SJRes))?(\\d+)?\\.xml";
+
     private static final Pattern FILENAME_PATTERN = Pattern.compile(
-        "(BILLS?|BILLSTATUS?|BILL-SUMMARIES?)-(\\d{3})thCongress(?:-(HR|S|HJ| SJ|HConRes|SConRes|HJRes|SJRes))?(\\d+)?\\.xml",
+        FILENAME_REGEX,
         Pattern.CASE_INSENSITIVE
     );
 
