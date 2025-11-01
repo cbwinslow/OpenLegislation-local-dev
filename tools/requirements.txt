@@ -1,7 +1,7 @@
 requests==2.32.3
 beautifulsoup4==4.12.3
 lxml==5.2.1
-psycopg2-binary==2.9.9  # For future DB interactions
+psycopg2-binary==2.9.11  # For future DB interactions
 pandas==2.2.2
 numpy==1.26.4
 scikit-learn==1.5.2
