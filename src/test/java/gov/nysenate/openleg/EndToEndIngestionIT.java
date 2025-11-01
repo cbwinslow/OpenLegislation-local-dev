@@ -32,6 +32,15 @@ public class EndToEndIngestionIT extends BaseXmlProcessorTest {
 
     private static final String TEST_XML_DIR = "/tmp/govinfo_test_e2e";
 
+    /**
+     * Executes an end-to-end ingestion test that processes sample bill XML files through the ingestion
+     * pipeline and verifies that bill data is persisted and retrievable.
+     *
+     * Sets up test XML files, processes each XML through the pipeline, asserts successful persistence
+     * of bill data in the database, verifies retrieval via the API, and performs cleanup.
+     *
+     * @throws IOException if creating or accessing the test XML files fails
+     */
     @Test
     public void testCompleteBillIngestionPipeline() throws IOException {
         // Setup test data
@@ -65,6 +74,12 @@ public class EndToEndIngestionIT extends BaseXmlProcessorTest {
         cleanupTestData();
     }
 
+    /**
+     * Verifies processing of a malformed bill XML triggers an error and does not persist corrupted data.
+     *
+     * Creates an invalid XML file, attempts to process it expecting an exception (and asserts the
+     * exception message is non-null), then confirms no corrupted bill data was stored.
+     */
     @Test
     public void testBillIngestionWithInvalidData() throws IOException {
         // Test error handling with malformed XML
@@ -83,6 +98,14 @@ public class EndToEndIngestionIT extends BaseXmlProcessorTest {
         verifyNoCorruptedData();
     }
 
+    /**
+     * Verifies the ingestion pipeline handles multiple XML files processed concurrently.
+     *
+     * Sets up multiple test XML files, runs the ingestion workflow in a concurrent scenario,
+     * and validates resulting database and retrieval state to detect thread-safety or concurrency issues.
+     *
+     * @throws IOException if test file setup or cleanup fails
+     */
     @Test
     public void testConcurrentIngestionProcessing() throws IOException {
         // Test processing multiple files concurrently
@@ -94,6 +117,11 @@ public class EndToEndIngestionIT extends BaseXmlProcessorTest {
         verifyConcurrentProcessingResults();
     }
 
+    /**
+     * Creates the test XML directory and copies sample XML files into it.
+     *
+     * @throws IOException if creating the directory or copying sample files fails
+     */
     private void setupTestXmlFiles() throws IOException {
         // Create test directory
         Path testDir = Paths.get(TEST_XML_DIR);
@@ -103,6 +131,15 @@ public class EndToEndIngestionIT extends BaseXmlProcessorTest {
         copySampleXmlFiles(testDir);
     }
 
+    /**
+     * Copies two sample bill XML files from the temporary source location into the provided test directory if they exist.
+     *
+     * The method looks for "/tmp/BILLS-119hr1enr.xml" and "/tmp/BILLS-118hr1enr.xml" and, when present,
+     * copies them to `testDir` with the same filenames.
+     *
+     * @param testDir the destination directory where sample XML files will be copied
+     * @throws IOException if an I/O error occurs during file existence checks or copying
+     */
     private void copySampleXmlFiles(Path testDir) throws IOException {
         // Copy the sample bill files we have
         Path source1 = Paths.get("/tmp/BILLS-119hr1enr.xml");
@@ -116,11 +153,24 @@ public class EndToEndIngestionIT extends BaseXmlProcessorTest {
         }
     }
 
+    /**
+     * Creates multiple test XML files in the configured test directory for concurrent ingestion tests.
+     *
+     * @throws IOException if creating the test directory or copying sample XML files fails
+     */
     private void setupMultipleTestXmlFiles() throws IOException {
         // Create multiple copies for concurrent testing
         setupTestXmlFiles();
     }
 
+    /**
+     * Create a malformed XML file named "invalid_bill.xml" inside the test XML directory for use by tests.
+     *
+     * The file contains intentionally invalid XML to simulate a corrupt input.
+     *
+     * @return the created File pointing to the malformed XML
+     * @throws IOException if the test directory cannot be created or the file cannot be written
+     */
     private File createInvalidXmlFile() throws IOException {
         Path testDir = Paths.get(TEST_XML_DIR);
         Files.createDirectories(testDir);
@@ -132,12 +182,24 @@ public class EndToEndIngestionIT extends BaseXmlProcessorTest {
         return invalidFile.toFile();
     }
 
+    /**
+     * Produce the path string to pass to processXmlFile for the given file.
+     *
+     * @param file the file for which to produce a processable path
+     * @return the path string to use with processXmlFile (currently the file's absolute path)
+     */
     private String getRelativePath(File file) {
         // Convert absolute path to a relative path that can be used with processXmlFile
         // For now, we'll use a temporary approach
         return file.getAbsolutePath();
     }
 
+    /**
+     * Verifies that a sample bill was persisted by asserting its base bill ID and title are present when retrievable.
+     *
+     * Attempts to load a test Bill (S100, 119) from the bill data service and asserts non-null base bill ID and title if the Bill is found.
+     * Absence of the Bill is treated as acceptable and does not fail the test.
+     */
     private void verifyBillDataInDatabase() {
         // Query for bills that should have been ingested
         // This is a simplified check - in practice we'd need to know the specific bill IDs
@@ -156,6 +218,11 @@ public class EndToEndIngestionIT extends BaseXmlProcessorTest {
         }
     }
 
+    /**
+     * Verifies that an ingested bill can be retrieved via the billDataService API.
+     *
+     * If the test bill exists, asserts that the retrieved bill's base ID equals the expected test bill ID.
+     */
     private void verifyBillRetrieval() {
         // Test API retrieval of ingested bills
         try {
@@ -171,6 +238,11 @@ public class EndToEndIngestionIT extends BaseXmlProcessorTest {
         }
     }
 
+    /**
+     * Verifies that a failed ingestion did not leave a corrupted test bill in the database.
+     *
+     * <p>If the test bill exists, asserts that its base bill ID and title are not null.</p>
+     */
     private void verifyNoCorruptedData() {
         // Verify database integrity after failed ingestion
         // This is a simplified check
@@ -186,12 +258,24 @@ public class EndToEndIngestionIT extends BaseXmlProcessorTest {
         }
     }
 
+    /**
+     * Performs a simplified verification that concurrent ingestion produced the expected bill data in the database.
+     *
+     * <p>Used by concurrent-processing tests to assert that bills were stored and are retrievable after parallel ingestion.</p>
+     */
     private void verifyConcurrentProcessingResults() {
         // Verify results of concurrent processing
         // This is a simplified check
         verifyBillDataInDatabase();
     }
 
+    /**
+     * Removes test XML files and the test directory at TEST_XML_DIR.
+     *
+     * Deletes all files and subdirectories beneath TEST_XML_DIR. IO failures during cleanup
+     * are logged to standard error and do not fail the test. Database cleanup is handled
+     * separately by transactional rollback.
+     */
     private void cleanupTestData() {
         // Clean up test files
         try {

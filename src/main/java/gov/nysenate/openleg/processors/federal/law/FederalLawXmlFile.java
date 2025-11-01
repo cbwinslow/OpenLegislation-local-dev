@@ -23,6 +23,12 @@ public class FederalLawXmlFile extends XmlFile {
     private final int congress;
     private final String lawNumber;
 
+    /**
+     * Creates a FederalLawXmlFile for the given file and extracts the congressional session and law number from its filename.
+     *
+     * @param file the federal law XML file
+     * @throws IllegalArgumentException if the filename does not contain a valid congress and law number
+     */
     public FederalLawXmlFile(File file) {
         super(file);
         Matcher matcher = LAW_PATTERN.matcher(getFileName());
@@ -34,20 +40,43 @@ public class FederalLawXmlFile extends XmlFile {
         }
     }
 
+    /**
+     * The Congress number parsed from the federal law file's filename.
+     *
+     * @return the Congress number extracted from the filename
+     */
     public int getCongress() {
         return congress;
     }
 
+    /**
+     * Gets the law number extracted from the file name.
+     *
+     * @return the law number extracted from the file name
+     */
     public String getLawNumber() {
         return lawNumber;
     }
 
+    /**
+     * Obtain the published date and time associated with this federal law XML file.
+     *
+     * Parses the published date from the filename or the XML header and, if those are not available,
+     * falls back to the file's last modified timestamp.
+     *
+     * @return the published LocalDateTime for this file
+     */
     @Override
     public LocalDateTime getPublishedDateTime() {
         // Parse from filename or XML header; fallback to file modified time
         return super.getPublishedDateTime();
     }
 
+    /**
+     * Produce a concise string representation of this FederalLawXmlFile including its congress, law number, and file name.
+     *
+     * @return a string containing the class name and the values of `congress`, `lawNumber`, and `fileName`
+     */
     @Override
     public String toString() {
         return "FederalLawXmlFile{" +

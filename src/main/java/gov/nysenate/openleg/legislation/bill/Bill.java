@@ -109,7 +109,9 @@ public class Bill extends BaseLegislativeContent implements Serializable, Compar
     /** Source of federal data (e.g., 'govinfo', 'congress.gov'). */
     protected String federalSource;
 
-    /** --- Constructors --- */
+    /**
+ * Creates a Bill instance with default (unset) fields.
+ */
 
     public Bill() {}
 
@@ -530,30 +532,57 @@ public class Bill extends BaseLegislativeContent implements Serializable, Compar
         return chapterYear;
     }
 
+    /**
+     * Sets the year the bill was chaptered (the year it was signed into law).
+     *
+     * @param chapterYear the chapter year to set, or {@code null} to unset
+     */
     public void setChapterYear(Integer chapterYear) {
         this.chapterYear = chapterYear;
     }
 
+    /**
+     * Gets the federal Congress number associated with this bill.
+     *
+     * @return the federal Congress number for the bill, or {@code null} if not set
+     */
     public Integer getFederalCongress() {
         return federalCongress;
     }
 
+    /**
+     * Set the federal congress number associated with this bill.
+     *
+     * @param federalCongress the federal congress number (may be null to unset)
+     */
     public void setFederalCongress(Integer federalCongress) {
         this.federalCongress = federalCongress;
     }
 
+    /**
+     * Gets the source identifier for federal data associated with this bill.
+     *
+     * @return the federal data source (e.g., "govinfo"), or `null` if not set
+     */
     public String getFederalSource() {
         return federalSource;
     }
 
+    /**
+     * Sets the identifier for the federal data source associated with this bill.
+     *
+     * @param federalSource the federal data source (e.g., "govinfo"), or null to clear it
+     */
     public void setFederalSource(String federalSource) {
         this.federalSource = federalSource;
     }
 
     /**
-     * Static method to map federal congress number to session year.
-     * For federal bills, session year is the starting year of the congress.
-     * e.g., 118th Congress: 2023.
+     * Map a federal Congress number to the session starting year.
+     *
+     * @param congress the federal Congress number
+     * @return the calendar year in which the specified Congress began
+     * @throws IllegalArgumentException if the congress number is unsupported
      */
     public static int congressToSessionYear(int congress) {
         if (congress >= 1 && congress <= 117) {
@@ -567,6 +596,11 @@ public class Bill extends BaseLegislativeContent implements Serializable, Compar
         throw new IllegalArgumentException("Unsupported congress number: " + congress);
     }
 
+    /**
+     * Sets the reference to the bill that this bill is a reprint of.
+     *
+     * @param reprintOf the BillId of the original bill this is a reprint of, or {@code null} to clear the reference
+     */
     public void setReprintOf(BillId reprintOf) {
         this.reprintOf = reprintOf;
     }

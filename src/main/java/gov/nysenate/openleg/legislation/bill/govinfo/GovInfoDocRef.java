@@ -12,9 +12,19 @@ public class GovInfoDocRef {
     private String url;
     private String title;
 
-    // Constructors
+    /**
+ * Creates an empty GovInfoDocRef with all fields unset.
+ */
     public GovInfoDocRef() {}
 
+    /**
+     * Create a GovInfoDocRef with the specified document type, identifier, URL, and title.
+     *
+     * @param docType the type of the referenced document (e.g., "bill", "summary")
+     * @param docId   the identifier of the document as provided by GovInfo
+     * @param url     the web address where the document can be accessed
+     * @param title   the title or brief description of the document
+     */
     public GovInfoDocRef(String docType, String docId, String url, String title) {
         this.docType = docType;
         this.docId = docId;
@@ -22,19 +32,64 @@ public class GovInfoDocRef {
         this.title = title;
     }
 
-    // Getters/Setters
+    /**
+ * Gets the type of the referenced GovInfo document.
+ *
+ * @return the document type, or {@code null} if not set
+ */
     public String getDocType() { return docType; }
-    public void setDocType(String docType) { this.docType = docType; }
+    /**
+ * Set the document type for this reference.
+ *
+ * @param docType the document type identifier (e.g., a descriptor such as "amendment", "text", or other GovInfo document type)
+ */
+public void setDocType(String docType) { this.docType = docType; }
 
-    public String getDocId() { return docId; }
-    public void setDocId(String docId) { this.docId = docId; }
+    /**
+ * Gets the document identifier.
+ *
+ * @return the document identifier, or {@code null} if not set
+ */
+public String getDocId() { return docId; }
+    /**
+ * Sets the document identifier for this GovInfoDocRef.
+ *
+ * @param docId the identifier of the document
+ */
+public void setDocId(String docId) { this.docId = docId; }
 
-    public String getUrl() { return url; }
-    public void setUrl(String url) { this.url = url; }
+    /**
+ * Gets the URL of the referenced GovInfo document.
+ *
+ * @return the document URL, or {@code null} if not set
+ */
+public String getUrl() { return url; }
+    /**
+ * Set the URL of the document.
+ *
+ * @param url the URL to the document
+ */
+public void setUrl(String url) { this.url = url; }
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    /**
+ * Gets the title of the document reference.
+ *
+ * @return the document's title, or null if not set
+ */
+public String getTitle() { return title; }
+    /**
+ * Sets the title of the document reference.
+ *
+ * @param title the document title, may be null
+ */
+public void setTitle(String title) { this.title = title; }
 
+    /**
+     * Determines whether the specified object is equal to this GovInfoDocRef.
+     *
+     * @param o the object to compare with this instance
+     * @return `true` if `o` is a GovInfoDocRef and its `docType`, `docId`, `url`, and `title` are equal to this instance's corresponding fields, `false` otherwise
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -46,11 +101,21 @@ public class GovInfoDocRef {
                Objects.equals(title, that.title);
     }
 
+    /**
+     * Compute a hash code for this GovInfoDocRef based on its identifying fields.
+     *
+     * @return a hash code derived from docType, docId, url, and title
+     */
     @Override
     public int hashCode() {
         return Objects.hash(docType, docId, url, title);
     }
 
+    /**
+     * Produce a string representation of this GovInfoDocRef containing its field values.
+     *
+     * @return a string in the format GovInfoDocRef{docType='...', docId='...', url='...', title='...'}
+     */
     @Override
     public String toString() {
         return "GovInfoDocRef{" +
