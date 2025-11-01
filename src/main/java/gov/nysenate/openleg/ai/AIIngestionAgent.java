@@ -17,12 +17,20 @@ public class AIIngestionAgent {
 
     private final IngestionService ingestionService;
 
+    /**
+     * Creates an AIIngestionAgent that delegates ingestion tasks to the provided service.
+     *
+     * @param ingestionService the service used to perform ingestion operations invoked by this agent
+     */
     public AIIngestionAgent(IngestionService ingestionService) {
         this.ingestionService = ingestionService;
     }
 
     /**
-     * Trigger ingestion for an arbitrary RSS endpoint.
+     * Trigger ingestion for the given RSS feed and associate the ingested content with the specified source.
+     *
+     * @param rssUrl the RSS feed URL to ingest
+     * @param source a label or identifier used to attribute the ingested content to its source
      */
     public void ingestFeed(String rssUrl, String source) {
         logger.info("AIIngestionAgent ingesting '{}' from {}", source, rssUrl);
@@ -30,7 +38,9 @@ public class AIIngestionAgent {
     }
 
     /**
-     * Use the curated ingestion jobs that already exist in {@link IngestionService}.
+     * Triggers ingestion for a predefined set of known sources used by AI workflows.
+     *
+     * <p>Invokes ingestion jobs for WikiLeaks, the CDC, the White House, and Reuters in sequence.</p>
      */
     public void ingestKnownSources() {
         logger.info("AIIngestionAgent ingesting known sources");
