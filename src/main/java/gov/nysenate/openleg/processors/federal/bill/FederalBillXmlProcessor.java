@@ -47,8 +47,8 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
         FederalBillXmlFile federalFile = (FederalBillXmlFile) fragment.getSourceFile();
         File xmlFile = federalFile.getFile();
         try {
-            BillJaxb jaxb = unmarshalBill(xmlFile);
-            Bill bill = mapToBill(jaxb, federalFile);
+            Document doc = parseXml(xmlFile);
+            Bill bill = mapToBill(doc, federalFile);
             // Persistence via base class or DAO
             super.saveLegData(bill);
             logger.info("Processed federal bill: {}", federalFile.getFileName());
@@ -58,16 +58,27 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
         }
     }
 
-    private BillJaxb unmarshalBill(File xmlFile) throws Exception {
-        Unmarshaller unmarshaller = JAXB_CONTEXT.createUnmarshaller();
-        return (BillJaxb) unmarshaller.unmarshal(xmlFile);
+    /**
+     * Parse XML file into a DOM Document.
+     */
+    public Document parseXml(File xmlFile) throws ParserConfigurationException, SAXException, IOException {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        return builder.parse(xmlFile);
     }
 
-    private Bill mapToBill(BillJaxb jaxb, FederalBillXmlFile sourceFile) {
-        LegislationIdJaxb legIdJaxb = jaxb.getLegislationId();
-        int congress = legIdJaxb.getCongress();
-        String type = legIdJaxb.getType();
-        String number = legIdJaxb.getNumber();
+    /**
+     * Map DOM Document to Bill model.
+     */
+    public Bill mapToBill(Document doc, FederalBillXmlFile sourceFile) {
+        Element root = doc.getDocumentElement();
+        
+        // Extract legislation ID info
+        Element legIdElement = (Element) root.getElementsByTagName("legislation-id").item(0);
+        int congress = Integer.parseInt(getElementText(legIdElement, "congress"));
+        String type = getElementText(legIdElement, "type");
+        String number = getElementText(legIdElement, "number");
+        
         Chamber chamber = type.startsWith("H") ? Chamber.HOUSE : Chamber.SENATE;
         BillType billType = BillType.fromString(type.toUpperCase());
         int sessionYear = congressToSessionYear(congress);
@@ -75,37 +86,50 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
         BaseBillId baseBillId = new BaseBillId(number, session);
 
         Bill bill = new Bill(baseBillId);
-        bill.setTitle(jaxb.getOfficialTitle());
+        
+        // Extract title
+        String title = getElementText(root, "official-title");
+        bill.setTitle(title);
 
-        // Sponsors
+        // Extract sponsors
         List<BillSponsor> sponsors = new ArrayList<>();
-        for (SponsorJaxb sponsorJaxb : jaxb.getSponsors()) {
-            String name = sponsorJaxb.getFullName();
-            String party = sponsorJaxb.getParty();
-            Member member = new Member("Federal Sponsor", "Doe", "John", null); // Map from bioguide if available
+        NodeList sponsorNodes = root.getElementsByTagName("sponsor");
+        for (int i = 0; i < sponsorNodes.getLength(); i++) {
+            Element sponsorElement = (Element) sponsorNodes.item(i);
+            String name = getElementText(sponsorElement, "full-name");
+            String party = getElementText(sponsorElement, "party");
+            // Create placeholder member - in production would map from bioguide
+            Member member = new Member("Federal Sponsor", "Doe", "John", null);
             SessionMember sessionMember = new SessionMember(0, member, "SPONSOR", session, null, true);
             BillSponsor sponsor = new BillSponsor(sessionMember);
             sponsors.add(sponsor);
         }
         bill.sponsors = sponsors;
 
-        // Actions
+        // Extract actions
         List<BillAction> actions = new ArrayList<>();
-        for (ActionJaxb actionJaxb : jaxb.getActions()) {
-            LocalDate date = LocalDate.parse(actionJaxb.getDate(), DATE_FORMAT);
-            Chamber actionChamber = "HOUSE".equals(actionJaxb.getChamber()) ? Chamber.HOUSE : Chamber.SENATE;
-            String text = actionJaxb.getText();
+        NodeList actionNodes = root.getElementsByTagName("action");
+        for (int i = 0; i < actionNodes.getLength(); i++) {
+            Element actionElement = (Element) actionNodes.item(i);
+            String dateStr = getElementText(actionElement, "date");
+            LocalDate date = LocalDate.parse(dateStr, DATE_FORMAT);
+            String chamberStr = getElementText(actionElement, "chamber");
+            Chamber actionChamber = "HOUSE".equals(chamberStr) ? Chamber.HOUSE : Chamber.SENATE;
+            String text = getElementText(actionElement, "text");
             BillId billId = new BillId(baseBillId, Version.ORIGINAL);
             BillAction action = new BillAction(date, text, actionChamber, 0, billId, "UNKNOWN");
             actions.add(action);
         }
         bill.actions = actions;
 
-        // Text
+        // Extract text
         BillText billText = new BillText();
         StringBuilder textBuilder = new StringBuilder();
-        for (TextJaxb textJaxb : jaxb.getTexts()) {
-            textBuilder.append(textJaxb.getContent()).append("\n");
+        NodeList textNodes = root.getElementsByTagName("bill-text");
+        for (int i = 0; i < textNodes.getLength(); i++) {
+            Element textElement = (Element) textNodes.item(i);
+            String content = textElement.getTextContent();
+            textBuilder.append(content).append("\n");
         }
         billText.setText(PLAIN, textBuilder.toString());
         bill.setText(billText);
@@ -114,6 +138,17 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
         bill.setFederalCongress(congress);
         bill.setFederalSource("govinfo");
         return bill;
+    }
+
+    /**
+     * Helper method to extract text content from a child element.
+     */
+    private String getElementText(Element parent, String tagName) {
+        NodeList nodes = parent.getElementsByTagName(tagName);
+        if (nodes.getLength() > 0) {
+            return nodes.item(0).getTextContent().trim();
+        }
+        return "";
     }
 
     private int congressToSessionYear(int congress) {
