@@ -6,7 +6,9 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Centralizes access to persisted legislative documents for AI agents.
@@ -55,9 +57,21 @@ public class AIDataContext {
     }
 
     /**
-     * Convenience wrapper for returning the most recently created documents.
+     * Count documents grouped by source using efficient database aggregation.
      */
-    public List<Document> getAllDocuments() {
-        return documentRepository.findAll();
+    public Map<String, Long> countDocumentsBySource() {
+        List<Object[]> results = documentRepository.countBySourceGrouped();
+        return results.stream()
+                .collect(Collectors.toMap(
+                        row -> (String) row[0],
+                        row -> (Long) row[1]
+                ));
+    }
+
+    /**
+     * Find documents that need attention based on publication date threshold.
+     */
+    public List<Document> getDocumentsNeedingAttention(LocalDateTime threshold) {
+        return documentRepository.findDocumentsNeedingAttention(threshold);
     }
 }
