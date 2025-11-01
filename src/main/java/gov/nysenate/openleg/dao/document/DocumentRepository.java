@@ -24,13 +24,21 @@ public interface DocumentRepository extends JpaRepository<Document, Long> {
     Optional<Document> findByUrl(String url);
 
     /**
-     * Find recent documents from a source, ordered by pub_date.
+     * Retrieve documents from the given source ordered by publication date (newest first).
+     *
+     * @param source the document source identifier to filter by
+     * @param limit  maximum number of documents to return
+     * @return       a list of documents from the specified source ordered by `pubDate` descending
      */
     @Query("SELECT d FROM Document d WHERE d.source = :source ORDER BY d.pubDate DESC")
     List<Document> findRecentBySource(@Param("source") String source, int limit);
 
     /**
-     * Perform a fuzzy keyword search across title, description and content fields.
+     * Search documents by a PostgreSQL full-text tsquery across title, description, and content.
+     *
+     * @param query    a PostgreSQL `tsquery` expression to match against the combined text fields
+     * @param pageable paging and sorting parameters for the result set
+     * @return         a list of Documents matching the query, ordered by publication date (newest first)
      */
     @Query(
         value = "SELECT * FROM document d " +

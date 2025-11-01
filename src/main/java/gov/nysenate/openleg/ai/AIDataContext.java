@@ -18,12 +18,24 @@ public class AIDataContext {
 
     private final DocumentRepository documentRepository;
 
+    /**
+     * Create a new AIDataContext backed by the provided DocumentRepository.
+     *
+     * The repository is used for persistence operations on Document entities.
+     *
+     * @param documentRepository the repository used to load and save documents
+     */
     public AIDataContext(DocumentRepository documentRepository) {
         this.documentRepository = documentRepository;
     }
 
     /**
-     * Persist a new document that has been generated or enriched by an agent.
+     * Persist a document generated or enriched by an agent, ensuring its creation timestamp is set.
+     *
+     * If the document's createdAt is null, sets it to the current time before saving.
+     *
+     * @param document the Document to persist
+     * @return the persisted Document with persistence-managed fields populated (for example, `id` and `createdAt`)
      */
     public Document saveDocument(Document document) {
         if (document.getCreatedAt() == null) {
@@ -33,29 +45,39 @@ public class AIDataContext {
     }
 
     /**
-     * Retrieve a document by url if one exists.
+     * Find a persisted Document by its URL.
+     *
+     * @param url the document URL to search for
+     * @return an Optional containing the matching Document, or empty if none is found
      */
     public Optional<Document> getDocumentByUrl(String url) {
         return documentRepository.findByUrl(url);
     }
 
     /**
-     * Retrieve a document by identifier.
+     * Retrieve the document with the given identifier.
+     *
+     * @param id the document's identifier
+     * @return an Optional containing the Document if found, empty otherwise
      */
     public Optional<Document> getDocumentById(Long id) {
         return documentRepository.findById(id);
     }
 
     /**
-     * Fetch all documents from a particular source so that downstream
-     * agents can perform analytics or summarization.
+     * Retrieve all persisted documents that originate from the given source.
+     *
+     * @param source the source identifier used to filter documents
+     * @return a list of documents from the specified source (empty if none found)
      */
     public List<Document> getDocumentsBySource(String source) {
         return documentRepository.findBySource(source);
     }
 
     /**
-     * Convenience wrapper for returning the most recently created documents.
+     * Retrieve all persisted Document entities.
+     *
+     * @return the list of all stored Document entities, or an empty list if none exist
      */
     public List<Document> getAllDocuments() {
         return documentRepository.findAll();
