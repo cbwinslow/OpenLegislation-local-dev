@@ -1,7 +1,7 @@
 package gov.nysenate.openleg.processors.federal.law;
 
 import gov.nysenate.openleg.processors.federal.bill.FederalBillXmlFile;
-import gov.nysenate.openleg.processors.bill.XmlFile;
+import gov.nysenate.openleg.processors.bill.xml.XmlFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
