@@ -1,5 +1,6 @@
 package gov.nysenate.openleg.processors.bill;
 
+import gov.nysenate.openleg.legislation.bill.BaseBillId;
 import gov.nysenate.openleg.legislation.bill.BillAction;
 import gov.nysenate.openleg.legislation.bill.BillId;
 import gov.nysenate.openleg.legislation.bill.Version;
@@ -76,7 +77,8 @@ public class BillActionParser
                 // Uppercase the action text to aid with regex matching
                 eventText = eventText.toUpperCase();
                 // Construct and append bill action to list.
-                BillId originalBillId = new BillId(billId, Version.ORIGINAL);
+                BaseBillId baseBillId = BaseBillId.of(billId);
+                BillId originalBillId = baseBillId.withVersion(Version.ORIGINAL);
                 BillAction action = new BillAction(eventDate, eventText, eventChamber, 0, originalBillId, "UNKNOWN");
                 billActions.add(action);
             }
@@ -115,7 +117,7 @@ public class BillActionParser
                 // Uppercase the action text to aid with regex matching
                 eventText = eventText.toUpperCase().trim();// sometimes the CDATA comes with leading or trailing whitespace chars
                 // Construct and append bill action to list.
-                BillAction action = new BillAction(eventDate, eventText, eventChamber, sequenceNo, billId);
+                BillAction action = new BillAction(eventDate, eventText, eventChamber, sequenceNo, billId, "UNKNOWN");
                 billActions.add(action);
             }
             // Fail fast otherwise
