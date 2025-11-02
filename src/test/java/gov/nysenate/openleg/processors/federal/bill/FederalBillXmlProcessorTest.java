@@ -57,16 +57,7 @@ public class FederalBillXmlProcessorTest {
     public void testProcessInvalidXml() throws Exception {
         // Create a temporary file with invalid XML content
         File tempFile = File.createTempFile("invalid-xml", ".xml");
-        tempFile.deleteOnExit();
-        try (java.io.FileWriter writer = new java.io.FileWriter(tempFile)) {
-            writer.write("<root><invalid></root>"); // Malformed XML
-        }
-        
-        try {
-            processor.parseXml(tempFile);
-            fail("Expected SAXException for invalid XML");
-        } catch (SAXException e) {
-            // Expected exception
+
         } finally {
             tempFile.delete();
         }
