@@ -33,7 +33,7 @@
         </configuration>
       </plugin>
       <!-- JAXB2 Maven Plugin for generating classes from XSD -->
-
+      <!--
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>jaxb2-maven-plugin</artifactId>

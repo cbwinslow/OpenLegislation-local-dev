@@ -33,6 +33,8 @@ public class FsFederalBillXmlDao implements SourceFileFsDao<FederalBillXmlFile> 
 
     private static final Logger logger = LoggerFactory.getLogger(FsFederalBillXmlDao.class);
 
+    private static final Pattern FEDERAL_XML_TYPE = Pattern.compile("(BILLS?|BILLSTATUS?|BILL-SUMMARIES?)-\\d+thCongress.*\\.xml", Pattern.CASE_INSENSITIVE);
+
     @Autowired
     protected OpenLegEnvironment environment;
 
@@ -53,7 +55,7 @@ public class FsFederalBillXmlDao implements SourceFileFsDao<FederalBillXmlFile> 
     @Override
     public List<FederalBillXmlFile> getIncomingSourceFiles(SortOrder sortByFileName, LimitOffset limitOffset) throws IOException {
         List<File> files = new ArrayList<>(getSortedFiles(incomingSourceDir));
-        files.removeIf(file -> !FederalBillXmlFile.FILENAME_PATTERN.matcher(file.getName()).matches());
+        files.removeIf(file -> !FEDERAL_XML_TYPE.matcher(file.getName()).matches());
         if (sortByFileName == SortOrder.DESC) {
             Collections.reverse(files);
         }
