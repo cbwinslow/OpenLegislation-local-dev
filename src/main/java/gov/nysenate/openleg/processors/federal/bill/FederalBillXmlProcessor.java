@@ -13,9 +13,6 @@ import gov.nysenate.openleg.processors.bill.LegDataFragment;
 import gov.nysenate.openleg.processors.bill.LegDataFragmentType;
 import gov.nysenate.openleg.processors.bill.AbstractBillProcessor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -24,7 +21,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.xpath.XPathExpressionException;
-import java.io.File;
+
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -52,17 +49,6 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
 
     @Override
     public void process(LegDataFragment fragment) {
-        FederalBillXmlFile federalFile = (FederalBillXmlFile) fragment.getParentLegDataFile();
-        File xmlFile = federalFile.getFile();
-        try {
-
-            logger.info("Processed federal bill: {}", federalFile.getFileName());
-        } catch (IOException | SAXException | XPathExpressionException e) {
-            logger.error("Error processing federal bill XML: {}", federalFile.getFileName(), e);
-            throw new ParseError("Failed to process federal bill XML: " + federalFile.getFileName(), e);
-        }
-    }
-
 
         }
         BillText billText = new BillText(textBuilder.toString());
@@ -71,6 +57,7 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
 
         bill.setFederalCongress(congress);
         bill.setFederalSource("govinfo");
+        
         return bill;
     }
     
