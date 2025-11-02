@@ -10,10 +10,12 @@ CREATE TABLE IF NOT EXISTS master.audit_log (
     old_row JSONB,
     new_row JSONB NOT NULL,
     changed_by TEXT,  -- Session ID or source
-    changed_at TIMESTAMP DEFAULT now(),
-    INDEX idx_audit_table_operation (table_name, operation),
-    INDEX idx_audit_changed_at (changed_at)
+    changed_at TIMESTAMP DEFAULT now()
 );
+
+-- Create indexes for audit_log
+CREATE INDEX IF NOT EXISTS idx_audit_table_operation ON master.audit_log (table_name, operation);
+CREATE INDEX IF NOT EXISTS idx_audit_changed_at ON master.audit_log (changed_at);
 
 -- Function to log INSERT
 CREATE OR REPLACE FUNCTION master.log_audit_insert()

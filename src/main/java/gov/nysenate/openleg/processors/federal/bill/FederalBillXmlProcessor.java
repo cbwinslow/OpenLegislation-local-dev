@@ -73,6 +73,14 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
         bill.setFederalSource("govinfo");
         return bill;
     }
+    
+    private String getElementTextContent(Element parent, String tagName) {
+        NodeList nodeList = parent.getElementsByTagName(tagName);
+        if (nodeList.getLength() > 0) {
+            return nodeList.item(0).getTextContent();
+        }
+        return null;
+    }
 
     private String getElementText(Element parent, String tagName) {
         NodeList nodes = parent.getElementsByTagName(tagName);
