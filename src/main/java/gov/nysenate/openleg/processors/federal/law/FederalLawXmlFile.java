@@ -1,11 +1,12 @@
 package gov.nysenate.openleg.processors.federal.law;
 
 import gov.nysenate.openleg.processors.federal.bill.FederalBillXmlFile;
-import gov.nysenate.openleg.processors.bill.XmlFile;
+import gov.nysenate.openleg.processors.bill.xml.XmlFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,7 +24,7 @@ public class FederalLawXmlFile extends XmlFile {
     private final int congress;
     private final String lawNumber;
 
-    public FederalLawXmlFile(File file) {
+    public FederalLawXmlFile(File file) throws IOException {
         super(file);
         Matcher matcher = LAW_PATTERN.matcher(getFileName());
         if (matcher.matches()) {

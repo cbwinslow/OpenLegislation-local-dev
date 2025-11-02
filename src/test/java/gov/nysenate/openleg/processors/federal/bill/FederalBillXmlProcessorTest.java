@@ -5,6 +5,7 @@ import gov.nysenate.openleg.processors.bill.LegDataFragmentType;
 import org.junit.Before;
 import org.junit.Test;
 
+
 import static org.junit.Assert.*;
 
 /**
@@ -26,9 +27,5 @@ public class FederalBillXmlProcessorTest {
         assertEquals(LegDataFragmentType.BILL, processor.getSupportedType());
     }
 
-    // Additional tests for the process() method would require:
-    // - Spring test context to inject xmlHelper and other dependencies
-    // - Mock or real BillIngestCache, Environment, etc.
-    // - Sample federal bill XML files in test resources
-    // These are better suited for integration tests.
+
 }
