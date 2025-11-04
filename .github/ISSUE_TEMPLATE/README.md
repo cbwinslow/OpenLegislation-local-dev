@@ -4,7 +4,7 @@ This directory contains GitHub Issue Forms for creating bug reports and feature 
 
 ## How to Create an Issue
 
-1. Go to the [Issues page](../../issues)
+1. Go to the [Issues page](https://github.com/cbwinslow/OpenLegislation-local-dev/issues)
 2. Click **New Issue**
 3. Choose either **Bug Report** or **Feature Request**
 4. Fill out the form with all required information
@@ -111,8 +111,8 @@ To modify templates:
 ## Resources
 
 - [GitHub Issue Forms Documentation](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-githubs-form-schema)
-- [OpenLegislation Documentation](../../../docs)
-- [Project Discussions](../../discussions)
+- [OpenLegislation Documentation](https://github.com/cbwinslow/OpenLegislation-local-dev/tree/main/docs)
+- [Project Discussions](https://github.com/cbwinslow/OpenLegislation-local-dev/discussions)
 
 ## Questions?
 
