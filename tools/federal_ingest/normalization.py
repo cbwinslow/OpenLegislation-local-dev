@@ -1,7 +1,7 @@
 """Utilities for converting API payloads to normalized database-friendly records."""
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import TYPE_CHECKING, Any, Dict, Mapping, Sequence, TypedDict
 
 from tools.data_pipeline.models import (
@@ -106,7 +106,7 @@ def govinfo_bulk_resource_to_record(resource: "BulkResource") -> NormalizedRecor
         "congress": resource.congress,
         "resource_path": resource.resource_path,
         "download_url": resource.url,
-        "retrieved_at": datetime.utcnow(),
+        "retrieved_at": datetime.now(timezone.utc),
         "raw_payload": {
             "url": resource.url,
             "collection": resource.collection,
