@@ -1,7 +1,7 @@
 """Utilities for converting API payloads to normalized database-friendly records."""
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import TYPE_CHECKING, Any, Dict, Mapping, Sequence, TypedDict
 
 from tools.data_pipeline.models import (
@@ -26,8 +26,14 @@ def _serialize_datetime(value: datetime | date | None) -> str | None:
     if value is None:
         return None
     if isinstance(value, datetime):
+        # Convert timezone-aware datetimes to UTC, then strip tzinfo
+        if value.tzinfo is not None:
+            value = value.astimezone(timezone.utc)
         return value.replace(tzinfo=None).isoformat() + "Z"
-    return datetime.combine(value, datetime.min.time()).isoformat() + "Z"
+    # For date values, create an aware midnight datetime in UTC
+    aware_midnight = datetime.combine(value, datetime.min.time()).replace(tzinfo=timezone.utc)
+    # Convert to UTC (no-op since already UTC) and strip tzinfo
+    return aware_midnight.replace(tzinfo=None).isoformat() + "Z"
 
 
 def _normalize_value(value: Any) -> Any:
@@ -106,7 +112,7 @@ def govinfo_bulk_resource_to_record(resource: "BulkResource") -> NormalizedRecor
         "congress": resource.congress,
         "resource_path": resource.resource_path,
         "download_url": resource.url,
-        "retrieved_at": datetime.utcnow(),
+        "retrieved_at": datetime.now(timezone.utc),
         "raw_payload": {
             "url": resource.url,
             "collection": resource.collection,
