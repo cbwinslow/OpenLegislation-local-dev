@@ -32,6 +32,7 @@
           <encoding>utf-8</encoding>
         </configuration>
       </plugin>
+
       <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-war-plugin</artifactId>
@@ -345,6 +346,7 @@
       <version>${javax.xml.bind.version}</version>
     </dependency>
     <dependency>
+
       <groupId>jakarta.xml.bind</groupId>
       <artifactId>jakarta.xml.bind-api</artifactId>
       <version>3.0.1</version>
