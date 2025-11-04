@@ -18,6 +18,17 @@ Updates to legislative data are distributed by the Legislative Bill drafting Com
 
 ![Bill page demo](https://raw.githubusercontent.com/nysenate/OpenLegislation/dev/src/main/webapp/static/img/bill-page.png)
 
+## 🤖 PR Automation
+
+This repository includes an automated PR management system that:
+- Auto-merges safe Dependabot updates
+- Provides automated code review feedback
+- Automatically labels and categorizes PRs
+- Generates weekly PR dashboards
+- Manages stale PRs
+
+**📚 [Learn More](docs/pr-automation-README.md)** | **🚀 [Setup Guide](docs/pr-automation-setup.md)**
+
 Current Senate Developers
 ---------------------------
 

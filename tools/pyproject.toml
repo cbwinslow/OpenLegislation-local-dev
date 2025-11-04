@@ -9,6 +9,8 @@ dependencies = [
     "pydantic",
     "pydantic-settings",
     "requests",
+    "sqlalchemy",
+    "tenacity",
     "pandas",
     "numpy",
     "torch",
