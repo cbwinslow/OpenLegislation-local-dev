@@ -112,7 +112,7 @@ def govinfo_bulk_resource_to_record(resource: "BulkResource") -> NormalizedRecor
         "congress": resource.congress,
         "resource_path": resource.resource_path,
         "download_url": resource.url,
-        "retrieved_at": datetime.utcnow(),
+        "retrieved_at": datetime.now(timezone.utc),
         "raw_payload": {
             "url": resource.url,
             "collection": resource.collection,

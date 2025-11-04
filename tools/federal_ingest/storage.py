@@ -5,7 +5,7 @@ import json
 import logging
 from datetime import date, datetime
 from pathlib import Path
-from typing import Iterable
+from typing import Any, Iterable
 
 import requests
 
@@ -14,7 +14,7 @@ from .normalization import NormalizedRecord
 logger = logging.getLogger(__name__)
 
 
-def _json_default(value):  # type: ignore[override]
+def _json_default(value: Any) -> Any:
     if isinstance(value, (datetime, date)):
         return value.isoformat()
     if isinstance(value, set):
