@@ -55,6 +55,7 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
         amendment.setBillText(billText);
 
 
+
         bill.setFederalCongress(congress);
         bill.setFederalSource("govinfo");
         
@@ -79,5 +80,14 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
 
     private int congressToSessionYear(int congress) {
         return 1789 + (congress - 1) * 2; // Starting year of congress, e.g., 119th = 2025
+    }
+    */
+
+    private String getElementText(Element parent, String tagName) {
+        NodeList nodes = parent.getElementsByTagName(tagName);
+        if (nodes.getLength() > 0) {
+            return nodes.item(0).getTextContent();
+        }
+        return "";
     }
 }

@@ -78,7 +78,6 @@ public class BillActionParser
                 eventText = eventText.toUpperCase();
                 // Construct and append bill action to list.
 
-                BillAction action = new BillAction(eventDate, eventText, eventChamber, 0, originalBillId, "UNKNOWN");
                 billActions.add(action);
             }
             else {

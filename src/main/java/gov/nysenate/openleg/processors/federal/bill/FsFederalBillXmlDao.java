@@ -39,6 +39,7 @@ public class FsFederalBillXmlDao implements SourceFileFsDao<FederalBillXmlFile> 
     private File incomingSourceDir;
     private File archiveSourceDir;
 
+
     @PostConstruct
     protected void init() {
         incomingSourceDir = new File(environment.getStagingDir(), "federal-xmls");
