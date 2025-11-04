@@ -18,6 +18,28 @@ Updates to legislative data are distributed by the Legislative Bill drafting Com
 
 ![Bill page demo](https://raw.githubusercontent.com/nysenate/OpenLegislation/dev/src/main/webapp/static/img/bill-page.png)
 
+## 🤖 PR Automation
+
+This repository includes comprehensive automated PR management:
+
+### GitHub Actions (Built-in)
+- Auto-merges safe Dependabot updates
+- Provides automated code review feedback
+- Automatically labels and categorizes PRs
+- Generates weekly PR dashboards
+- Manages stale PRs
+
+**📚 [Learn More](docs/pr-automation-README.md)** | **🚀 [Setup Guide](docs/pr-automation-setup.md)**
+
+### AI Webhook Server (Self-hosted)
+New! Deploy your own AI-powered code review webhook server:
+- Uses OpenRouter AI agents (Claude, GPT-4, etc.) for intelligent code review
+- Provides detailed analysis: security, bugs, style, performance
+- Auto-merge capability based on AI review scores
+- Designed for homelab deployment with Docker
+
+**🚀 [Webhook Server Guide](webhook-server/README.md)** | **⚙️ [Setup Instructions](webhook-server/SETUP.md)**
+
 Current Senate Developers
 ---------------------------
 
