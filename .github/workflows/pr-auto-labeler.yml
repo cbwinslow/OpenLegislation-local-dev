@@ -1,0 +1,180 @@
+name: PR Auto Labeler
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  label-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Auto-label based on files changed
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            
+            const labels = new Set();
+            
+            // Analyze changed files
+            for (const file of files) {
+              const path = file.filename;
+              
+              // Backend changes
+              if (path.includes('src/main/java/')) {
+                labels.add('backend');
+                
+                // Specific Java components
+                if (path.includes('/api/')) labels.add('api');
+                if (path.includes('/processor/')) labels.add('data-processing');
+                if (path.includes('/dao/')) labels.add('database');
+                if (path.includes('/service/')) labels.add('business-logic');
+                if (path.includes('/federal/')) labels.add('federal-integration');
+              }
+              
+              // Frontend changes
+              if (path.includes('frontend/') || path.includes('.jsx') || path.includes('.tsx')) {
+                labels.add('frontend');
+                labels.add('ui');
+              }
+              
+              // Database changes
+              if (path.includes('sql/migrations/') || path.includes('.sql')) {
+                labels.add('database');
+                labels.add('migration');
+              }
+              
+              // Configuration changes
+              if (path.includes('pom.xml')) {
+                labels.add('dependencies');
+                labels.add('build');
+              }
+              
+              if (path.includes('.yml') || path.includes('.yaml')) {
+                if (path.includes('.github/workflows/')) {
+                  labels.add('ci-cd');
+                  labels.add('automation');
+                } else {
+                  labels.add('configuration');
+                }
+              }
+              
+              // Documentation
+              if (path.includes('README') || path.includes('docs/') || path.endsWith('.md')) {
+                labels.add('documentation');
+              }
+              
+              // Tests
+              if (path.includes('src/test/') || path.includes('test_')) {
+                labels.add('tests');
+              }
+              
+              // Infrastructure
+              if (path.includes('ansible/') || path.includes('infra/') || path.includes('Dockerfile')) {
+                labels.add('infrastructure');
+              }
+              
+              // Tools
+              if (path.includes('tools/')) {
+                labels.add('tooling');
+                if (path.endsWith('.py')) labels.add('python');
+              }
+            }
+            
+            // Add PR type labels based on title/description
+            const title = context.payload.pull_request.title.toLowerCase();
+            const body = (context.payload.pull_request.body || '').toLowerCase();
+            
+            if (title.includes('fix') || title.includes('bug')) {
+              labels.add('bug-fix');
+            }
+            if (title.includes('feat') || title.includes('feature') || title.includes('add')) {
+              labels.add('enhancement');
+            }
+            if (title.includes('refactor') || title.includes('cleanup')) {
+              labels.add('refactoring');
+            }
+            if (title.includes('security') || title.includes('vulnerability')) {
+              labels.add('security');
+              labels.add('high-priority');
+            }
+            if (title.includes('perf') || title.includes('performance')) {
+              labels.add('performance');
+            }
+            if (title.includes('breaking')) {
+              labels.add('breaking-change');
+              labels.add('needs-review');
+            }
+            
+            // Priority labels
+            if (body.includes('urgent') || body.includes('critical') || title.includes('hotfix')) {
+              labels.add('high-priority');
+            }
+            
+            // Apply labels
+            if (labels.size > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                labels: Array.from(labels)
+              });
+            }
+      
+      - name: Assign reviewers based on labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: labels } = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            
+            const labelNames = labels.map(l => l.name);
+            const reviewers = new Set();
+            
+            // Add reviewers based on component (customize these)
+            if (labelNames.includes('backend') || labelNames.includes('api')) {
+              // Backend reviewers would go here
+              // reviewers.add('backend-team');
+            }
+            
+            if (labelNames.includes('frontend') || labelNames.includes('ui')) {
+              // Frontend reviewers would go here
+              // reviewers.add('frontend-team');
+            }
+            
+            if (labelNames.includes('database') || labelNames.includes('migration')) {
+              // Database reviewers would go here
+              // reviewers.add('database-team');
+            }
+            
+            if (labelNames.includes('security')) {
+              // Security reviewers would go here
+              // reviewers.add('security-team');
+            }
+            
+            // Note: Reviewer assignment commented out - configure with actual team members
+            /*
+            if (reviewers.size > 0) {
+              await github.rest.pulls.requestReviewers({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number,
+                reviewers: Array.from(reviewers)
+              });
+            }
+            */

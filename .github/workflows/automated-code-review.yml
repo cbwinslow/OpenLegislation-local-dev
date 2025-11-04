@@ -1,0 +1,329 @@
+name: Automated Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  checks: write
+
+jobs:
+  pr-metadata:
+    runs-on: ubuntu-latest
+    outputs:
+      is-draft: ${{ steps.pr-info.outputs.is-draft }}
+      changed-files: ${{ steps.changed-files.outputs.all_changed_files }}
+      
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Get PR info
+        id: pr-info
+        run: |
+          echo "is-draft=${{ github.event.pull_request.draft }}" >> $GITHUB_OUTPUT
+      
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v40
+        with:
+          files: |
+            **/*.java
+            **/*.xml
+            **/*.yml
+            **/*.yaml
+            **/*.js
+            **/*.jsx
+            **/*.ts
+            **/*.tsx
+            **/*.py
+
+  code-quality-checks:
+    needs: pr-metadata
+    if: needs.pr-metadata.outputs.is-draft == 'false'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      
+      - name: Run Checkstyle
+        id: checkstyle
+        continue-on-error: true
+        run: |
+          mvn checkstyle:check > checkstyle-output.txt 2>&1 || true
+          cat checkstyle-output.txt
+      
+      - name: Run PMD
+        id: pmd
+        continue-on-error: true
+        run: |
+          mvn pmd:check > pmd-output.txt 2>&1 || true
+          cat pmd-output.txt
+      
+      - name: Run SpotBugs
+        id: spotbugs
+        continue-on-error: true
+        run: |
+          mvn compile spotbugs:check > spotbugs-output.txt 2>&1 || true
+          cat spotbugs-output.txt
+      
+      - name: Aggregate results and comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let comment = '## 🔍 Automated Code Review Results\n\n';
+            
+            // Read checkstyle results
+            try {
+              const checkstyle = fs.readFileSync('checkstyle-output.txt', 'utf8');
+              const checkstyleIssues = checkstyle.match(/\[ERROR\]/g);
+              comment += '### Checkstyle\n';
+              if (checkstyleIssues) {
+                comment += `❌ Found ${checkstyleIssues.length} style violations\n\n`;
+                comment += '<details><summary>View Details</summary>\n\n```\n';
+                comment += checkstyle.substring(0, 2000);
+                comment += '\n```\n</details>\n\n';
+              } else {
+                comment += '✅ No style violations found\n\n';
+              }
+            } catch (e) {
+              comment += '### Checkstyle\n⚠️ Could not run checkstyle\n\n';
+            }
+            
+            // Read PMD results
+            try {
+              const pmd = fs.readFileSync('pmd-output.txt', 'utf8');
+              const pmdIssues = pmd.match(/\[ERROR\]/g);
+              comment += '### PMD\n';
+              if (pmdIssues) {
+                comment += `❌ Found ${pmdIssues.length} potential issues\n\n`;
+                comment += '<details><summary>View Details</summary>\n\n```\n';
+                comment += pmd.substring(0, 2000);
+                comment += '\n```\n</details>\n\n';
+              } else {
+                comment += '✅ No issues found\n\n';
+              }
+            } catch (e) {
+              comment += '### PMD\n⚠️ Could not run PMD\n\n';
+            }
+            
+            // Read SpotBugs results
+            try {
+              const spotbugs = fs.readFileSync('spotbugs-output.txt', 'utf8');
+              const spotbugsIssues = spotbugs.match(/\[ERROR\]/g);
+              comment += '### SpotBugs\n';
+              if (spotbugsIssues) {
+                comment += `❌ Found ${spotbugsIssues.length} potential bugs\n\n`;
+                comment += '<details><summary>View Details</summary>\n\n```\n';
+                comment += spotbugs.substring(0, 2000);
+                comment += '\n```\n</details>\n\n';
+              } else {
+                comment += '✅ No bugs found\n\n';
+              }
+            } catch (e) {
+              comment += '### SpotBugs\n⚠️ Could not run SpotBugs\n\n';
+            }
+            
+            comment += '\n---\n*This is an automated code review. Please address any issues before merging.*';
+            
+            // Post comment
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  pr-size-labeler:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Calculate PR size and add label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            
+            const totalChanges = files.reduce((sum, file) => {
+              return sum + file.additions + file.deletions;
+            }, 0);
+            
+            let sizeLabel = '';
+            if (totalChanges < 10) {
+              sizeLabel = 'size/XS';
+            } else if (totalChanges < 50) {
+              sizeLabel = 'size/S';
+            } else if (totalChanges < 200) {
+              sizeLabel = 'size/M';
+            } else if (totalChanges < 500) {
+              sizeLabel = 'size/L';
+            } else {
+              sizeLabel = 'size/XL';
+            }
+            
+            // Remove old size labels
+            const { data: labels } = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            
+            for (const label of labels) {
+              if (label.name.startsWith('size/')) {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  name: label.name
+                });
+              }
+            }
+            
+            // Add new size label
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: [sizeLabel]
+            });
+            
+            // Add comment for large PRs
+            if (totalChanges > 500) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: '⚠️ This PR is quite large. Consider breaking it into smaller, more focused PRs for easier review.'
+              });
+            }
+
+  complexity-analysis:
+    needs: pr-metadata
+    if: needs.pr-metadata.outputs.is-draft == 'false'
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      
+      - name: Analyze code complexity
+        continue-on-error: true
+        run: |
+          # Generate complexity report
+          mvn compile > /dev/null 2>&1 || true
+          
+          # Create a simple complexity report
+          echo "# Code Complexity Analysis" > complexity-report.md
+          echo "" >> complexity-report.md
+          
+          # Count files changed
+          FILES_CHANGED=$(git diff --name-only origin/main...HEAD | wc -l)
+          echo "- **Files Changed:** $FILES_CHANGED" >> complexity-report.md
+          
+          # Check for large methods (basic heuristic)
+          LARGE_METHODS=$(git diff origin/main...HEAD | grep -c "^+.*{$" || echo 0)
+          echo "- **New Methods/Classes:** ~$LARGE_METHODS" >> complexity-report.md
+          
+          cat complexity-report.md
+      
+      - name: Upload complexity report
+        uses: actions/upload-artifact@v3
+        with:
+          name: complexity-report
+          path: complexity-report.md
+
+  review-checklist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Post review checklist
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const checklist = `
+            ## 📋 Review Checklist
+            
+            Please ensure the following before merging:
+            
+            ### Code Quality
+            - [ ] Code follows project style guidelines
+            - [ ] All tests pass
+            - [ ] No new warnings introduced
+            - [ ] Code is well-documented
+            
+            ### Functionality
+            - [ ] Changes work as expected
+            - [ ] Edge cases are handled
+            - [ ] No breaking changes (or documented)
+            - [ ] Backward compatibility maintained
+            
+            ### Security
+            - [ ] No security vulnerabilities introduced
+            - [ ] Input validation is proper
+            - [ ] Authentication/authorization checked
+            - [ ] No sensitive data exposed
+            
+            ### Testing
+            - [ ] Unit tests added/updated
+            - [ ] Integration tests pass
+            - [ ] Manual testing performed
+            
+            ### Documentation
+            - [ ] README updated (if needed)
+            - [ ] API docs updated (if needed)
+            - [ ] Comments added for complex logic
+            
+            ---
+            *Auto-generated checklist. Check off items as you review.*
+            `;
+            
+            // Check if checklist comment already exists
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            
+            const existingChecklist = comments.find(comment => 
+              comment.body.includes('📋 Review Checklist') && 
+              comment.user.type === 'Bot'
+            );
+            
+            if (!existingChecklist) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: checklist
+              });
+            }
