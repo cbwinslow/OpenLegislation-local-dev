@@ -1,0 +1,192 @@
+name: Bug Report
+description: Report a bug or issue with OpenLegislation
+title: "[BUG]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please provide as much detail as possible.
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of the bug.
+      placeholder: Describe what went wrong...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Detailed steps to reproduce the behavior
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Scroll down to '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: Describe the expected behavior...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: What actually happened instead?
+      placeholder: Describe what actually happened...
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating System
+      description: What OS are you running?
+      placeholder: "e.g., Ubuntu 20.04, macOS 12.0, Windows 11"
+    validations:
+      required: true
+
+  - type: input
+    id: java-version
+    attributes:
+      label: Java Version
+      description: What version of Java are you using?
+      placeholder: "e.g., OpenJDK 17.0.2"
+    validations:
+      required: true
+
+  - type: input
+    id: maven-version
+    attributes:
+      label: Maven Version
+      description: What version of Maven are you using?
+      placeholder: "e.g., 3.8.6"
+    validations:
+      required: false
+
+  - type: input
+    id: database
+    attributes:
+      label: Database
+      description: What database version are you using?
+      placeholder: "e.g., PostgreSQL 15"
+    validations:
+      required: false
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser
+      description: If applicable, what browser are you using?
+      placeholder: "e.g., Chrome 91, Firefox 89"
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Please paste any relevant log output here
+      placeholder: Paste relevant log output here
+      render: shell
+    validations:
+      required: false
+
+  - type: dropdown
+    id: data-source
+    attributes:
+      label: Data Source
+      description: Which data source is affected?
+      options:
+        - State
+        - Federal
+        - Both
+        - Not applicable
+    validations:
+      required: true
+
+  - type: input
+    id: congress-session
+    attributes:
+      label: Congress/Session
+      description: If applicable, which Congress or Session?
+      placeholder: "e.g., 119th Congress"
+    validations:
+      required: false
+
+  - type: input
+    id: bill-law-id
+    attributes:
+      label: Bill/Law ID
+      description: If applicable, provide the Bill or Law ID
+      placeholder: "e.g., S1234, HR5678"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How severe is this bug?
+      options:
+        - Critical
+        - High
+        - Medium
+        - Low
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-users
+    attributes:
+      label: Affected Users
+      description: Who is affected by this bug?
+      options:
+        - All users
+        - State users
+        - Federal users
+        - Developers
+        - Specific users
+    validations:
+      required: true
+
+  - type: dropdown
+    id: data-loss
+    attributes:
+      label: Data Loss
+      description: Does this bug cause data loss?
+      options:
+        - "Yes"
+        - "No"
+        - Unknown
+    validations:
+      required: true
+
+  - type: textarea
+    id: possible-solution
+    attributes:
+      label: Possible Solution
+      description: If you have any suggestions for fixing this bug, please describe them here
+      placeholder: Describe potential solutions or workarounds...
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here, including screenshots or examples
+      placeholder: Any additional information...
+    validations:
+      required: false
