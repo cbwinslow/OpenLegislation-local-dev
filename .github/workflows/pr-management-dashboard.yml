@@ -1,0 +1,226 @@
+name: PR Management Dashboard
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'  # Every Monday at 9 AM UTC
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: read
+
+jobs:
+  generate-dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate PR summary report
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Fetch all open PRs
+            const { data: pullRequests } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: 100
+            });
+            
+            // Categorize PRs
+            const categories = {
+              dependabot: [],
+              needsReview: [],
+              approved: [],
+              draft: [],
+              stale: [],
+              highPriority: []
+            };
+            
+            const now = new Date();
+            const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+            
+            for (const pr of pullRequests) {
+              // Check if stale (no activity in 7 days)
+              const updatedAt = new Date(pr.updated_at);
+              const isStale = updatedAt < weekAgo;
+              
+              // Categorize
+              if (pr.user.login === 'dependabot[bot]') {
+                categories.dependabot.push(pr);
+              }
+              
+              if (pr.draft) {
+                categories.draft.push(pr);
+              } else if (isStale) {
+                categories.stale.push(pr);
+              }
+              
+              // Fetch labels
+              const { data: labels } = await github.rest.issues.listLabelsOnIssue({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number
+              });
+              
+              const labelNames = labels.map(l => l.name);
+              
+              if (labelNames.includes('high-priority') || labelNames.includes('urgent')) {
+                categories.highPriority.push(pr);
+              }
+              
+              // Check review status
+              const { data: reviews } = await github.rest.pulls.listReviews({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number
+              });
+              
+              const hasApproval = reviews.some(r => r.state === 'APPROVED');
+              const needsChanges = reviews.some(r => r.state === 'CHANGES_REQUESTED');
+              
+              if (hasApproval && !needsChanges) {
+                categories.approved.push(pr);
+              } else if (!hasApproval && !pr.draft && !isStale) {
+                categories.needsReview.push(pr);
+              }
+            }
+            
+            // Generate report
+            let report = '# 📊 PR Management Dashboard\n\n';
+            report += `**Generated:** ${now.toISOString()}\n\n`;
+            report += `**Total Open PRs:** ${pullRequests.length}\n\n`;
+            report += '---\n\n';
+            
+            // High Priority PRs
+            report += '## 🔴 High Priority PRs\n\n';
+            if (categories.highPriority.length === 0) {
+              report += '*No high priority PRs*\n\n';
+            } else {
+              for (const pr of categories.highPriority) {
+                report += `- [#${pr.number}](${pr.html_url}) - ${pr.title}\n`;
+              }
+              report += '\n';
+            }
+            
+            // PRs Ready to Merge
+            report += '## ✅ Approved PRs (Ready to Merge)\n\n';
+            if (categories.approved.length === 0) {
+              report += '*No approved PRs*\n\n';
+            } else {
+              for (const pr of categories.approved) {
+                report += `- [#${pr.number}](${pr.html_url}) - ${pr.title}\n`;
+              }
+              report += '\n';
+            }
+            
+            // PRs Needing Review
+            report += '## 👀 PRs Needing Review\n\n';
+            if (categories.needsReview.length === 0) {
+              report += '*No PRs awaiting review*\n\n';
+            } else {
+              for (const pr of categories.needsReview) {
+                const age = Math.floor((now - new Date(pr.created_at)) / (1000 * 60 * 60 * 24));
+                report += `- [#${pr.number}](${pr.html_url}) - ${pr.title} (${age} days old)\n`;
+              }
+              report += '\n';
+            }
+            
+            // Dependabot PRs
+            report += '## 🤖 Dependabot PRs\n\n';
+            if (categories.dependabot.length === 0) {
+              report += '*No Dependabot PRs*\n\n';
+            } else {
+              report += `**Total:** ${categories.dependabot.length}\n\n`;
+              for (const pr of categories.dependabot) {
+                report += `- [#${pr.number}](${pr.html_url}) - ${pr.title}\n`;
+              }
+              report += '\n';
+            }
+            
+            // Stale PRs
+            report += '## ⏰ Stale PRs (No activity in 7+ days)\n\n';
+            if (categories.stale.length === 0) {
+              report += '*No stale PRs*\n\n';
+            } else {
+              for (const pr of categories.stale) {
+                const age = Math.floor((now - new Date(pr.updated_at)) / (1000 * 60 * 60 * 24));
+                report += `- [#${pr.number}](${pr.html_url}) - ${pr.title} (last updated ${age} days ago)\n`;
+              }
+              report += '\n';
+            }
+            
+            // Draft PRs
+            report += '## 📝 Draft PRs\n\n';
+            if (categories.draft.length === 0) {
+              report += '*No draft PRs*\n\n';
+            } else {
+              for (const pr of categories.draft) {
+                report += `- [#${pr.number}](${pr.html_url}) - ${pr.title}\n`;
+              }
+              report += '\n';
+            }
+            
+            report += '---\n\n';
+            report += '### 📈 Summary Statistics\n\n';
+            report += `- **High Priority:** ${categories.highPriority.length}\n`;
+            report += `- **Approved:** ${categories.approved.length}\n`;
+            report += `- **Needs Review:** ${categories.needsReview.length}\n`;
+            report += `- **Dependabot:** ${categories.dependabot.length}\n`;
+            report += `- **Stale:** ${categories.stale.length}\n`;
+            report += `- **Draft:** ${categories.draft.length}\n`;
+            
+            report += '\n---\n\n';
+            report += '*This report is automatically generated every Monday. Configure the schedule in `.github/workflows/pr-management-dashboard.yml`*\n';
+            
+            // Create or update issue
+            const issueTitle = 'PR Management Dashboard';
+            
+            // Search for existing dashboard issue
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'dashboard'
+            });
+            
+            const existingIssue = issues.find(issue => issue.title === issueTitle);
+            
+            if (existingIssue) {
+              // Update existing issue
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingIssue.number,
+                body: report
+              });
+              
+              // Add comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingIssue.number,
+                body: `Dashboard updated on ${now.toISOString()}`
+              });
+            } else {
+              // Create new issue
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: issueTitle,
+                body: report,
+                labels: ['dashboard', 'automation']
+              });
+            }
+
+  close-stale-prs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close stale PRs
+        uses: actions/stale@v8
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          stale-pr-message: 'This PR has been inactive for 30 days and will be closed in 7 days if there is no activity.'
+          close-pr-message: 'This PR was closed due to inactivity. Feel free to reopen if you want to continue working on it.'
+          days-before-stale: 30
+          days-before-close: 7
+          exempt-pr-labels: 'keep-open,in-progress,blocked'
+          stale-pr-label: 'stale'
