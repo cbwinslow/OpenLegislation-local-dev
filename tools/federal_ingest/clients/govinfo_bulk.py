@@ -64,7 +64,7 @@ class GovInfoBulkClient:
         collection: str,
         congress: Optional[str],
         prefix: str = "",
-        extensions: tuple[str, ...] = ('.xml', '.zip', '.json', '.csv', '.txt'),
+
     ) -> Iterable[BulkResource]:
         listing = self._fetch_listing(base_url)
         for href in listing:
@@ -78,10 +78,7 @@ class GovInfoBulkClient:
                     collection=collection,
                     congress=congress,
                     prefix=os.path.join(prefix, href.strip("/")),
-                    extensions=extensions,
-                )
-                continue
-            if not href.lower().endswith(extensions):
+
                 continue
             resource_path = os.path.join(prefix, os.path.basename(urlparse(absolute).path))
             yield BulkResource(
@@ -97,7 +94,7 @@ class GovInfoBulkClient:
         collection: str,
         congress: Optional[str] = None,
         normalized: bool = True,
-        extensions: tuple[str, ...] = ('.xml', '.zip', '.json', '.csv', '.txt'),
+
     ) -> Iterator[NormalizedRecord | BulkResource]:
         target_url = BULK_BASE_URL.rstrip("/") + f"/{collection}"
         if congress:
@@ -109,7 +106,7 @@ class GovInfoBulkClient:
             collection=collection,
             congress=congress,
             prefix="",
-            extensions=extensions,
+
         )
         for resource in resources:
             yield (
