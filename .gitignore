@@ -85,3 +85,4 @@ src/test/java/gov/nysenate/openleg/SillyTests.java
 
 #Ignore vscode AI rules
 .github/instructions/codacy.instructions.md
+webhook-server/.env
