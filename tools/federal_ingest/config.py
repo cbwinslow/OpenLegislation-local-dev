@@ -17,6 +17,18 @@ class FederalIngestSettings:
 
 
 def _require_env(name: str) -> str:
+    """
+    Retrieve the value of a required environment variable.
+    
+    Parameters:
+        name (str): The name of the environment variable to read.
+    
+    Returns:
+        str: The environment variable's value.
+    
+    Raises:
+        RuntimeError: If the environment variable is missing or empty.
+    """
     value = os.getenv(name)
     if not value:
         raise RuntimeError(f"Missing required environment variable: {name}")
@@ -25,7 +37,12 @@ def _require_env(name: str) -> str:
 
 @lru_cache()
 def get_settings() -> FederalIngestSettings:
-    """Return cached settings instance."""
+    """
+    Provide a cached FederalIngestSettings instance populated from environment variables.
+    
+    Returns:
+        FederalIngestSettings: Instance with `congress_api_key` from CONGRESS_GOV_API_KEY, `govinfo_api_key` from GOVINFO_API_KEY, and `database_url` from FEDERAL_INGEST_DATABASE_URL or `None`.
+    """
 
     return FederalIngestSettings(
         congress_api_key=_require_env("CONGRESS_GOV_API_KEY"),

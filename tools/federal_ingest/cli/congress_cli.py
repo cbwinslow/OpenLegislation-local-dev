@@ -9,6 +9,12 @@ from ..cli.common import configure_logging, handle_records
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """
+    Create an ArgumentParser configured for the Congress.gov ingestion CLI.
+    
+    Returns:
+        argparse.ArgumentParser: Parser with a positional `command` choice of "bills", "members", or "votes", and options `--congress`, `--chamber`, `--limit`, `--export`, `--upsert`, `--database-url`, and `--verbose`.
+    """
     parser = argparse.ArgumentParser(description="Ingest data from api.congress.gov")
     parser.add_argument("command", choices=["bills", "members", "votes"], help="Resource to fetch")
     parser.add_argument("--congress", default="118", help="Congress number (e.g., 118)")
@@ -25,6 +31,14 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> None:
+    """
+    Parse CLI arguments, fetch the requested Congress.gov resource, and process the resulting records.
+    
+    Parses the provided argv (or system arguments if None), configures logging according to --verbose, and uses a CongressGovIngestClient to iterate records for the selected command ("bills", "members", or "votes"). The --chamber option is required for "members" and "votes" commands; if omitted the parser will report an error. Fetched records are forwarded to handle_records with export, upsert, and database_url options from the parsed arguments.
+    
+    Parameters:
+        argv (list[str] | None): Optional list of command-line arguments to parse; when None the system arguments are used.
+    """
     parser = build_parser()
     args = parser.parse_args(argv)
     configure_logging(args.verbose)

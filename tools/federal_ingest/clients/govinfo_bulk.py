@@ -32,19 +32,50 @@ class GovInfoBulkClient:
     """Crawl bulkdata directory listings and yield normalized records."""
 
     def __init__(self, *, session: Optional[requests.Session] = None) -> None:
+        """
+        Initialize the client with an HTTP session.
+        
+        Parameters:
+            session (Optional[requests.Session]): Optional requests Session to use for HTTP requests. If omitted, a new Session is created. The session will have its `User-Agent` header set to the module's default `USER_AGENT` if not already present.
+        """
         self.session = session or requests.Session()
         self.session.headers.setdefault("User-Agent", USER_AGENT)
 
     def close(self) -> None:
+        """
+        Close the underlying HTTP session.
+        
+        Releases network resources held by the client's requests.Session.
+        """
         self.session.close()
 
     def __enter__(self) -> "GovInfoBulkClient":
+        """
+        Enter a context and provide this GovInfoBulkClient instance for use with a with-statement.
+        
+        Returns:
+            GovInfoBulkClient: This client instance (`self`) to be used as the context manager target.
+        """
         return self
 
     def __exit__(self, exc_type, exc, tb) -> None:  # type: ignore[override]
+        """
+        Close the client's HTTP session when exiting a context manager.
+        
+        Ensures the underlying requests.Session is closed. Does not suppress exceptions; any exception raised in the with-block will propagate.
+        """
         self.close()
 
     def _fetch_listing(self, url: str) -> List[str]:
+        """
+        Extract href attributes from the HTML listing at the given URL.
+        
+        Parameters:
+            url (str): URL of the directory/listing page to fetch and parse.
+        
+        Returns:
+            List[str]: A list of href attribute values extracted from all anchor tags on the page.
+        """
         logger.debug("Fetching bulk listing %s", url)
         response = self.session.get(url, timeout=30)
         response.raise_for_status()
@@ -59,6 +90,18 @@ class GovInfoBulkClient:
         congress: Optional[str],
         prefix: str = "",
     ) -> Iterable[BulkResource]:
+        """
+        Recursively traverse the HTML directory listing at base_url and yield BulkResource objects for supported bulk files.
+        
+        Parameters:
+            base_url (str): Absolute URL of the directory listing to crawl.
+            collection (str): GovInfo collection identifier to attach to each resource.
+            congress (Optional[str]): Congress identifier to attach to each resource, or None if not applicable.
+            prefix (str): Accumulated path prefix representing the resource's location within the collection.
+        
+        Returns:
+            Iterable[BulkResource]: BulkResource instances for files with extensions `.xml`, `.zip`, `.json`, `.csv`, or `.txt` discovered under the directory.
+        """
         listing = self._fetch_listing(base_url)
         for href in listing:
             if not href or href in {"../", "?"}:
@@ -90,6 +133,17 @@ class GovInfoBulkClient:
         congress: Optional[str] = None,
         normalized: bool = True,
     ) -> Iterator[NormalizedRecord | BulkResource]:
+        """
+        Iterate over GovInfo bulk data resources for a collection and optional congress.
+        
+        Parameters:
+        	collection (str): Bulkdata collection name to crawl (e.g., "uscode", "bills").
+        	congress (Optional[str]): Optional congress identifier to restrict the crawl (e.g., "116").
+        	normalized (bool): If True yield normalized records; if False yield raw BulkResource objects.
+        
+        Returns:
+        	Iterator[NormalizedRecord | BulkResource]: Yields a normalized record for each discovered resource when `normalized` is True, or the corresponding `BulkResource` when `normalized` is False.
+        """
         target_url = BULK_BASE_URL.rstrip("/") + f"/{collection}"
         if congress:
             target_url += f"/{congress}"
