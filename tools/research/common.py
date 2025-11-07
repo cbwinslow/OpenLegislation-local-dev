@@ -16,10 +16,10 @@ import psycopg2
 import psycopg2.extras
 
 try:
-    from tools import db_config
+    from tools.config import db_config
 except ModuleNotFoundError:  # pragma: no cover - fallback when executed directly
     sys.path.append(str(pathlib.Path(__file__).resolve().parents[1]))
-    from tools import db_config  # type: ignore
+    from tools.config import db_config  # type: ignore
 
 
 DEFAULT_REPORT_DIR = pathlib.Path("reports")
