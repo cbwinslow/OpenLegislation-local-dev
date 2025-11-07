@@ -20,7 +20,7 @@ from lxml import etree
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
-from govinfo_bill_ingestion import GovInfoBillIngestor
+from tools.ingestion.govinfo.govinfo_bill_ingestion import GovInfoBillIngestor
 from tools.config.settings import settings
 
 

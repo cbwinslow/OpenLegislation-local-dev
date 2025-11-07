@@ -15,7 +15,7 @@ import psycopg2
 import psycopg2.extras
 
 from tools.config.settings import settings
-from member_ingestion_tracker import MemberIngestionTracker
+from tools.ingestion.members.member_ingestion_tracker import MemberIngestionTracker
 
 
 class ResumeFunctionalityTester:

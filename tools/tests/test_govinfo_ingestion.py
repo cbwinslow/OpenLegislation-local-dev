@@ -25,7 +25,7 @@ from unittest.mock import patch, MagicMock
 import psycopg2
 import psycopg2.extras
 
-from govinfo_data_connector import GovInfoDataConnector
+from tools.ingestion.govinfo.govinfo_data_connector import GovInfoDataConnector
 
 
 class TestGovInfoIngestion(unittest.TestCase):
@@ -289,7 +289,7 @@ class TestGovInfoIngestion(unittest.TestCase):
 
     def test_congress_range_parsing(self):
         """Test congress range parsing logic"""
-        from fetch_govinfo_bulk import parse_congress_range
+        from tools.ingestion.govinfo.fetch_govinfo_bulk import parse_congress_range
 
         # Single congress
         result = parse_congress_range("119")
