@@ -1,160 +1,352 @@
+# .github/workflows/automated-code-review.yml
+# -----------------------------------------------------------------------------
+# Name: Automated Code Review & Quality Gate
+# Date: 2025-11-07
+# Author: cbwinslow <blaine.winslow@gmail.com>
+# Summary:
+#   Comprehensive PR workflow that:
+#     - Gathers PR metadata and changed files
+#     - Runs language-aware linters, formatters, tests
+#     - Performs SAST/Dependency scanning (CodeQL + Dependency Review + Trivy)
+#     - Labels PR size and posts a review checklist
+#     - Uploads reports (actions/upload-artifact@v4)
+#     - Prepares hooks for external AI review apps (CodeRabbit, Qodo/Jules, etc.)
+# Inputs/Outputs:
+#   Inputs  : GitHub PR event context
+#   Outputs : Annotations, PR comments, labels, uploaded artifacts
+# Secrets (optional for external tools):
+#   OPENAI_API_KEY, CODY_TOKEN, CODERABBIT_API_KEY, QODO_API_KEY, SNYK_TOKEN, SONAR_TOKEN
+# Notes:
+#   - External AI reviewers (CodeRabbitAI, “Qodo/Jules”) are typically installed
+#     as GitHub Apps. This workflow complements those apps and can tag/notify them.
+#   - Jobs are gated on draft state and on path filters to avoid unnecessary runs.
+# -----------------------------------------------------------------------------
+
 name: Automated Code Review
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
-    branches: [ main, develop ]
+    types: [opened, synchronize, reopened, ready_for_review, edited]
+    branches: [main, develop]
+  pull_request_target:
+    # Allow certain jobs (labels, checklists) to run with elevated token on forks
+    types: [opened, reopened, synchronize, ready_for_review]
+    branches: [main, develop]
 
+# Sensible default permissions; individual jobs can elevate if needed
 permissions:
   contents: read
   pull-requests: write
   issues: write
   checks: write
+  security-events: write
+
+concurrency:
+  group: pr-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash -euo pipefail
+
+env:
+  FORCE_COLOR: "1"
+  NODE_VERSION: "20"
+  PYTHON_VERSION: "3.11"
+  JAVA_VERSION: "17"
+  REPORT_DIR: reports
 
 jobs:
   pr-metadata:
+    name: Collect PR Metadata
     runs-on: ubuntu-latest
     outputs:
       is-draft: ${{ steps.pr-info.outputs.is-draft }}
-      changed-files: ${{ steps.changed-files.outputs.all_changed_files }}
-      
+      changed-any: ${{ steps.filter.outputs.changed_any }}
+      changed-java: ${{ steps.filter.outputs.java }}
+      changed-js: ${{ steps.filter.outputs.js }}
+      changed-py: ${{ steps.filter.outputs.py }}
+      changed-config: ${{ steps.filter.outputs.config }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      
+        with: { fetch-depth: 0 }
+
       - name: Get PR info
         id: pr-info
-        run: |
-          echo "is-draft=${{ github.event.pull_request.draft }}" >> $GITHUB_OUTPUT
-      
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v46
-        with:
-          files: |
-            **/*.java
-            **/*.xml
-            **/*.yml
-            **/*.yaml
-            **/*.js
-            **/*.jsx
-            **/*.ts
-            **/*.tsx
-            **/*.py
+        run: echo "is-draft=${{ github.event.pull_request.draft }}" >> "$GITHUB_OUTPUT"
 
-  code-quality-checks:
+      - name: Detect changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            java:
+              - '**/*.java'
+              - '**/pom.xml'
+            js:
+              - '**/*.js'
+              - '**/*.jsx'
+              - '**/*.ts'
+              - '**/*.tsx'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'yarn.lock'
+              - 'bun.lockb'
+            py:
+              - '**/*.py'
+              - 'pyproject.toml'
+              - 'requirements*.txt'
+            config:
+              - '**/*.yml'
+              - '**/*.yaml'
+              - '**/*.json'
+              - '**/*.md'
+            changed_any:
+              - '**'
+
+  # -----------------------------
+  # Java / Maven quality gates
+  # -----------------------------
+  java-quality:
+    name: Java Lint & Static Analysis
     needs: pr-metadata
-    if: needs.pr-metadata.outputs.is-draft == 'false'
+    if: needs.pr-metadata.outputs.is-draft == 'false' && needs.pr-metadata.outputs.changed-java == 'true'
     runs-on: ubuntu-latest
-    
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Set up JDK 17
+
+      - name: Set up Temurin JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: temurin
           cache: maven
-      
-      - name: Run Checkstyle
+
+      - name: Maven verify (build, tests)
+        id: mvn-verify
+        continue-on-error: true
+        run: |
+          mkdir -p "$REPORT_DIR"
+          mvn -B -DskipTests=false -Dmaven.test.failure.ignore=true verify | tee "$REPORT_DIR/maven-verify.log"
+
+      - name: Checkstyle
         id: checkstyle
         continue-on-error: true
         run: |
-          mvn checkstyle:check > checkstyle-output.txt 2>&1 || true
-          cat checkstyle-output.txt
-      
-      - name: Run PMD
+          mvn -B checkstyle:checkstyle | tee "$REPORT_DIR/checkstyle.log" || true
+
+      - name: PMD
         id: pmd
         continue-on-error: true
         run: |
-          mvn pmd:check > pmd-output.txt 2>&1 || true
-          cat pmd-output.txt
-      
-      - name: Run SpotBugs
+          mvn -B pmd:check pmd:cpd-check | tee "$REPORT_DIR/pmd.log" || true
+
+      - name: SpotBugs
         id: spotbugs
         continue-on-error: true
         run: |
-          mvn compile spotbugs:check > spotbugs-output.txt 2>&1 || true
-          cat spotbugs-output.txt
-      
-      - name: Aggregate results and comment
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            
-            let comment = '## 🔍 Automated Code Review Results\n\n';
-            
-            // Read checkstyle results
-            try {
-              const checkstyle = fs.readFileSync('checkstyle-output.txt', 'utf8');
-              const checkstyleIssues = checkstyle.match(/\[ERROR\]/g);
-              comment += '### Checkstyle\n';
-              if (checkstyleIssues) {
-                comment += `❌ Found ${checkstyleIssues.length} style violations\n\n`;
-                comment += '<details><summary>View Details</summary>\n\n```\n';
-                comment += checkstyle.substring(0, 2000);
-                comment += '\n```\n</details>\n\n';
-              } else {
-                comment += '✅ No style violations found\n\n';
-              }
-            } catch (e) {
-              comment += '### Checkstyle\n⚠️ Could not run checkstyle\n\n';
-            }
-            
-            // Read PMD results
-            try {
-              const pmd = fs.readFileSync('pmd-output.txt', 'utf8');
-              const pmdIssues = pmd.match(/\[ERROR\]/g);
-              comment += '### PMD\n';
-              if (pmdIssues) {
-                comment += `❌ Found ${pmdIssues.length} potential issues\n\n`;
-                comment += '<details><summary>View Details</summary>\n\n```\n';
-                comment += pmd.substring(0, 2000);
-                comment += '\n```\n</details>\n\n';
-              } else {
-                comment += '✅ No issues found\n\n';
-              }
-            } catch (e) {
-              comment += '### PMD\n⚠️ Could not run PMD\n\n';
-            }
-            
-            // Read SpotBugs results
-            try {
-              const spotbugs = fs.readFileSync('spotbugs-output.txt', 'utf8');
-              const spotbugsIssues = spotbugs.match(/\[ERROR\]/g);
-              comment += '### SpotBugs\n';
-              if (spotbugsIssues) {
-                comment += `❌ Found ${spotbugsIssues.length} potential bugs\n\n`;
-                comment += '<details><summary>View Details</summary>\n\n```\n';
-                comment += spotbugs.substring(0, 2000);
-                comment += '\n```\n</details>\n\n';
-              } else {
-                comment += '✅ No bugs found\n\n';
-              }
-            } catch (e) {
-              comment += '### SpotBugs\n⚠️ Could not run SpotBugs\n\n';
-            }
-            
-            comment += '\n---\n*This is an automated code review. Please address any issues before merging.*';
-            
-            // Post comment
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
+          mvn -B spotbugs:spotbugs | tee "$REPORT_DIR/spotbugs.log" || true
 
-  pr-size-labeler:
+      - name: Upload Java reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-reports
+          path: ${{ env.REPORT_DIR }}
+          if-no-files-found: warn
+          retention-days: 14
+
+  # -----------------------------
+  # Node / JS quality gates
+  # -----------------------------
+  js-quality:
+    name: JS/TS Lint & Tests
+    needs: pr-metadata
+    if: needs.pr-metadata.outputs.is-draft == 'false' && needs.pr-metadata.outputs.changed-js == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
         with:
-          fetch-depth: 0
-      
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install deps (auto-detect package manager)
+        run: |
+          if [[ -f pnpm-lock.yaml ]]; then npm i -g pnpm && pnpm i --frozen-lockfile; 
+          elif [[ -f yarn.lock ]]; then corepack enable && yarn install --frozen-lockfile; 
+          elif [[ -f bun.lockb ]]; then curl -fsSL https://bun.sh/install | bash && ~/.bun/bin/bun install; 
+          else npm ci; fi
+
+      - name: ESLint
+        continue-on-error: true
+        run: |
+          npx --yes eslint . || true
+
+      - name: Unit tests
+        continue-on-error: true
+        run: |
+          if jq -e '.scripts.test' package.json >/dev/null 2>&1; then npm test --silent || true; fi
+
+      - name: Upload JS reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: js-reports
+          path: |
+            coverage/**
+            .eslint* **/eslint*.log
+          if-no-files-found: warn
+          retention-days: 14
+
+  # -----------------------------
+  # Python quality gates
+  # -----------------------------
+  python-quality:
+    name: Python Lint, Type Check & Tests
+    needs: pr-metadata
+    if: needs.pr-metadata.outputs.is-draft == 'false' && needs.pr-metadata.outputs.changed-py == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: |
+            requirements*.txt
+            pyproject.toml
+
+      - name: Install tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff mypy bandit pytest pytest-cov
+          if [[ -f requirements.txt ]]; then pip install -r requirements.txt || true; fi
+          if [[ -f pyproject.toml ]]; then pip install . || true; fi
+
+      - name: Ruff (lint)
+        continue-on-error: true
+        run: ruff check . | tee "$REPORT_DIR/ruff.log" || true
+
+      - name: mypy (type check)
+        continue-on-error: true
+        run: mypy . | tee "$REPORT_DIR/mypy.log" || true
+
+      - name: Bandit (security)
+        continue-on-error: true
+        run: bandit -r . -q | tee "$REPORT_DIR/bandit.log" || true
+
+      - name: PyTest
+        continue-on-error: true
+        run: pytest -q --maxfail=1 --disable-warnings --cov=. --cov-report=xml --cov-report=term | tee "$REPORT_DIR/pytest.log" || true
+
+      - name: Upload Python reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-reports
+          path: ${{ env.REPORT_DIR }}
+          if-no-files-found: warn
+          retention-days: 14
+
+  # -----------------------------
+  # General config/document hygiene
+  # -----------------------------
+  docs-and-config:
+    name: Docs, Markdown, YAML, Shell checks
+    needs: pr-metadata
+    if: needs.pr-metadata.outputs.is-draft == 'false' && needs.pr-metadata.outputs.changed-config == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Markdownlint
+        uses: DavidAnson/markdownlint-cli2-action@v16
+        with:
+          config: .markdownlint.jsonc
+        continue-on-error: true
+
+      - name: YAML Lint
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          config_file: .yamllint.yml
+        continue-on-error: true
+
+      - name: ShellCheck
+        uses: ludeeus/action-shellcheck@v2
+        continue-on-error: true
+
+      - name: Upload docs/config reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-config-reports
+          path: |
+            .markdownlint*
+            .yamllint*
+          if-no-files-found: warn
+          retention-days: 14
+
+  # -----------------------------
+  # Security & dependency analysis
+  # -----------------------------
+  dependency-review:
+    name: GitHub Dependency Review
+    needs: pr-metadata
+    if: needs.pr-metadata.outputs.is-draft == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+
+  trivy-scan:
+    name: Trivy FS Scan (SCA/SAST)
+    needs: pr-metadata
+    if: needs.pr-metadata.outputs.is-draft == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Trivy
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          format: sarif
+          output: trivy-results.sarif
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
+      - name: Upload Trivy SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
+
+  codeql:
+    name: CodeQL (Auto-build)
+    needs: pr-metadata
+    if: needs.pr-metadata.outputs.is-draft == 'false'
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: 'java,javascript,python'
+      - uses: github/codeql-action/autobuild@v3
+      - uses: github/codeql-action/analyze@v3
+
+  # -----------------------------
+  # PR size labeler & checklist (safe under pull_request_target)
+  # -----------------------------
+  pr-size-labeler:
+    name: PR Size Labeler
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request_target' || github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
       - name: Calculate PR size and add label
         uses: actions/github-script@v7
         with:
@@ -164,166 +356,127 @@ jobs:
               repo: context.repo.repo,
               pull_number: context.issue.number
             });
-            
-            const totalChanges = files.reduce((sum, file) => {
-              return sum + file.additions + file.deletions;
-            }, 0);
-            
-            let sizeLabel = '';
-            if (totalChanges < 10) {
-              sizeLabel = 'size/XS';
-            } else if (totalChanges < 50) {
-              sizeLabel = 'size/S';
-            } else if (totalChanges < 200) {
-              sizeLabel = 'size/M';
-            } else if (totalChanges < 500) {
-              sizeLabel = 'size/L';
-            } else {
-              sizeLabel = 'size/XL';
-            }
-            
-            // Remove old size labels
+            const totalChanges = files.reduce((sum, f) => sum + f.additions + f.deletions, 0);
+            const sizeLabel = totalChanges < 10 ? 'size/XS'
+              : totalChanges < 50 ? 'size/S'
+              : totalChanges < 200 ? 'size/M'
+              : totalChanges < 500 ? 'size/L' : 'size/XL';
             const { data: labels } = await github.rest.issues.listLabelsOnIssue({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number
+              owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number
             });
-            
-            for (const label of labels) {
-              if (label.name.startsWith('size/')) {
-                await github.rest.issues.removeLabel({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: context.issue.number,
-                  name: label.name
-                });
-              }
+            for (const l of labels) if (l.name.startsWith('size/')) {
+              await github.rest.issues.removeLabel({ owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number, name: l.name }).catch(() => {});
             }
-            
-            // Add new size label
-            await github.rest.issues.addLabels({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              labels: [sizeLabel]
-            });
-            
-            // Add comment for large PRs
+            await github.rest.issues.addLabels({ owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number, labels: [sizeLabel] });
             if (totalChanges > 500) {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: '⚠️ This PR is quite large. Consider breaking it into smaller, more focused PRs for easier review.'
-              });
+              await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number, body: '⚠️ This PR is quite large. Consider splitting to ease review.' });
             }
-
-  complexity-analysis:
-    needs: pr-metadata
-    if: needs.pr-metadata.outputs.is-draft == 'false'
-    runs-on: ubuntu-latest
-    
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: maven
-      
-      - name: Analyze code complexity
-        continue-on-error: true
-        run: |
-          # Generate complexity report
-          mvn compile > /dev/null 2>&1 || true
-          
-          # Create a simple complexity report
-          echo "# Code Complexity Analysis" > complexity-report.md
-          echo "" >> complexity-report.md
-          
-          # Count files changed
-          FILES_CHANGED=$(git diff --name-only origin/main...HEAD | wc -l)
-          echo "- **Files Changed:** $FILES_CHANGED" >> complexity-report.md
-          
-          # Check for large methods (basic heuristic)
-          LARGE_METHODS=$(git diff origin/main...HEAD | grep -c "^+.*{$" || echo 0)
-          echo "- **New Methods/Classes:** ~$LARGE_METHODS" >> complexity-report.md
-          
-          cat complexity-report.md
-      
-      - name: Upload complexity report
-        uses: actions/upload-artifact@v3
-        with:
-          name: complexity-report
-          path: complexity-report.md
 
   review-checklist:
+    name: Post Review Checklist
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request_target' || github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v4
-      
       - name: Post review checklist
         uses: actions/github-script@v7
         with:
           script: |
             const checklist = `
             ## 📋 Review Checklist
-            
             Please ensure the following before merging:
-            
             ### Code Quality
             - [ ] Code follows project style guidelines
             - [ ] All tests pass
             - [ ] No new warnings introduced
             - [ ] Code is well-documented
-            
             ### Functionality
             - [ ] Changes work as expected
             - [ ] Edge cases are handled
             - [ ] No breaking changes (or documented)
             - [ ] Backward compatibility maintained
-            
             ### Security
             - [ ] No security vulnerabilities introduced
             - [ ] Input validation is proper
-            - [ ] Authentication/authorization checked
-            - [ ] No sensitive data exposed
-            
+            - [ ] Authn/Authz verified (if applicable)
+            - [ ] No secrets or sensitive data committed
             ### Testing
             - [ ] Unit tests added/updated
             - [ ] Integration tests pass
             - [ ] Manual testing performed
-            
             ### Documentation
             - [ ] README updated (if needed)
             - [ ] API docs updated (if needed)
-            - [ ] Comments added for complex logic
-            
-            ---
-            *Auto-generated checklist. Check off items as you review.*
+            - [ ] Comments for complex logic
             `;
-            
-            // Check if checklist comment already exists
-            const { data: comments } = await github.rest.issues.listComments({
+            const { data: comments } = await github.rest.issues.listComments({ owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number });
+            const exists = comments.find(c => c.body?.includes('📋 Review Checklist') && c.user?.type === 'Bot');
+            if (!exists) {
+              await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number, body: checklist });
+            }
+
+  # -----------------------------
+  # Simple complexity snapshot
+  # -----------------------------
+  complexity-analysis:
+    name: Complexity Snapshot
+    needs: pr-metadata
+    if: needs.pr-metadata.outputs.is-draft == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Generate complexity report
+        run: |
+          mkdir -p "$REPORT_DIR"
+          echo "# Code Complexity Analysis" > "$REPORT_DIR/complexity-report.md"
+          echo >> "$REPORT_DIR/complexity-report.md"
+          FILES_CHANGED=$(git diff --name-only origin/${{ github.base_ref || 'main' }}...HEAD | wc -l)
+          echo "- **Files Changed:** $FILES_CHANGED" >> "$REPORT_DIR/complexity-report.md"
+          LARGE_BLOCKS=$(git diff origin/${{ github.base_ref || 'main' }}...HEAD | grep -E '^\+' | grep -cE '(.{120,})' || true)
+          echo "- **New long lines (>120 chars):** $LARGE_BLOCKS" >> "$REPORT_DIR/complexity-report.md"
+          ADDED_FUNCS=$(git diff origin/${{ github.base_ref || 'main' }}...HEAD | grep -cE '^\+.*(def |function |class |public |private |protected )' || true)
+          echo "- **New functions/classes (heuristic):** ~$ADDED_FUNCS" >> "$REPORT_DIR/complexity-report.md"
+          cat "$REPORT_DIR/complexity-report.md"
+      - name: Upload complexity report (v4)
+        uses: actions/upload-artifact@v4
+        with:
+          name: complexity-report
+          path: ${{ env.REPORT_DIR }}/complexity-report.md
+          retention-days: 14
+
+  # -----------------------------
+  # Optional: Notify external AI review tools (requires apps/secrets)
+  # -----------------------------
+  ai-review-hooks:
+    name: AI Review Hooks (optional)
+    needs: pr-metadata
+    if: needs.pr-metadata.outputs.is-draft == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Tag CodeRabbitAI if installed
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          script: |
+            await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.issue.number
+              issue_number: context.issue.number,
+              body: '🤖 If CodeRabbitAI is installed as a GitHub App, it will review this PR automatically. /cc @coderabbit[bot]'
             });
-            
-            const existingChecklist = comments.find(comment => 
-              comment.body.includes('📋 Review Checklist') && 
-              comment.user.type === 'Bot'
-            );
-            
-            if (!existingChecklist) {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: checklist
-              });
-            }
+      - name: Post AI reviewer hints
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          script: |
+            const hints = `
+            ### 🔗 AI Reviewer Hints
+            - Ensure the following apps are installed in the repo/org for deep AI code review:
+              - CodeRabbitAI (GitHub App)
+              - Qodo/Jules (Google/third-party reviewer app)
+              - SonarCloud or Qodana for additional SAST/SCA
+            - Provide API tokens via repo secrets if their actions require them.
+            - This workflow uploads artifacts those apps can reference in their comments.
+            `;
+            await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number, body: hints });
