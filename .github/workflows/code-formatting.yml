@@ -1,0 +1,173 @@
+name: Code Formatting and Linting
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  JAVA_VERSION: '17'
+
+jobs:
+  java-formatting:
+    name: Java Code Formatting
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK ${{ env.JAVA_VERSION }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+        distribution: 'temurin'
+        cache: maven
+        
+    - name: Run Spotless format check
+      id: spotless-check
+      run: mvn spotless:check || echo "NEEDS_FORMATTING=true" >> $GITHUB_ENV
+      continue-on-error: true
+      
+    - name: Apply Spotless formatting
+      if: env.NEEDS_FORMATTING == 'true' && github.event_name == 'pull_request'
+      run: mvn spotless:apply
+      
+    - name: Commit formatted code
+      if: env.NEEDS_FORMATTING == 'true' && github.event_name == 'pull_request'
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "style: Apply Spotless code formatting [automated]"
+        commit_user_name: github-actions[bot]
+        commit_user_email: github-actions[bot]@users.noreply.github.com
+        
+    - name: Run PMD
+      run: mvn pmd:check
+      continue-on-error: true
+      
+    - name: Run Checkstyle
+      run: mvn checkstyle:check
+      continue-on-error: true
+      
+    - name: Upload PMD results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: pmd-results
+        path: target/pmd.xml
+        
+    - name: Comment on PR with violations
+      if: failure() && github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '⚠️ **Code Quality Issues Detected**\n\nPlease review the PMD and Checkstyle reports in the workflow artifacts.'
+          })
+
+  python-formatting:
+    name: Python Code Formatting
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install formatting tools
+      run: |
+        pip install black isort flake8 pylint mypy
+        
+    - name: Check code formatting with Black
+      id: black-check
+      run: black --check tools/ || echo "NEEDS_BLACK=true" >> $GITHUB_ENV
+      continue-on-error: true
+      
+    - name: Check import sorting with isort
+      id: isort-check
+      run: isort --check-only tools/ || echo "NEEDS_ISORT=true" >> $GITHUB_ENV
+      continue-on-error: true
+      
+    - name: Apply Black formatting
+      if: (env.NEEDS_BLACK == 'true' || env.NEEDS_ISORT == 'true') && github.event_name == 'pull_request'
+      run: |
+        black tools/
+        isort tools/
+        
+    - name: Commit formatted Python code
+      if: (env.NEEDS_BLACK == 'true' || env.NEEDS_ISORT == 'true') && github.event_name == 'pull_request'
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "style: Apply Black and isort formatting [automated]"
+        commit_user_name: github-actions[bot]
+        commit_user_email: github-actions[bot]@users.noreply.github.com
+        
+    - name: Run Flake8
+      run: flake8 tools/ --max-line-length=100 --ignore=E501,W503
+      continue-on-error: true
+      
+    - name: Run Pylint
+      run: pylint tools/**/*.py --disable=C0111,C0103
+      continue-on-error: true
+      
+    - name: Run mypy type checking
+      run: mypy tools/ --ignore-missing-imports
+      continue-on-error: true
+
+  yaml-json-formatting:
+    name: YAML and JSON Formatting
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install yamllint and prettier
+      run: |
+        sudo apt-get install yamllint -y
+        npm install -g prettier
+        
+    - name: Lint YAML files
+      run: |
+        find . -name "*.yml" -o -name "*.yaml" | xargs yamllint -c .yamllint || true
+        
+    - name: Format JSON files
+      run: |
+        find . -name "*.json" | xargs prettier --write
+        
+    - name: Commit formatted files
+      if: github.event_name == 'pull_request'
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "style: Format YAML and JSON files [automated]"
+        commit_user_name: github-actions[bot]
+        commit_user_email: github-actions[bot]@users.noreply.github.com
+
+  markdown-linting:
+    name: Markdown Linting
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Lint markdown files
+      uses: avto-dev/markdown-lint@v1
+      with:
+        args: '**/*.md'
+        ignore: 'node_modules'
+        
+    - name: Check markdown links
+      uses: gaurav-nelson/github-action-markdown-link-check@v1
+      with:
+        use-quiet-mode: 'yes'
+        config-file: '.github/markdown-link-check-config.json'

@@ -1,0 +1,272 @@
+name: Issue Automation and Management
+
+on:
+  issues:
+    types: [opened, edited, labeled, assigned]
+  issue_comment:
+    types: [created]
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  auto-label-issues:
+    name: Auto-label New Issues
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues' && github.event.action == 'opened'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Auto-label based on content
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const issue = context.payload.issue;
+          const title = issue.title.toLowerCase();
+          const body = (issue.body || '').toLowerCase();
+          const labels = [];
+          
+          // Categorize by keywords
+          if (title.includes('bug') || body.includes('bug') || body.includes('error')) {
+            labels.push('bug');
+          }
+          if (title.includes('feature') || title.includes('enhancement')) {
+            labels.push('enhancement');
+          }
+          if (title.includes('docs') || title.includes('documentation')) {
+            labels.push('documentation');
+          }
+          if (title.includes('federal') || body.includes('congress') || body.includes('govinfo')) {
+            labels.push('federal-data');
+          }
+          if (title.includes('database') || body.includes('postgres') || body.includes('sql')) {
+            labels.push('database');
+          }
+          if (title.includes('api') || body.includes('endpoint')) {
+            labels.push('api');
+          }
+          if (title.includes('security') || body.includes('vulnerability')) {
+            labels.push('security');
+          }
+          if (title.includes('performance') || body.includes('optimization')) {
+            labels.push('performance');
+          }
+          if (title.includes('test') || title.includes('testing')) {
+            labels.push('testing');
+          }
+          if (title.includes('ci') || title.includes('workflow') || body.includes('github actions')) {
+            labels.push('ci-cd');
+          }
+          
+          // Priority detection
+          if (title.includes('urgent') || title.includes('critical') || body.includes('production down')) {
+            labels.push('priority: critical');
+          } else if (title.includes('high priority')) {
+            labels.push('priority: high');
+          }
+          
+          if (labels.length > 0) {
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              labels: labels
+            });
+          }
+
+  auto-assign-issues:
+    name: Auto-assign Issues
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues' && github.event.action == 'opened'
+    
+    steps:
+    - name: Auto-assign based on labels
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const issue = context.payload.issue;
+          const labels = issue.labels.map(l => l.name);
+          
+          // Define team assignments
+          const assignments = {
+            'federal-data': ['cbwinslow'],
+            'database': ['cbwinslow'],
+            'api': ['cbwinslow'],
+            'security': ['cbwinslow']
+          };
+          
+          for (const [label, assignees] of Object.entries(assignments)) {
+            if (labels.includes(label)) {
+              await github.rest.issues.addAssignees({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                assignees: assignees
+              });
+              break;
+            }
+          }
+
+  create-linked-project-items:
+    name: Add Issues to Project Board
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues' && github.event.action == 'opened'
+    
+    steps:
+    - name: Add to project board
+      uses: actions/add-to-project@v0.5.0
+      with:
+        project-url: https://github.com/users/cbwinslow/projects/1
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  stale-issue-management:
+    name: Manage Stale Issues
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: Mark and close stale issues
+      uses: actions/stale@v9
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        stale-issue-message: |
+          This issue has been automatically marked as stale because it has not had 
+          recent activity. It will be closed if no further activity occurs. 
+          Thank you for your contributions.
+        close-issue-message: |
+          This issue has been automatically closed due to inactivity. 
+          Please reopen if this is still relevant.
+        days-before-stale: 60
+        days-before-close: 14
+        stale-issue-label: 'stale'
+        exempt-issue-labels: 'priority: critical,priority: high,in-progress'
+
+  issue-triage:
+    name: Triage and Categorize Issues
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues'
+    
+    steps:
+    - name: Add triage label
+      if: github.event.action == 'opened'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          await github.rest.issues.addLabels({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.payload.issue.number,
+            labels: ['needs-triage']
+          });
+          
+    - name: Create triage comment
+      if: github.event.action == 'opened'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const comment = `👋 Thanks for opening this issue!
+          
+          This issue has been automatically labeled and is pending triage.
+          
+          **Next Steps:**
+          - A maintainer will review and categorize this issue
+          - Additional labels and assignments will be added as needed
+          - You'll be notified of any updates
+          
+          **Resources:**
+          - [Contributing Guide](CONTRIBUTING.md)
+          - [Code of Conduct](CODE_OF_CONDUCT.md)
+          - [Documentation](docs/)
+          `;
+          
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.payload.issue.number,
+            body: comment
+          });
+
+  link-related-issues:
+    name: Link Related Issues
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues' && github.event.action == 'opened'
+    
+    steps:
+    - name: Find and link related issues
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const issue = context.payload.issue;
+          const keywords = issue.title.toLowerCase().split(' ');
+          
+          // Search for related issues
+          const { data: issues } = await github.rest.issues.listForRepo({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            state: 'open',
+            per_page: 100
+          });
+          
+          const related = issues.filter(i => {
+            if (i.number === issue.number) return false;
+            const otherTitle = i.title.toLowerCase();
+            return keywords.some(kw => kw.length > 3 && otherTitle.includes(kw));
+          }).slice(0, 5);
+          
+          if (related.length > 0) {
+            const links = related.map(i => `- #${i.number}: ${i.title}`).join('\n');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: `🔗 **Related Issues:**\n${links}`
+            });
+          }
+
+  create-milestone-from-label:
+    name: Create Milestones for Major Features
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues' && contains(github.event.issue.labels.*.name, 'epic')
+    
+    steps:
+    - name: Create milestone
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const issue = context.payload.issue;
+          
+          try {
+            // Create milestone based on the issue
+            const milestone = await github.rest.issues.createMilestone({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: issue.title,
+              description: `Epic: ${issue.title}\n\nTracking issue: #${issue.number}`,
+              due_on: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString() // 90 days
+            });
+            
+            // Add milestone to the issue
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              milestone: milestone.data.number
+            });
+            
+            // Comment about milestone creation
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: `📌 Created milestone: [${milestone.data.title}](${milestone.data.html_url})`
+            });
+          } catch (error) {
+            console.log('Milestone may already exist or error occurred:', error.message);
+          }
