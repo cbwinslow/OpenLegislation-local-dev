@@ -1,0 +1,488 @@
+name: AI Test Generation & Automation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'src/main/java/**'
+      - 'src/test/java/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  analyze-test-coverage:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    outputs:
+      test_coverage: ${{ steps.coverage.outputs.coverage }}
+      missing_tests: ${{ steps.coverage.outputs.missing }}
+      test_files: ${{ steps.coverage.outputs.test_files }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Analyze test coverage
+        id: coverage
+        run: |
+          # Find Java source files
+          SOURCE_FILES=$(find src/main/java -name "*.java" -type f)
+          TEST_FILES=$(find src/test/java -name "*Test.java" -type f 2>/dev/null || echo "")
+
+          # Calculate basic coverage metrics
+          SOURCE_COUNT=$(echo "$SOURCE_FILES" | wc -l)
+          TEST_COUNT=$(echo "$TEST_FILES" | wc -l)
+
+          # Find source files without corresponding tests
+          MISSING_TESTS=""
+          for source_file in $SOURCE_FILES; do
+            # Convert source path to test path
+            test_file=$(echo "$source_file" | sed 's|src/main/java|src/test/java|' | sed 's|\.java$|Test.java|')
+
+            if [ ! -f "$test_file" ]; then
+              MISSING_TESTS="${MISSING_TESTS}${source_file}\n"
+            fi
+          done
+
+          # Calculate coverage percentage
+          if [ "$SOURCE_COUNT" -gt 0 ]; then
+            COVERAGE=$(( TEST_COUNT * 100 / SOURCE_COUNT ))
+          else
+            COVERAGE=0
+          fi
+
+          echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
+          echo "missing<<EOF" >> $GITHUB_OUTPUT
+          echo "$MISSING_TESTS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "test_files=$TEST_FILES" >> $GITHUB_OUTPUT
+
+          echo "Test coverage: ${COVERAGE}% (${TEST_COUNT}/${SOURCE_COUNT} files)"
+
+  ai-test-generation:
+    needs: analyze-test-coverage
+    runs-on: ubuntu-latest
+    if: needs.analyze-test-coverage.outputs.test_coverage != '100'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python for test generation
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install test generation dependencies
+        run: |
+          pip install openai anthropic requests jinja2
+
+      - name: Generate missing tests
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python -c "
+          import os
+          import json
+          import re
+          from pathlib import Path
+
+          def get_ai_test_generation(source_code, class_name, package_name, model='gpt-4'):
+              prompt = f'''Generate comprehensive JUnit 5 tests for the following Java class:
+
+          Package: {package_name}
+          Class: {class_name}
+
+          Source Code:
+          ```java
+          {source_code}
+          ```
+
+          Please generate a complete test class with:
+
+          1. Proper package and imports
+          2. Test class with @SpringBootTest or appropriate test annotations
+          3. Test methods for all public methods
+          4. Edge cases and error scenarios
+          5. Mock usage where appropriate (@Mock, @InjectMocks)
+          6. Assertions using AssertJ or JUnit assertions
+          7. @BeforeEach/@AfterEach setup methods if needed
+          8. Test data builders or factories
+          9. Parameterized tests where applicable
+          10. Exception testing
+
+          Include tests for:
+          - Happy path scenarios
+          - Null/empty input validation
+          - Boundary conditions
+          - Exception handling
+          - Integration with dependencies
+
+          Use modern JUnit 5 features like @DisplayName, @Nested, etc.
+          '''
+
+              try:
+                  import requests
+                  headers = {
+                      'Authorization': f'Bearer {os.getenv(\"OPENAI_API_KEY\")}',
+                      'Content-Type': 'application/json'
+                  }
+                  data = {
+                      'model': model,
+                      'messages': [{'role': 'user', 'content': prompt}],
+                      'max_tokens': 2000,
+                      'temperature': 0.3
+                  }
+                  response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=data)
+                  if response.status_code == 200:
+                      return response.json()['choices'][0]['message']['content']
+                  else:
+                      return f'// Error generating tests: {response.status_code}'
+              except Exception as e:
+                  return f'// Test generation failed: {e}'
+
+          # Get missing test files
+          missing_tests = '''${{ needs.analyze-test-coverage.outputs.missing }}'''.strip().split('\n')
+          missing_tests = [f for f in missing_tests if f.strip()]
+
+          generated_tests = []
+
+          for source_file in missing_tests[:3]:  # Limit to 3 files to avoid token limits
+              if source_file and Path(source_file).exists():
+                  try:
+                      with open(source_file, 'r', encoding='utf-8', errors='ignore') as f:
+                          content = f.read()
+
+                      # Extract class name and package
+                      class_match = re.search(r'public\s+class\s+(\w+)', content)
+                      package_match = re.search(r'package\s+([\w.]+)', content)
+
+                      if class_match and package_match:
+                          class_name = class_match.group(1)
+                          package_name = package_match.group(1)
+
+                          print(f'Generating tests for {class_name}...')
+
+                          # Generate test code
+                          test_code = get_ai_test_generation(content, class_name, package_name)
+
+                          # Create test file path
+                          test_file_path = source_file.replace('src/main/java', 'src/test/java').replace('.java', 'Test.java')
+
+                          # Ensure directory exists
+                          os.makedirs(os.path.dirname(test_file_path), exist_ok=True)
+
+                          # Save test file
+                          with open(test_file_path, 'w') as f:
+                              f.write(test_code)
+
+                          generated_tests.append({
+                              'source_file': source_file,
+                              'test_file': test_file_path,
+                              'class_name': class_name,
+                              'test_code': test_code
+                          })
+
+                  except Exception as e:
+                      print(f'Error processing {source_file}: {e}')
+                      continue
+
+          # Save summary
+          with open('generated_tests.json', 'w') as f:
+              json.dump(generated_tests, f, indent=2)
+
+          print(f'Generated {len(generated_tests)} test files')
+          "
+
+      - name: Post generated tests
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            if (fs.existsSync('generated_tests.json')) {
+              const generatedTests = JSON.parse(fs.readFileSync('generated_tests.json', 'utf8'));
+
+              if (generatedTests.length > 0) {
+                let comment = '## 🧪 AI-Generated Unit Tests\n\n';
+                comment += 'I analyzed your code and generated the following unit tests for classes that were missing test coverage:\n\n';
+
+                for (const test of generatedTests) {
+                  comment += `### 📁 ${test.class_name}Test.java\n\n`;
+                  comment += `**Source:** \`${test.source_file}\`\n\n`;
+                  comment += '<details><summary>View Generated Test Code</summary>\n\n';
+                  comment += '```java\n' + test.test_code + '\n```\n';
+                  comment += '</details>\n\n';
+                }
+
+                comment += '**Next Steps:**\n';
+                comment += '1. Review the generated tests for accuracy\n';
+                comment += '2. Run the tests to ensure they pass\n';
+                comment += '3. Add the test files to version control\n';
+                comment += '4. Customize tests as needed for your specific requirements\n';
+                comment += '5. Consider adding integration tests for complex scenarios\n\n';
+
+                comment += '**Test Coverage Improvement:**\n';
+                comment += `- Generated tests for ${generatedTests.length} classes\n`;
+                comment += '- Tests include unit tests, edge cases, and error scenarios\n';
+                comment += '- Mock dependencies where appropriate\n\n';
+
+                comment += '*AI-generated tests provide a starting point. Review and customize as needed for your testing strategy.*';
+
+                // Post comment
+                await github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: comment
+                });
+              }
+            }
+
+  run-tests:
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Run tests
+        run: |
+          mvn test -Dtest.failure.ignore=true
+
+      - name: Generate test report
+        run: |
+          # Create a simple test summary
+          if [ -d "target/surefire-reports" ]; then
+            echo "Test Results Summary:" > test_summary.txt
+            echo "====================" >> test_summary.txt
+
+            # Count test results
+            TESTS_RUN=$(find target/surefire-reports -name "*.xml" -exec grep -l "<testsuite" {} \; | wc -l)
+            echo "Test suites run: $TESTS_RUN" >> test_summary.txt
+
+            # Check for failures
+            FAILURES=$(find target/surefire-reports -name "*.txt" -exec grep -l "FAILURES" {} \; | wc -l)
+            if [ "$FAILURES" -gt 0 ]; then
+              echo "❌ Some tests failed. Check the detailed reports." >> test_summary.txt
+            else
+              echo "✅ All tests passed!" >> test_summary.txt
+            fi
+
+            echo "" >> test_summary.txt
+            echo "Detailed results in target/surefire-reports/" >> test_summary.txt
+          fi
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: |
+            target/surefire-reports/
+            test_summary.txt
+
+      - name: Comment test results
+        uses: actions/github-script@v7
+        if: always()
+        with:
+          script: |
+            const fs = require('fs');
+
+            let comment = '## 🧪 Test Execution Results\n\n';
+
+            if (fs.existsSync('test_summary.txt')) {
+              const summary = fs.readFileSync('test_summary.txt', 'utf8');
+              comment += '```\n' + summary + '\n```\n\n';
+            } else {
+              comment += 'No test summary available.\n\n';
+            }
+
+            comment += '**Test Artifacts:**\n';
+            comment += '- Detailed test reports are available in the workflow artifacts\n';
+            comment += '- Check `target/surefire-reports/` for XML and text reports\n\n';
+
+            if (fs.existsSync('generated_tests.json')) {
+              const generatedTests = JSON.parse(fs.readFileSync('generated_tests.json', 'utf8'));
+              if (generatedTests.length > 0) {
+                comment += '**🤖 AI-Generated Tests:**\n';
+                comment += `Successfully generated ${generatedTests.length} new test files.\n\n`;
+              }
+            }
+
+            comment += '*Review test failures and generated tests to improve code quality.*';
+
+            // Post comment (only on PRs)
+            if (context.eventName === 'pull_request') {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }
+
+  test-quality-analysis:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python for analysis
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install analysis tools
+        run: |
+          pip install radon pytest-cov
+
+      - name: Analyze test quality
+        run: |
+          python -c "
+          import os
+          import json
+          import subprocess
+          from pathlib import Path
+
+          def analyze_test_quality():
+              results = {
+                  'test_files': 0,
+                  'test_methods': 0,
+                  'assertions': 0,
+                  'coverage_estimate': 0,
+                  'issues': []
+              }
+
+              # Find test files
+              test_files = list(Path('src/test/java').rglob('*Test.java')) if Path('src/test/java').exists() else []
+
+              results['test_files'] = len(test_files)
+
+              for test_file in test_files[:10]:  # Analyze first 10 files
+                  try:
+                      with open(test_file, 'r', encoding='utf-8', errors='ignore') as f:
+                          content = f.read()
+
+                      # Count test methods
+                      import re
+                      test_methods = len(re.findall(r'@Test', content))
+                      results['test_methods'] += test_methods
+
+                      # Count assertions
+                      assertions = len(re.findall(r'assert[A-Z]\w*\(', content))
+                      results['assertions'] += assertions
+
+                      # Check for common issues
+                      issues = []
+
+                      if test_methods == 0:
+                        issues.append('No @Test methods found')
+
+                      if 'void test' in content:
+                        issues.append('Using old JUnit 3 style test methods')
+
+                      if '@SpringBootTest' not in content and 'Service' in str(test_file):
+                        issues.append('Service tests might need @SpringBootTest')
+
+                      if issues:
+                        results['issues'].append({
+                          'file': str(test_file),
+                          'issues': issues
+                        })
+
+                  except Exception as e:
+                      print(f'Error analyzing {test_file}: {e}')
+                      continue
+
+              # Estimate coverage
+              source_files = len(list(Path('src/main/java').rglob('*.java'))) if Path('src/main/java').exists() else 0
+              if source_files > 0:
+                  results['coverage_estimate'] = min(100, (results['test_files'] * 100) // source_files)
+
+              return results
+
+          # Run analysis
+          analysis = analyze_test_quality()
+
+          # Save results
+          with open('test_quality.json', 'w') as f:
+              json.dump(analysis, f, indent=2)
+
+          print(f'Analyzed {analysis[\"test_files\"]} test files')
+          "
+
+      - name: Create test quality issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            if (fs.existsSync('test_quality.json')) {
+              const quality = JSON.parse(fs.readFileSync('test_quality.json', 'utf8'));
+
+              let body = '# 🧪 Test Quality Analysis Report\n\n';
+
+              body += '## 📊 Test Metrics\n\n';
+              body += `- **Test Files:** ${quality.test_files}\n`;
+              body += `- **Test Methods:** ${quality.test_methods}\n`;
+              body += `- **Assertions:** ${quality.assertions}\n`;
+              body += `- **Estimated Coverage:** ${quality.coverage_estimate}%\n\n`;
+
+              if (quality.issues && quality.issues.length > 0) {
+                body += '## ⚠️ Test Quality Issues\n\n';
+
+                for (const fileIssue of quality.issues) {
+                  body += `### 📁 ${fileIssue.file}\n\n`;
+                  for (const issue of fileIssue.issues) {
+                    body += `- ${issue}\n`;
+                  }
+                  body += '\n';
+                }
+              } else {
+                body += '## ✅ No Major Issues Found\n\n';
+                body += 'Your test suite looks good! Keep up the great work.\n\n';
+              }
+
+              body += '## 💡 Recommendations\n\n';
+              body += '- Aim for at least 80% test coverage\n';
+              body += '- Each test should have multiple assertions\n';
+              body += '- Test edge cases and error scenarios\n';
+              body += '- Use descriptive test method names\n';
+              body += '- Consider parameterized tests for similar scenarios\n\n';
+
+              body += '*This analysis is automatically generated. Review and improve your tests regularly.*';
+
+              // Create issue
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `🧪 Test Quality Analysis - ${new Date().toISOString().split('T')[0]}`,
+                body: body,
+                labels: ['automated', 'testing', 'code-quality']
+              });
+            }

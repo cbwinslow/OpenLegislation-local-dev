@@ -1,0 +1,486 @@
+name: AI Automation Dashboard & Monitoring
+
+on:
+  schedule:
+    # Run daily at 6 AM UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      report_type:
+        description: 'Type of report to generate'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - summary
+          - issues-only
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  collect-ai-activity-data:
+    runs-on: ubuntu-latest
+
+    outputs:
+      ai_activity_summary: ${{ steps.collect.outputs.summary }}
+      ai_metrics: ${{ steps.collect.outputs.metrics }}
+      ai_issues_count: ${{ steps.collect.outputs.issues_count }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Collect AI activity data
+        id: collect
+        run: |
+          # Get recent workflow runs
+          echo "Collecting AI workflow activity..."
+
+          # Get workflow runs from the last 30 days
+          WORKFLOW_RUNS=$(gh run list --limit 100 --json status,conclusion,createdAt,updatedAt,workflowName | jq -r '.[] | select(.workflowName | contains("AI"))')
+
+          # Count successful AI workflow runs
+          SUCCESSFUL_RUNS=$(echo "$WORKFLOW_RUNS" | jq -r 'select(.status == "completed" and .conclusion == "success") | .workflowName' | wc -l)
+
+          # Count failed AI workflow runs
+          FAILED_RUNS=$(echo "$WORKFLOW_RUNS" | jq -r 'select(.status == "completed" and .conclusion == "failure") | .workflowName' | wc -l)
+
+          # Get recent AI-generated issues
+          AI_ISSUES=$(gh issue list --limit 50 --json title,createdAt,labels | jq -r '.[] | select(.title | contains("AI") or .title | contains("🤖") or .title | contains("🧪") or .title | contains("🔧"))')
+
+          # Count AI-generated issues
+          ISSUES_COUNT=$(echo "$AI_ISSUES" | jq -r '.title' | wc -l)
+
+          # Get recent AI comments on PRs
+          AI_COMMENTS=$(gh pr list --limit 20 --json comments | jq -r '.[] | select(.comments[]?.body | contains("🤖") or contains("AI") or contains("generated"))')
+
+          # Calculate metrics
+          TOTAL_AI_ACTIVITIES=$((SUCCESSFUL_RUNS + FAILED_RUNS + ISSUES_COUNT))
+
+          # Create summary
+          SUMMARY="AI Automation Activity (Last 30 days):"
+          SUMMARY="${SUMMARY}\n- Successful AI workflow runs: $SUCCESSFUL_RUNS"
+          SUMMARY="${SUMMARY}\n- Failed AI workflow runs: $FAILED_RUNS"
+          SUMMARY="${SUMMARY}\n- AI-generated issues/reports: $ISSUES_COUNT"
+          SUMMARY="${SUMMARY}\n- Total AI activities: $TOTAL_AI_ACTIVITIES"
+
+          # Create metrics JSON
+          METRICS="{
+            \"successful_runs\": $SUCCESSFUL_RUNS,
+            \"failed_runs\": $FAILED_RUNS,
+            \"ai_issues\": $ISSUES_COUNT,
+            \"total_activities\": $TOTAL_AI_ACTIVITIES,
+            \"workflows\": [
+              \"ai-code-completion.yml\",
+              \"ai-code-refactoring.yml\",
+              \"ai-test-generation.yml\",
+              \"ai-code-generation.yml\"
+            ]
+          }"
+
+          echo "summary<<EOF" >> $GITHUB_OUTPUT
+          echo "$SUMMARY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          echo "metrics=$METRICS" >> $GITHUB_OUTPUT
+          echo "issues_count=$ISSUES_COUNT" >> $GITHUB_OUTPUT
+
+  generate-ai-dashboard:
+    needs: collect-ai-activity-data
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python for dashboard generation
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dashboard dependencies
+        run: |
+          pip install requests jinja2
+
+      - name: Generate AI automation dashboard
+        env:
+          AI_METRICS: ${{ needs.collect-ai-activity-data.outputs.ai_metrics }}
+        run: |
+          python -c "
+          import os
+          import json
+          from datetime import datetime, timedelta
+          from jinja2 import Template
+
+          # Get metrics
+          metrics = json.loads(os.getenv('AI_METRICS', '{}'))
+
+          # Generate dashboard HTML
+          dashboard_template = '''
+          <!DOCTYPE html>
+          <html lang=\"en\">
+          <head>
+              <meta charset=\"UTF-8\">
+              <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+              <title>AI Automation Dashboard</title>
+              <style>
+                  body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+                  .dashboard { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                  .header { text-align: center; border-bottom: 2px solid #007acc; padding-bottom: 20px; margin-bottom: 30px; }
+                  .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+                  .metric-card { background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #007acc; }
+                  .metric-title { font-size: 14px; color: #666; margin-bottom: 5px; }
+                  .metric-value { font-size: 32px; font-weight: bold; color: #007acc; }
+                  .workflows { margin-bottom: 30px; }
+                  .workflow-item { background: #f8f9fa; padding: 15px; margin-bottom: 10px; border-radius: 6px; }
+                  .status-success { color: #28a745; }
+                  .status-failure { color: #dc3545; }
+                  .recommendations { background: #e7f3ff; padding: 20px; border-radius: 8px; border-left: 4px solid #007acc; }
+                  .recommendations h3 { margin-top: 0; color: #007acc; }
+                  .footer { text-align: center; color: #666; font-size: 12px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
+              </style>
+          </head>
+          <body>
+              <div class=\"dashboard\">
+                  <div class=\"header\">
+                      <h1>🤖 AI Automation Dashboard</h1>
+                      <p>Generated on {{ generation_date }}</p>
+                      <p>Monitoring AI-powered development workflows</p>
+                  </div>
+
+                  <div class=\"metrics-grid\">
+                      <div class=\"metric-card\">
+                          <div class=\"metric-title\">Successful AI Runs</div>
+                          <div class=\"metric-value\">{{ metrics.successful_runs }}</div>
+                      </div>
+                      <div class=\"metric-card\">
+                          <div class=\"metric-title\">Failed AI Runs</div>
+                          <div class=\"metric-value\">{{ metrics.failed_runs }}</div>
+                      </div>
+                      <div class=\"metric-card\">
+                          <div class=\"metric-title\">AI-Generated Issues</div>
+                          <div class=\"metric-value\">{{ metrics.ai_issues }}</div>
+                      </div>
+                      <div class=\"metric-card\">
+                          <div class=\"metric-title\">Total AI Activities</div>
+                          <div class=\"metric-value\">{{ metrics.total_activities }}</div>
+                      </div>
+                  </div>
+
+                  <div class=\"workflows\">
+                      <h2>🔄 Active AI Workflows</h2>
+                      {% for workflow in metrics.workflows %}
+                      <div class=\"workflow-item\">
+                          <strong>{{ workflow }}</strong>
+                          <span style=\"float: right;\">
+                              {% if metrics.successful_runs > metrics.failed_runs %}
+                                  <span class=\"status-success\">● Active</span>
+                              {% else %}
+                                  <span class=\"status-failure\">● Needs Attention</span>
+                              {% endif %}
+                          </span>
+                          <br>
+                          <small>Automated AI workflow for code analysis and generation</small>
+                      </div>
+                      {% endfor %}
+                  </div>
+
+                  <div class=\"recommendations\">
+                      <h3>💡 Recommendations</h3>
+                      <ul>
+                          {% if metrics.failed_runs > 0 %}
+                          <li><strong>Review Failed Runs:</strong> {{ metrics.failed_runs }} AI workflows failed. Check logs and fix issues.</li>
+                          {% endif %}
+                          {% if metrics.successful_runs < 5 %}
+                          <li><strong>Increase AI Activity:</strong> Consider triggering more AI workflows for better code coverage.</li>
+                          {% endif %}
+                          {% if metrics.ai_issues < 3 %}
+                          <li><strong>Monitor Issues:</strong> AI-generated issues help track improvements. Ensure workflows are creating actionable issues.</li>
+                          {% endif %}
+                          <li><strong>Review AI Suggestions:</strong> Check PR comments for AI-generated code suggestions and apply relevant ones.</li>
+                          <li><strong>Update AI Prompts:</strong> Regularly review and improve AI prompts for better results.</li>
+                          <li><strong>Monitor Token Usage:</strong> Keep track of AI API usage to manage costs effectively.</li>
+                      </ul>
+                  </div>
+
+                  <div class=\"footer\">
+                      <p>This dashboard is automatically generated by GitHub Actions.</p>
+                      <p>Last updated: {{ generation_date }}</p>
+                  </div>
+              </div>
+          </body>
+          </html>
+          '''
+
+          template = Template(dashboard_template)
+          dashboard_html = template.render(
+              generation_date=datetime.now().strftime('%Y-%m-%d %H:%M UTC'),
+              metrics=metrics
+          )
+
+          # Save dashboard
+          with open('ai-dashboard.html', 'w') as f:
+              f.write(dashboard_html)
+
+          print('Generated AI automation dashboard')
+          "
+
+      - name: Upload dashboard
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-dashboard
+          path: ai-dashboard.html
+
+  create-dashboard-issue:
+    needs: [collect-ai-activity-data, generate-ai-dashboard]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event.inputs.report_type != 'issues-only'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download dashboard artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ai-dashboard
+
+      - name: Create or update dashboard issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            // Read dashboard HTML
+            const dashboardHtml = fs.readFileSync('ai-dashboard.html', 'utf8');
+
+            // Get metrics
+            const metrics = JSON.parse('${{ needs.collect-ai-activity-data.outputs.ai_metrics }}');
+
+            let body = '# 🤖 AI Automation Dashboard\n\n';
+            body += '## 📊 Key Metrics (Last 30 Days)\n\n';
+            body += `| Metric | Value |\n`;
+            body += `|--------|-------|\n`;
+            body += `| Successful AI Runs | ${metrics.successful_runs} |\n`;
+            body += `| Failed AI Runs | ${metrics.failed_runs} |\n`;
+            body += `| AI-Generated Issues | ${metrics.ai_issues} |\n`;
+            body += `| Total AI Activities | ${metrics.total_activities} |\n\n`;
+
+            body += '## 🔄 Active AI Workflows\n\n';
+            for (const workflow of metrics.workflows) {
+              const status = metrics.successful_runs > metrics.failed_runs ? '✅ Active' : '⚠️ Needs Attention';
+              body += `- **${workflow}** - ${status}\n`;
+            }
+            body += '\n';
+
+            body += '## 📈 Dashboard\n\n';
+            body += '<details><summary>View Full Dashboard</summary>\n\n';
+            body += '```html\n' + dashboardHtml.substring(0, 5000) + '\n```\n';
+            body += '</details>\n\n';
+
+            body += '## 💡 Recommendations\n\n';
+            if (metrics.failed_runs > 0) {
+              body += `- 🚨 **Review Failed Runs:** ${metrics.failed_runs} AI workflows failed. Check logs and fix issues.\n`;
+            }
+            if (metrics.successful_runs < 5) {
+              body += `- 📈 **Increase AI Activity:** Consider triggering more AI workflows for better code coverage.\n`;
+            }
+            if (metrics.ai_issues < 3) {
+              body += `- 📋 **Monitor Issues:** AI-generated issues help track improvements. Ensure workflows are creating actionable issues.\n`;
+            }
+            body += `- 🔍 **Review AI Suggestions:** Check PR comments for AI-generated code suggestions and apply relevant ones.\n`;
+            body += `- 🔧 **Update AI Prompts:** Regularly review and improve AI prompts for better results.\n';
+            body += `- 💰 **Monitor Token Usage:** Keep track of AI API usage to manage costs effectively.\n\n';
+
+            body += '---\n\n';
+            body += '*This dashboard is automatically generated. Full HTML version available in workflow artifacts.*';
+
+            // Check if dashboard issue already exists
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['ai-dashboard', 'automated'],
+              state: 'open'
+            });
+
+            if (issues.data.length > 0) {
+              // Update existing issue
+              await github.rest.issues.update({
+                issue_number: issues.data[0].number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `🤖 AI Automation Dashboard - ${new Date().toISOString().split('T')[0]}`,
+                body: body
+              });
+            } else {
+              // Create new issue
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `🤖 AI Automation Dashboard - ${new Date().toISOString().split('T')[0]}`,
+                body: body,
+                labels: ['ai-dashboard', 'automated', 'monitoring']
+              });
+            }
+
+  ai-health-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python for health check
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install health check dependencies
+        run: |
+          pip install requests
+
+      - name: Perform AI system health check
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python -c "
+          import os
+          import json
+          import requests
+          from datetime import datetime
+
+          def check_ai_service(name, api_key_env, test_url, headers_func):
+              if not os.getenv(api_key_env):
+                  return {'status': 'missing_key', 'error': f'{api_key_env} not configured'}
+
+              try:
+                  headers = headers_func(os.getenv(api_key_env))
+                  response = requests.get(test_url, headers=headers, timeout=10)
+
+                  if response.status_code in [200, 401, 403]:  # 401/403 means key works but no permission
+                      return {'status': 'healthy', 'response_time': response.elapsed.total_seconds()}
+                  else:
+                      return {'status': 'unhealthy', 'error': f'HTTP {response.status_code}'}
+              except Exception as e:
+                  return {'status': 'error', 'error': str(e)}
+
+          # Check OpenAI
+          openai_status = check_ai_service(
+              'OpenAI',
+              'OPENAI_API_KEY',
+              'https://api.openai.com/v1/models',
+              lambda key: {'Authorization': f'Bearer {key}'}
+          )
+
+          # Check Anthropic (if configured)
+          anthropic_status = {'status': 'not_configured'}
+          if os.getenv('ANTHROPIC_API_KEY'):
+              anthropic_status = check_ai_service(
+                  'Anthropic',
+                  'ANTHROPIC_API_KEY',
+                  'https://api.anthropic.com/v1/messages',
+                  lambda key: {'x-api-key': key, 'anthropic-version': '2023-06-01'}
+              )
+
+          # Check workflow configurations
+          workflow_checks = {}
+          workflow_files = [
+              '.github/workflows/ai-code-completion.yml',
+              '.github/workflows/ai-code-refactoring.yml',
+              '.github/workflows/ai-test-generation.yml',
+              '.github/workflows/ai-code-generation.yml'
+          ]
+
+          for wf_file in workflow_files:
+              if os.path.exists(wf_file):
+                  workflow_checks[wf_file] = {'status': 'present'}
+              else:
+                  workflow_checks[wf_file] = {'status': 'missing'}
+
+          # Overall health
+          services_healthy = sum(1 for s in [openai_status, anthropic_status] if s['status'] in ['healthy', 'not_configured'])
+          workflows_present = sum(1 for w in workflow_checks.values() if w['status'] == 'present')
+
+          overall_status = 'healthy' if services_healthy >= 1 and workflows_present == len(workflow_files) else 'degraded'
+
+          health_report = {
+              'timestamp': datetime.now().isoformat(),
+              'overall_status': overall_status,
+              'services': {
+                  'openai': openai_status,
+                  'anthropic': anthropic_status
+              },
+              'workflows': workflow_checks,
+              'recommendations': []
+          }
+
+          # Generate recommendations
+          if openai_status['status'] != 'healthy':
+              health_report['recommendations'].append('Check OpenAI API key configuration')
+          if anthropic_status['status'] == 'not_configured':
+              health_report['recommendations'].append('Consider configuring Anthropic API for additional AI capabilities')
+          if workflows_present < len(workflow_files):
+              health_report['recommendations'].append('Some AI workflows are missing - check .github/workflows/')
+
+          # Save health report
+          with open('ai-health-report.json', 'w') as f:
+              json.dump(health_report, f, indent=2)
+
+          print(f'AI Health Check: {overall_status.upper()}')
+          "
+
+      - name: Create health check issue if needed
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            if (fs.existsSync('ai-health-report.json')) {
+              const health = JSON.parse(fs.readFileSync('ai-health-report.json', 'utf8'));
+
+              // Only create issue if there are problems
+              if (health.overall_status !== 'healthy' || health.recommendations.length > 0) {
+                let body = '# 🚨 AI System Health Check\n\n';
+
+                body += `**Status:** ${health.overall_status.toUpperCase()}\n\n`;
+                body += `**Timestamp:** ${health.timestamp}\n\n`;
+
+                body += '## 🔗 AI Services\n\n';
+                for (const [service, status] of Object.entries(health.services)) {
+                  const icon = status.status === 'healthy' ? '✅' : status.status === 'not_configured' ? '⚪' : '❌';
+                  body += `${icon} **${service.toUpperCase()}:** ${status.status}\n`;
+                  if (status.error) body += `   - Error: ${status.error}\n`;
+                  if (status.response_time) body += `   - Response time: ${status.response_time}s\n`;
+                }
+                body += '\n';
+
+                body += '## 🔄 AI Workflows\n\n';
+                for (const [workflow, status] of Object.entries(health.workflows)) {
+                  const icon = status.status === 'present' ? '✅' : '❌';
+                  body += `${icon} **${workflow}:** ${status.status}\n`;
+                }
+                body += '\n';
+
+                if (health.recommendations.length > 0) {
+                  body += '## 💡 Recommendations\n\n';
+                  for (const rec of health.recommendations) {
+                    body += `- ${rec}\n`;
+                  }
+                  body += '\n';
+                }
+
+                body += '*This health check is automatically generated. Address any issues to ensure AI automation works properly.*';
+
+                // Create issue
+                await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: `🚨 AI System Health Check - ${health.overall_status.toUpperCase()}`,
+                  body: body,
+                  labels: ['ai-health', 'automated', 'alert']
+                });
+              }
+            }

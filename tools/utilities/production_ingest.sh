@@ -7,7 +7,7 @@
 set -e
 
 # Configuration - Modify these for your environment
-CONGRESS_RANGE=${CONGRESS_RANGE:-"93-119"}  # Full historical range
+CONGRESS_RANGE=${CONGRESS_RANGE:-"1-119"}  # ALL historical data from Congress 1 (1789) to current
 COLLECTIONS=${COLLECTIONS:-"BILLS BILLSTATUS BILLSUM"}
 SESSIONS=${SESSIONS:-"1 2"}
 OUTPUT_BASE=${OUTPUT_BASE:-"/data/govinfo_bulk"}  # Large storage location
