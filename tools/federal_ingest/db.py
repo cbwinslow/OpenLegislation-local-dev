@@ -18,6 +18,15 @@ from .schema import TABLE_MAP
 
 
 def create_db_engine(override_url: str | None = None) -> Engine:
+    """
+    Create a SQLAlchemy Engine for the application's database connection.
+    
+    Parameters:
+        override_url (str | None): Optional database URL to use instead of settings or the default connection string.
+    
+    Returns:
+        Engine: A SQLAlchemy Engine configured with the future API for the resolved database URL.
+    """
     settings = get_settings()
     url = override_url or settings.database_url or get_connection_string()
     return create_engine(url, future=True)
@@ -25,6 +34,12 @@ def create_db_engine(override_url: str | None = None) -> Engine:
 
 @contextmanager
 def session_scope(engine: Engine) -> Iterator[Session]:
+    """
+    Provide a transactional SQLAlchemy session bound to the given engine, committing on successful exit, rolling back on exception, and always closing the session.
+    
+    Returns:
+        session (Session): A SQLAlchemy session bound to the provided engine; committed on normal exit, rolled back if an exception occurs, and closed on exit.
+    """
     SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
     session = SessionLocal()
     try:
@@ -38,6 +53,21 @@ def session_scope(engine: Engine) -> Iterator[Session]:
 
 
 def upsert_normalized_records(session: Session, records: Iterable[NormalizedRecord]) -> Dict[str, int]:
+    """
+    Upserts multiple normalized records into their corresponding database tables, grouping rows by their target table and applying per-table conflict resolution using each record's unique key columns.
+    
+    Parameters:
+        records (Iterable[NormalizedRecord]): Iterable of records where each record must include:
+            - "table": target table name (str)
+            - "data": dict mapping column names to values for insertion
+            - "unique_columns": sequence of column names that form the conflict key for upsert
+    
+    Returns:
+        Dict[str, int]: Mapping from table name to the number of rows processed for that table.
+    
+    Raises:
+        KeyError: If a record references a table name not present in TABLE_MAP.
+    """
     grouped: Dict[str, List[Dict]] = defaultdict(list)
     unique_columns: Dict[str, Sequence[str]] = {}
     for record in records:

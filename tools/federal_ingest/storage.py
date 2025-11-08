@@ -14,7 +14,7 @@ from .normalization import NormalizedRecord
 logger = logging.getLogger(__name__)
 
 
-def _json_default(value: Any) -> Any:
+
     if isinstance(value, (datetime, date)):
         return value.isoformat()
     if isinstance(value, set):
@@ -23,7 +23,19 @@ def _json_default(value: Any) -> Any:
 
 
 def export_records(export_path: Path, records: Iterable[NormalizedRecord]) -> int:
-    """Write normalized records to a JSON Lines file."""
+    """
+    Write an iterable of NormalizedRecord objects to a JSON Lines file.
+    
+    Each input record is written as one JSON object per line with the keys:
+    `table` (table name), `unique_columns` (list), and `data` (record payload).
+    
+    Parameters:
+        export_path (Path): Destination file path to write the JSON Lines output. Parent directories will be created if missing.
+        records (Iterable[NormalizedRecord]): Iterable of normalized records to export.
+    
+    Returns:
+        int: Number of records written to the file.
+    """
 
     export_path.parent.mkdir(parents=True, exist_ok=True)
     count = 0
@@ -41,7 +53,20 @@ def export_records(export_path: Path, records: Iterable[NormalizedRecord]) -> in
 
 
 def download_resource(url: str, destination_dir: Path, *, session: requests.Session | None = None) -> Path:
-    """Download a resource to the destination directory, returning the file path."""
+    """
+    Download a resource from a URL into the destination directory and save it as a local file.
+    
+    Parameters:
+        url (str): The HTTP(S) URL of the resource to download.
+        destination_dir (Path): Directory where the file will be saved; created if it does not exist.
+        session (requests.Session | None): Optional requests Session to use for the request. If omitted, a temporary session is created and closed by this function; a provided session will not be closed.
+    
+    Returns:
+        Path: The path to the downloaded file on disk. If a file with the same name already exists in destination_dir, that path is returned without downloading.
+    
+    Raises:
+        requests.HTTPError: If the HTTP response contains an error status.
+    """
 
     destination_dir.mkdir(parents=True, exist_ok=True)
     local_name = url.split("/")[-1]
