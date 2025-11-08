@@ -5,11 +5,12 @@ This document consolidates all project tasks, microgoals, and completion criteri
 ## 🎯 Project Vision & Strategic Goals
 
 ### Primary Objectives
-1. **Democratize Legislative Data** - Provide free, open access to NY State and federal legislative information
-2. **Real-time Data Processing** - Parse and redistribute legislative updates in real-time from LBDC and federal sources
+1. **Democratize Legislative Data** - Provide free, open access to NY State, federal, and state-level legislative information
+2. **Multi-Source Data Integration** - Aggregate and harmonize data from LBDC, GovInfo.gov, API.congress.gov, and OpenStates
 3. **AI-Enhanced Analysis** - Incorporate semantic search, ML-powered insights, and automated quality management
 4. **Developer-Friendly Platform** - Offer well-documented APIs and tools for civic tech integration
 5. **Scalable Infrastructure** - Build resilient, cloud-native architecture supporting high-volume data processing
+6. **Comprehensive Coverage** - Support all 50 states + federal legislative data with unified API
 
 ---
 
@@ -17,7 +18,7 @@ This document consolidates all project tasks, microgoals, and completion criteri
 
 | Task/Microgoal | Criteria/Definition | Status | Priority | Assigned Agent | Est. Effort |
 |----------------|-------------------|---------|----------|---------------|-------------|
-| **Complete Federal Data Integration** | All Congress.gov collections fully ingested with proper SQL mappings | IN PROGRESS | CRITICAL | Federal Data Crew | 8 weeks |
+| **Complete Multi-Source Data Integration** | All data sources (Congress.gov, GovInfo.gov, OpenStates) fully integrated | IN PROGRESS | CRITICAL | Federal Data Crew | 10 weeks |
 | **Implement AI-Powered Semantic Search** | Vector search operational with legislative text embeddings | PLANNED | HIGH | AI/ML Crew | 6 weeks |
 | **Enhance Automation & CI/CD** | Full pipeline automation with quality gates | DONE | HIGH | DevOps Crew | 4 weeks |
 | **Modernize Frontend Interface** | React-based data ingestion dashboard deployed | IN PROGRESS | MEDIUM | Frontend Crew | 5 weeks |
@@ -25,45 +26,122 @@ This document consolidates all project tasks, microgoals, and completion criteri
 
 ---
 
-## 🏗️ Phase 1: Federal Data Integration (Critical Path)
+## 🏗️ Phase 1: Multi-Source Data Integration (Critical Path)
 
-### Task 1.1: Complete Congress.gov Collections Coverage
-**Description**: Ensure all major Congress.gov collections are fully supported with proper ingestion pipelines.
+### Task 1.1: Complete Congress.gov API Integration
+**Description**: Ensure all major Congress.gov API collections are fully supported with proper ingestion pipelines.
 
+### Task 1.2: GovInfo.gov Bulk Data Integration
+**Description**: Implement comprehensive bulk data ingestion from GovInfo.gov for complete legislative coverage.
+
+### Task 1.3: OpenStates State-Level Data Integration
+**Description**: Integrate all 50 states' legislative data through OpenStates API for comprehensive state coverage.
+
+### Task 1.4: Data Harmonization & Deduplication
+**Description**: Create unified data model that harmonizes federal and state sources with intelligent deduplication.
+
+#### Task 1.1: Congress.gov API Integration
 **Microgoals & Completion Criteria**:
-- [ ] **BILLS Collection** - Verify complete XML field mapping to `govinfo_bill*` tables
-  - [ ] All bill metadata (title, sponsors, cosponsors, subjects, committees)
-  - [ ] Full action history with proper date sequencing
-  - [ ] Text versions and amendments tracking
-  - [ ] Committee references and report links
-  - **Criteria**: 100% field coverage test pass, ingestion rate >1000 bills/hour
+- [ ] **API Client Implementation**
+  - [ ] Congress.gov API client with rate limiting and retry logic
+  - [ ] Support for all major endpoints (bills, amendments, members, committees)
+  - [ ] Real-time webhook integration for live updates
+  - [ ] Authentication and API key management
+  - **Criteria**: API response time <2 seconds, 99.9% uptime
 
-- [ ] **BILLSTATUS Collection** - Status history integration
-  - [ ] Real-time status updates from Congress.gov API
-  - [ ] Historical status migration complete
-  - [ ] Status change notifications working
-  - **Criteria**: Status latency <5 minutes from official publication
+- [ ] **Bills & Amendments Integration**
+  - [ ] Real-time bill ingestion from Congress.gov API
+  - [ ] Amendment tracking and versioning
+  - [ ] Bill text and PDF retrieval
+  - [ ] Sponsor and cosponsor data linking
+  - **Criteria**: Ingestion latency <5 minutes from publication
 
-- [ ] **COMMITTEES Collection** - Committee data integration
-  - [ ] Committee memberships and leadership
-  - [ ] Committee jurisdictions and subcommittees
-  - [ ] Hearing schedules and transcripts
-  - **Criteria**: All committees from 118th+ Congress ingested
+- [ ] **Members & Committees Data**
+  - [ ] Complete member profiles with biographical data
+  - [ ] Committee memberships and leadership positions
+  - [ ] Voting records and roll call votes
+  - [ ] Historical data migration for all Congress sessions
+  - **Criteria**: 100% member coverage, voting accuracy >99%
 
-- [ ] **MEMBERS Collection** - Enhanced member data (already partially complete)
-  - [x] Basic member profiles with bioguide_id deduplication
-  - [ ] Social media integration and verification
-  - [ ] Historical service records and leadership positions
-  - [ ] Member-to-bill sponsorship analytics
-  - **Criteria**: 99% data accuracy with automated validation
+#### Task 1.2: GovInfo.gov Bulk Data Integration
+**Microgoals & Completion Criteria**:
+- [ ] **Bulk Data Processing Pipeline**
+  - [ ] Automated bulk data download from GovInfo.gov
+  - [ ] XML/JSON parsing for all collection types
+  - [ ] Incremental updates and change detection
+  - [ ] Error handling and retry mechanisms
+  - **Criteria**: Processing rate >10GB/hour, error rate <0.1%
+
+- [ ] **Collection Coverage**
+  - [ ] BILLS (all Congress sessions)
+  - [ ] BILLSTATUS (status history)
+  - [ ] COMMITTEEREPORTS (committee reports)
+  - [ ] CRPT (Congressional Record)
+  - [ ] STATUTE (United States Statutes)
+  - [ ] FR (Federal Register)
+  - **Criteria**: 100% collection coverage, historical data to 1973
+
+- [ ] **Data Validation & Quality**
+  - [ ] Schema validation for all XML/JSON data
+  - [ ] Cross-reference validation between collections
+  - [ ] Data completeness checks
+  - [ ] Automated quality reporting
+  - **Criteria**: Data accuracy >99.5%, completeness >98%
+
+#### Task 1.3: OpenStates State-Level Integration
+**Microgoals & Completion Criteria**:
+- [ ] **Multi-State API Integration**
+  - [ ] OpenStates API client with pagination support
+  - [ ] Support for all 50 states + DC and territories
+  - [ ] Bill tracking and status updates
+  - [ ] Legislator profiles and contact information
+  - **Criteria**: All 50 states integrated, update latency <1 hour
+
+- [ ] **State-Specific Adaptations**
+  - [ ] Handle different state legislative structures
+  - [ ] State-specific bill numbering systems
+  - [ ] Committee structure variations
+  - [ ] Session calendar differences
+  - **Criteria**: 100% state coverage, accurate structure mapping
+
+- [ ] **Federal-State Linking**
+  - [ ] Cross-reference federal bills with similar state legislation
+  - [ ] Track federal influence on state legislation
+  - [ ] Identify trends across state and federal levels
+  - [ ] Unified search across all jurisdictions
+  - **Criteria**: Linking accuracy >85%, comprehensive trend analysis
+
+#### Task 1.4: Data Harmonization & Deduplication
+**Microgoals & Completion Criteria**:
+- [ ] **Unified Data Model**
+  - [ ] Common schema for federal and state data
+  - [ ] Standardized field mappings and transformations
+  - [ ] Entity resolution across sources
+  - [ ] Temporal data harmonization
+  - **Criteria**: Unified API for all data sources, consistent data model
+
+- [ ] **Intelligent Deduplication**
+  - [ ] Fuzzy matching for bill titles and content
+  - [ ] Entity deduplication for legislators and committees
+  - [ ] Version control and change tracking
+  - [ ] Conflict resolution mechanisms
+  - **Criteria**: Deduplication accuracy >95%, automated conflict resolution
+
+- [ ] **Cross-Source Analytics**
+  - [ ] Comparative analysis across jurisdictions
+  - [ ] Trend identification and prediction
+  - [ ] Impact assessment across legislative levels
+  - [ ] Unified reporting and visualization
+  - **Criteria**: Comprehensive analytics suite, real-time insights
 
 **Assigned Agent**: Federal Data Crew  
-**Dependencies**: Task 1.2 (Database Schema)  
-**Timeline**: 8 weeks  
+**Dependencies**: Task 1.5 (Database Schema)  
+**Timeline**: 10 weeks  
 **Success Metrics**: 
-- 100% collection coverage
-- Ingestion latency <15 minutes
-- Data accuracy >99%
+- 100% data source coverage (federal + all states)
+- Ingestion latency <15 minutes for real-time sources
+- Data accuracy >99% across all sources
+- Unified API response time <500ms
 
 ### Task 1.2: Database Schema Optimization
 **Description**: Optimize PostgreSQL schema for federal data with proper indexing and relationships.
