@@ -1,0 +1,524 @@
+name: Bot PR Management
+
+on:
+  pull_request:
+    types: [opened, synchronize, labeled, reopened, ready_for_review]
+  schedule:
+    - cron: '0 0 * * *'  # Daily at midnight UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  checks: read
+
+jobs:
+  label-bot-prs:
+    name: Auto-label Bot PRs
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Label PRs by bot type and size
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const author = pr.user.login.toLowerCase();
+            const labels = new Set();
+            
+            // Label by bot type
+            if (author.includes('dependabot')) {
+              labels.add('bot:dependabot');
+              labels.add('dependencies');
+            } else if (author.includes('copilot')) {
+              labels.add('bot:copilot');
+            } else if (author.includes('coderabbit')) {
+              labels.add('bot:coderabbit');
+            } else if (author.includes('jules') || author.includes('google-labs-jules')) {
+              labels.add('bot:jules');
+            } else if (author.includes('keploy')) {
+              labels.add('bot:keploy');
+            } else if (author.includes('codeant')) {
+              labels.add('bot:codeant');
+            } else if (author.includes('qodo-merge')) {
+              labels.add('bot:qodo-merge');
+            } else if (author.includes('agentfarmx')) {
+              labels.add('bot:agentfarmx');
+            }
+            
+            // Size labeling by changes
+            const additions = pr.additions || 0;
+            const deletions = pr.deletions || 0;
+            const changes = additions + deletions;
+            
+            if (changes < 10) {
+              labels.add('size:XS');
+            } else if (changes < 100) {
+              labels.add('size:S');
+            } else if (changes < 500) {
+              labels.add('size:M');
+            } else if (changes < 1000) {
+              labels.add('size:L');
+            } else {
+              labels.add('size:XL');
+            }
+            
+            // Type detection from title
+            const title = pr.title.toLowerCase();
+            if (title.includes('bump') || title.includes('update') && author.includes('dependabot')) {
+              labels.add('dependencies');
+            }
+            if (title.includes('fix') || title.includes('bug')) {
+              labels.add('bug-fix');
+            }
+            if (title.includes('feat') || title.includes('feature')) {
+              labels.add('enhancement');
+            }
+            if (title.includes('refactor')) {
+              labels.add('refactoring');
+            }
+            if (title.includes('test')) {
+              labels.add('tests');
+            }
+            if (title.includes('doc')) {
+              labels.add('documentation');
+            }
+            
+            // Apply labels (create if they don't exist)
+            if (labels.size > 0) {
+              const labelArray = Array.from(labels);
+              
+              // Ensure labels exist first
+              for (const label of labelArray) {
+                try {
+                  await github.rest.issues.getLabel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    name: label
+                  });
+                } catch (error) {
+                  if (error.status === 404) {
+                    // Create label if it doesn't exist
+                    const color = label.startsWith('bot:') ? 'bfd4f2' : 
+                                  label.startsWith('size:') ? 'c5def5' :
+                                  'ededed';
+                    try {
+                      await github.rest.issues.createLabel({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        name: label,
+                        color: color,
+                        description: `Auto-generated label for ${label}`
+                      });
+                    } catch (createError) {
+                      console.log(`Could not create label ${label}:`, createError.message);
+                    }
+                  }
+                }
+              }
+              
+              // Add labels to PR
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                labels: labelArray
+              });
+            }
+
+  detect-duplicate-prs:
+    name: Detect Duplicate PRs
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'opened'
+    
+    steps:
+      - name: Check for duplicate PRs by title similarity
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const title = pr.title.toLowerCase();
+            
+            // Get all open PRs
+            const { data: openPRs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: 100
+            });
+            
+            // Find similar titles (excluding current PR)
+            // Extract key phrases for comparison
+            const extractKeyPhrase = (str) => {
+              return str.replace(/^(fix|feat|chore|docs|refactor|test|style|perf):\s*/i, '')
+                        .replace(/\([^)]*\)/g, '')  // Remove scope
+                        .substring(0, 30)
+                        .trim();
+            };
+            
+            const currentKeyPhrase = extractKeyPhrase(title);
+            const duplicates = openPRs.filter(p => {
+              if (p.number === pr.number) return false;
+              const otherKeyPhrase = extractKeyPhrase(p.title.toLowerCase());
+              return otherKeyPhrase === currentKeyPhrase || 
+                     (currentKeyPhrase.length > 10 && otherKeyPhrase.includes(currentKeyPhrase)) ||
+                     (otherKeyPhrase.length > 10 && currentKeyPhrase.includes(otherKeyPhrase));
+            });
+            
+            if (duplicates.length > 0) {
+              const duplicateList = duplicates.map(d => `- #${d.number}: ${d.title} by @${d.user.login}`).join('\n');
+              
+              const message = [
+                '⚠️ **Potential Duplicate PRs Detected**',
+                '',
+                'This PR may be addressing the same issue as:',
+                '',
+                duplicateList,
+                '',
+                '**Action Required:**',
+                '- Review the related PRs above',
+                '- If this is indeed a duplicate, please close this PR with a reference to the original',
+                '- If this PR has a different approach or supersedes others, please comment explaining the difference',
+                '- Consider consolidating efforts to avoid confusion and merge conflicts',
+                '',
+                '**Note:** This is an automated check and may have false positives.'
+              ].join('\n');
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                body: message
+              });
+              
+              // Add duplicate label
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                labels: ['possible-duplicate']
+              });
+            }
+
+  auto-merge-dependabot:
+    name: Auto-merge Dependabot PRs
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.user.login == 'dependabot[bot]'
+    
+    steps:
+      - name: Get Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+      
+      - name: Auto-approve patch and minor updates
+        if: |
+          steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
+          steps.metadata.outputs.update-type == 'version-update:semver-minor'
+        run: |
+          gh pr review --approve "$PR_URL" || echo "Already approved or cannot approve"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Comment on major updates
+        if: steps.metadata.outputs.update-type == 'version-update:semver-major'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const majorUpdateMessage = [
+              '⚠️ **Major Version Update Detected**',
+              '',
+              'This PR contains a **major version update** which may include breaking changes.',
+              '',
+              '**Action Required:**',
+              '- Review the changelog for breaking changes',
+              '- Check if our code needs updates to accommodate the new version',
+              '- Test thoroughly before merging',
+              '- Consider creating a separate branch for testing',
+              '',
+              `**Update Type:** ${context.payload.pull_request.title}`,
+              '',
+              'This PR requires manual review and approval before merging.'
+            ].join('\n');
+            
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: majorUpdateMessage
+            });
+            
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['needs-review', 'major-update']
+            });
+      
+      - name: Wait for checks to pass
+        if: |
+          steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
+          steps.metadata.outputs.update-type == 'version-update:semver-minor'
+        uses: lewagon/wait-on-check-action@v1.3.4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 30
+          running-workflow-name: 'auto-merge-dependabot'
+          allowed-conclusions: success,skipped
+      
+      - name: Enable auto-merge for safe updates
+        if: |
+          steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
+          steps.metadata.outputs.update-type == 'version-update:semver-minor'
+        run: |
+          gh pr merge --auto --squash "$PR_URL" || echo "Auto-merge could not be enabled"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Label by update type
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const updateType = '${{ steps.metadata.outputs.update-type }}';
+            const labels = ['dependencies'];
+            
+            if (updateType.includes('major')) {
+              labels.push('major-update');
+            } else if (updateType.includes('minor')) {
+              labels.push('minor-update', 'auto-merge-candidate');
+            } else if (updateType.includes('patch')) {
+              labels.push('patch-update', 'auto-merge-candidate');
+            }
+            
+            await github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: labels
+            });
+
+  mark-stale-prs:
+    name: Mark and Close Stale PRs
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Mark stale PRs
+        uses: actions/stale@v9
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          stale-pr-message: >
+            🤖 This PR has been automatically marked as stale because it has been inactive for 30 days.
+            
+            
+            **Action Required:**
+            
+            - If you plan to continue working on this PR, please comment or push new commits
+            
+            - If this PR is blocked, add the `blocked` label and comment explaining the blocker
+            
+            - If this PR should remain open regardless of activity, add the `keep-open` label
+            
+            
+            **What happens next:**
+            
+            - This PR will be closed in 7 days if no activity occurs
+            
+            - You can always reopen a closed PR if needed later
+            
+            
+            Thank you for your contribution! 🙏
+          close-pr-message: >
+            🤖 This PR has been automatically closed due to inactivity.
+            
+            
+            **Closing Reason:** No activity for 37 days (30 days stale + 7 days grace period)
+            
+            
+            **Need to reopen?**
+            
+            - Comment on this PR explaining why it should be reopened
+            
+            - Or create a new PR with updated changes
+            
+            
+            Thank you for your contribution! The maintainers appreciate your work. 💙
+          days-before-stale: 30
+          days-before-close: 7
+          stale-pr-label: 'stale'
+          exempt-pr-labels: 'keep-open,blocked,in-progress,high-priority'
+          exempt-draft-pr: true
+          operations-per-run: 100
+
+  bot-coordination:
+    name: Bot Coordination Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'opened'
+    
+    steps:
+      - name: Check for multiple bots addressing same issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const author = pr.user.login;
+            
+            // Only run for bot PRs
+            const botPatterns = ['bot]', 'app/', '[bot', 'copilot', 'dependabot'];
+            if (!botPatterns.some(pattern => author.toLowerCase().includes(pattern.toLowerCase()))) {
+              console.log('Not a bot PR, skipping coordination check');
+              return;
+            }
+            
+            // Extract potential issue reference from title or body
+            const prText = `${pr.title} ${pr.body || ''}`;
+            const issueMatches = prText.match(/#(\d+)/g) || [];
+            const issueNumbers = [...new Set(issueMatches.map(m => parseInt(m.substring(1))))];
+            
+            if (issueNumbers.length === 0) {
+              console.log('No issue references found');
+              return;
+            }
+            
+            // Get all open PRs
+            const { data: openPRs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              per_page: 100
+            });
+            
+            // Find other bot PRs referencing the same issues
+            const conflictingPRs = openPRs.filter(p => {
+              if (p.number === pr.number) return false;
+              
+              const isBot = botPatterns.some(pattern => 
+                p.user.login.toLowerCase().includes(pattern.toLowerCase())
+              );
+              
+              if (!isBot) return false;
+              
+              const otherPRText = `${p.title} ${p.body || ''}`;
+              return issueNumbers.some(num => otherPRText.includes(`#${num}`));
+            });
+            
+            if (conflictingPRs.length > 0) {
+              const conflictList = conflictingPRs.map(p => 
+                `- #${p.number}: ${p.title} by @${p.user.login}`
+              ).join('\n');
+              
+              const coordinationMessage = [
+                '🤖 **Bot Coordination Alert**',
+                '',
+                'Multiple automation tools are working on related issues:',
+                '',
+                conflictList,
+                '',
+                '**Recommendation:**',
+                '- Review the approaches in each PR',
+                '- Choose the best solution or combine approaches',
+                '- Close redundant PRs to avoid confusion',
+                '- Consider adjusting bot configurations to prevent future conflicts',
+                '',
+                `Referenced issues: ${issueNumbers.map(n => `#${n}`).join(', ')}`,
+                '',
+                '*This is an automated coordination check to help manage multiple automation tools.*'
+              ].join('\n');
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                body: coordinationMessage
+              });
+              
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                labels: ['bot-coordination-needed']
+              });
+            }
+
+  pr-health-check:
+    name: PR Health Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Check PR health and add recommendations
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const issues = [];
+            const recommendations = [];
+            
+            // Check if PR has description
+            if (!pr.body || pr.body.trim().length < 50) {
+              issues.push('PR description is missing or too short');
+              recommendations.push('Add a detailed description explaining what changes were made and why');
+            }
+            
+            // Check if PR has many changed files
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number
+            });
+            
+            if (files.length > 50) {
+              issues.push(`PR changes ${files.length} files, which may be difficult to review`);
+              recommendations.push('Consider breaking this into smaller, focused PRs');
+            }
+            
+            // Check if PR has been open for a long time without updates
+            const now = new Date();
+            const createdAt = new Date(pr.created_at);
+            const updatedAt = new Date(pr.updated_at);
+            const daysOld = Math.floor((now - createdAt) / (1000 * 60 * 60 * 24));
+            const daysSinceUpdate = Math.floor((now - updatedAt) / (1000 * 60 * 60 * 24));
+            
+            if (daysOld > 14 && daysSinceUpdate > 7) {
+              issues.push(`PR is ${daysOld} days old with no updates for ${daysSinceUpdate} days`);
+              recommendations.push('Rebase on latest main branch to resolve potential conflicts');
+            }
+            
+            // Check if PR has merge conflicts
+            if (pr.mergeable_state === 'dirty') {
+              issues.push('PR has merge conflicts');
+              recommendations.push('Resolve merge conflicts before merging');
+            }
+            
+            // Only comment if there are issues
+            if (issues.length > 0 && github.event.action === 'opened') {
+              const issueList = issues.map(i => `- ⚠️ ${i}`).join('\n');
+              const recList = recommendations.map(r => `- 💡 ${r}`).join('\n');
+              
+              const healthCheckMessage = [
+                '## 🏥 PR Health Check',
+                '',
+                '**Issues Detected:**',
+                issueList,
+                '',
+                '**Recommendations:**',
+                recList,
+                '',
+                '*This is an automated health check to help improve PR quality and reviewability.*'
+              ].join('\n');
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                body: healthCheckMessage
+              });
+            }
