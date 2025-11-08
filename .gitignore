@@ -77,6 +77,12 @@ ingestion_log.json
 *.duckdb
 *.db
 
+# Archived/historical data files
+tools/archived_data/
+linear_import_run_*.json
+linear_import_processed*.json
+*_backup_*.json
+
 # Maven
 /.mvn/
 

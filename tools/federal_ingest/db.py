@@ -10,7 +10,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from tools.db_config import get_connection_string
+from tools.config.db_config import get_connection_string
 
 from .config import get_settings
 from .normalization import NormalizedRecord

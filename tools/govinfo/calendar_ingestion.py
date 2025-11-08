@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 
 from base_ingestion_process import BaseIngestionProcess
-from settings import settings
+from tools.config.settings import settings
 
 from .models import (
     GovInfoCalendarRecord,
