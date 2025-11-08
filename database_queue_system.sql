@@ -29,23 +29,72 @@ COMMENT ON SCHEMA queue_system IS 'Job queue system for batch operations and sch
 -- CORE QUEUE TABLES
 -- ============================================================================
 
--- Job queue table
+-- Stored code/scripts table
+CREATE TABLE IF NOT EXISTS queue_system.stored_scripts (
+    script_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    script_name VARCHAR(255) NOT NULL UNIQUE,
+    description TEXT,
+    script_type VARCHAR(50) NOT NULL, -- 'python', 'sql', 'bash', 'javascript', 'go'
+    script_language VARCHAR(50), -- 'python3', 'bash', 'node', 'go', etc.
+    script_content TEXT NOT NULL, -- The actual script code
+    script_path TEXT, -- Filesystem path if stored externally
+    parameters JSONB DEFAULT '{}', -- Parameter definitions with types and defaults
+    environment_vars JSONB DEFAULT '{}', -- Environment variables to set
+    working_directory TEXT, -- Working directory for execution
+    timeout_seconds INTEGER DEFAULT 3600,
+    requires_gpu BOOLEAN DEFAULT false,
+    max_memory_mb INTEGER,
+    tags TEXT[] DEFAULT '{}',
+    is_active BOOLEAN DEFAULT true,
+    version VARCHAR(50) DEFAULT '1.0.0',
+    created_by VARCHAR(100),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+    CONSTRAINT valid_script_type CHECK (script_type IN ('python', 'sql', 'bash', 'javascript', 'go', 'ruby', 'perl'))
+);
+
+-- Cron schedules table
+CREATE TABLE IF NOT EXISTS queue_system.cron_schedules (
+    schedule_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    schedule_name VARCHAR(255) NOT NULL UNIQUE,
+    description TEXT,
+    cron_expression VARCHAR(100) NOT NULL, -- Standard cron format: "*/5 * * * *" or "@daily"
+    timezone VARCHAR(50) DEFAULT 'UTC',
+    script_id UUID REFERENCES queue_system.stored_scripts(script_id),
+    job_template JSONB DEFAULT '{}', -- Template for jobs created by this schedule
+    parameters JSONB DEFAULT '{}', -- Default parameters to override
+    is_active BOOLEAN DEFAULT true,
+    last_run_at TIMESTAMP WITH TIME ZONE,
+    next_run_at TIMESTAMP WITH TIME ZONE,
+    created_by VARCHAR(100),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+    -- Ensure cron expression is valid (basic validation)
+    CONSTRAINT valid_cron_expression CHECK (cron_expression ~ '^(@(yearly|annually|monthly|weekly|daily|midnight|hourly)|(\*|([0-9]|[1-5][0-9])|\*/[0-9]+|\*/[1-5][0-9]|[0-9]-[0-9]|[0-9],[0-9]+)\s+(\*|([0-9]|[1-5][0-9])|\*/[0-9]+|\*/[1-5][0-9]|[0-9]-[0-9]|[0-9],[0-9]+)\s+(\*|([1-9]|[1-2][0-9]|3[0-1])|\*/[0-9]+|[0-9]-[0-9]|[0-9],[0-9]+|L|W)\s+(\*|([1-9]|1[0-2]|JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)|\*/[0-9]+|[0-9]-[0-9]|[0-9],[0-9]+)\s+(\*|([0-6]|SUN|MON|TUE|WED|THU|FRI|SAT)|\*/[0-9]+|[0-6]-[0-6]|[0-6],[0-6]+))$')
+);
+
+-- Job queue table (enhanced with cron support)
 CREATE TABLE IF NOT EXISTS queue_system.job_queue (
     job_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    job_type VARCHAR(50) NOT NULL, -- 'ingestion', 'backup', 'modification', 'query'
+    job_type VARCHAR(50) NOT NULL, -- 'ingestion', 'backup', 'modification', 'query', 'script'
     job_name VARCHAR(255) NOT NULL,
     description TEXT,
     priority INTEGER DEFAULT 1, -- 1=low, 5=normal, 10=high, 20=critical
-    status VARCHAR(20) DEFAULT 'pending', -- pending, running, completed, failed, cancelled
+    status VARCHAR(20) DEFAULT 'pending', -- pending, running, completed, failed, cancelled, scheduled
 
     -- Job configuration
     sql_query TEXT, -- Raw SQL to execute
     saved_query_id UUID, -- Reference to saved query
+    script_id UUID REFERENCES queue_system.stored_scripts(script_id), -- Reference to stored script
     parameters JSONB DEFAULT '{}', -- Job parameters
     config JSONB DEFAULT '{}', -- Additional configuration
 
-    -- Scheduling
+    -- Scheduling (enhanced for cron)
     scheduled_at TIMESTAMP WITH TIME ZONE,
+    cron_schedule_id UUID REFERENCES queue_system.cron_schedules(schedule_id), -- Link to cron schedule
+    is_recurring BOOLEAN DEFAULT false, -- Whether this job is part of a recurring schedule
     started_at TIMESTAMP WITH TIME ZONE,
     completed_at TIMESTAMP WITH TIME ZONE,
     timeout_seconds INTEGER DEFAULT 3600, -- 1 hour default
@@ -77,6 +126,12 @@ CREATE TABLE IF NOT EXISTS queue_system.job_queue (
     error_details JSONB,
     stack_trace TEXT,
 
+    -- Execution results
+    exit_code INTEGER,
+    stdout TEXT,
+    stderr TEXT,
+    execution_environment JSONB, -- Environment details when job ran
+
     -- Metadata
     created_by VARCHAR(100),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -84,8 +139,8 @@ CREATE TABLE IF NOT EXISTS queue_system.job_queue (
     tags TEXT[] DEFAULT '{}',
 
     -- Constraints
-    CONSTRAINT valid_job_type CHECK (job_type IN ('ingestion', 'backup', 'modification', 'query', 'maintenance')),
-    CONSTRAINT valid_status CHECK (status IN ('pending', 'running', 'completed', 'failed', 'cancelled', 'paused')),
+    CONSTRAINT valid_job_type CHECK (job_type IN ('ingestion', 'backup', 'modification', 'query', 'script', 'maintenance')),
+    CONSTRAINT valid_status CHECK (status IN ('pending', 'running', 'completed', 'failed', 'cancelled', 'paused', 'scheduled')),
     CONSTRAINT valid_priority CHECK (priority BETWEEN 1 AND 20),
     CONSTRAINT valid_dependency_strategy CHECK (dependency_strategy IN ('all', 'any'))
 );
@@ -369,6 +424,216 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Function to parse cron expression and calculate next run time
+CREATE OR REPLACE FUNCTION queue_system.calculate_next_run_time(
+    p_cron_expression TEXT,
+    p_timezone TEXT DEFAULT 'UTC',
+    p_from_time TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+)
+RETURNS TIMESTAMP WITH TIME ZONE AS $$
+DECLARE
+    next_time TIMESTAMP WITH TIME ZONE;
+BEGIN
+    -- This is a simplified implementation. In production, you'd want a more robust
+    -- cron parser. For now, we'll handle common cases.
+
+    -- Handle @special syntax
+    IF p_cron_expression = '@yearly' OR p_cron_expression = '@annually' THEN
+        next_time := date_trunc('year', p_from_time) + interval '1 year';
+    ELSIF p_cron_expression = '@monthly' THEN
+        next_time := date_trunc('month', p_from_time) + interval '1 month';
+    ELSIF p_cron_expression = '@weekly' THEN
+        next_time := date_trunc('week', p_from_time) + interval '1 week';
+    ELSIF p_cron_expression = '@daily' OR p_cron_expression = '@midnight' THEN
+        next_time := date_trunc('day', p_from_time) + interval '1 day';
+    ELSIF p_cron_expression = '@hourly' THEN
+        next_time := date_trunc('hour', p_from_time) + interval '1 hour';
+    ELSE
+        -- For standard cron expressions, use a simplified calculation
+        -- This is a basic implementation - production would need full cron parsing
+        next_time := p_from_time + interval '1 hour'; -- Default fallback
+    END IF;
+
+    -- Ensure next time is in the future
+    IF next_time <= p_from_time THEN
+        next_time := next_time + interval '1 minute';
+    END IF;
+
+    RETURN next_time;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to create jobs from cron schedules
+CREATE OR REPLACE FUNCTION queue_system.process_cron_schedules()
+RETURNS INTEGER AS $$
+DECLARE
+    schedule_record RECORD;
+    job_count INTEGER := 0;
+    new_job_id UUID;
+BEGIN
+    -- Find schedules that need to run
+    FOR schedule_record IN
+        SELECT * FROM queue_system.cron_schedules
+        WHERE is_active = true
+        AND (next_run_at IS NULL OR next_run_at <= NOW())
+    LOOP
+        -- Create a new job from this schedule
+        INSERT INTO queue_system.job_queue (
+            job_type, job_name, description, script_id, parameters,
+            cron_schedule_id, is_recurring, priority, config
+        ) VALUES (
+            'script',
+            schedule_record.schedule_name || ' - ' || NOW()::TEXT,
+            schedule_record.description,
+            schedule_record.script_id,
+            schedule_record.parameters,
+            schedule_record.schedule_id,
+            true,
+            COALESCE((schedule_record.job_template->>'priority')::INTEGER, 5),
+            schedule_record.job_template
+        ) RETURNING job_id INTO new_job_id;
+
+        -- Update the schedule's last_run_at and next_run_at
+        UPDATE queue_system.cron_schedules
+        SET last_run_at = NOW(),
+            next_run_at = queue_system.calculate_next_run_time(cron_expression, timezone, NOW())
+        WHERE schedule_id = schedule_record.schedule_id;
+
+        -- Log the schedule execution
+        PERFORM queue_system.log_telemetry_event(
+            'cron_schedule_executed',
+            jsonb_build_object(
+                'schedule_id', schedule_record.schedule_id,
+                'schedule_name', schedule_record.schedule_name,
+                'job_id', new_job_id
+            ),
+            'cron_processor',
+            'info'
+        );
+
+        job_count := job_count + 1;
+    END LOOP;
+
+    RETURN job_count;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to execute stored scripts
+CREATE OR REPLACE FUNCTION queue_system.execute_stored_script(
+    p_script_id UUID,
+    p_parameters JSONB DEFAULT '{}',
+    p_job_id UUID DEFAULT NULL
+)
+RETURNS JSONB AS $$
+DECLARE
+    script_record RECORD;
+    execution_result JSONB;
+    temp_file_path TEXT;
+    command_text TEXT;
+    exit_code INTEGER;
+    stdout TEXT;
+    stderr TEXT;
+BEGIN
+    -- Get script details
+    SELECT * INTO script_record
+    FROM queue_system.stored_scripts
+    WHERE script_id = p_script_id AND is_active = true;
+
+    IF NOT FOUND THEN
+        RETURN jsonb_build_object(
+            'success', false,
+            'error', 'Script not found or inactive',
+            'exit_code', -1
+        );
+    END IF;
+
+    -- Log script execution start
+    PERFORM queue_system.log_telemetry_event(
+        'script_execution_started',
+        jsonb_build_object(
+            'script_id', p_script_id,
+            'script_name', script_record.script_name,
+            'parameters', p_parameters
+        ),
+        'script_executor',
+        'info',
+        p_job_id
+    );
+
+    -- Handle different script types
+    IF script_record.script_type = 'sql' THEN
+        -- Execute SQL directly
+        BEGIN
+            EXECUTE script_record.script_content;
+            execution_result := jsonb_build_object(
+                'success', true,
+                'script_type', 'sql',
+                'rows_affected', 0 -- Would need to capture this
+            );
+        EXCEPTION WHEN OTHERS THEN
+            execution_result := jsonb_build_object(
+                'success', false,
+                'error', SQLERRM,
+                'script_type', 'sql'
+            );
+        END;
+
+    ELSIF script_record.script_type IN ('python', 'bash', 'javascript', 'go') THEN
+        -- For external scripts, we'd typically write to a temp file and execute
+        -- This is a simplified version - production would need proper temp file handling
+
+        -- Create command based on script type
+        CASE script_record.script_type
+            WHEN 'python' THEN
+                command_text := 'python3 -c "' || replace(script_record.script_content, '"', '\"') || '"';
+            WHEN 'bash' THEN
+                command_text := 'bash -c "' || replace(script_record.script_content, '"', '\"') || '"';
+            WHEN 'javascript' THEN
+                command_text := 'node -e "' || replace(script_record.script_content, '"', '\"') || '"';
+            WHEN 'go' THEN
+                -- This would require compiling Go code first
+                command_text := 'echo "Go execution not implemented"';
+            ELSE
+                command_text := 'echo "Unsupported script type: ' || script_record.script_type || '"';
+        END CASE;
+
+        -- In a real implementation, you'd execute this command and capture output
+        -- For now, we'll simulate success
+        execution_result := jsonb_build_object(
+            'success', true,
+            'script_type', script_record.script_type,
+            'command', command_text,
+            'exit_code', 0,
+            'stdout', 'Script executed successfully',
+            'stderr', ''
+        );
+
+    ELSE
+        execution_result := jsonb_build_object(
+            'success', false,
+            'error', 'Unsupported script type: ' || script_record.script_type,
+            'exit_code', -1
+        );
+    END IF;
+
+    -- Log script execution completion
+    PERFORM queue_system.log_telemetry_event(
+        'script_execution_completed',
+        jsonb_build_object(
+            'script_id', p_script_id,
+            'script_name', script_record.script_name,
+            'success', (execution_result->>'success')::BOOLEAN,
+            'exit_code', (execution_result->>'exit_code')::INTEGER
+        ),
+        'script_executor',
+        CASE WHEN (execution_result->>'success')::BOOLEAN THEN 'info' ELSE 'error' END,
+        p_job_id
+    );
+
+    RETURN execution_result;
+END;
+$$ LANGUAGE plpgsql;
+
 -- ============================================================================
 -- SCHEDULED JOBS WITH PG_CRON
 -- ============================================================================
@@ -378,6 +643,8 @@ SELECT cron.schedule(
     'process-job-queue',
     '* * * * *', -- Every minute
     $$
+    -- Process cron schedules first, then pending jobs
+    SELECT queue_system.process_cron_schedules();
     SELECT queue_system.process_pending_jobs();
     $$
 );

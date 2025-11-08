@@ -1,0 +1,969 @@
+{
+  "ingestion_run": "20251108_222331",
+  "start_time": "2025-11-08T22:23:31.835433",
+  "end_time": "2025-11-08T22:24:35.586460",
+  "duration_hours": 0.017708618611111112,
+  "hardware": {
+    "gpus": 3,
+    "gpu_devices": [
+      0,
+      1,
+      2
+    ],
+    "cpus": 40,
+    "memory_gb": 125.81241226196289
+  },
+  "total_jobs": 43,
+  "successful_jobs": 0,
+  "failed_jobs": 43,
+  "success_rate": 0.0,
+  "average_processing_time": 0.5639319586199384,
+  "source_breakdown": {
+    "congress_api": {
+      "total": 18,
+      "success": 0,
+      "failed": 18,
+      "avg_time": 1.2768783966700237
+    },
+    "govinfo_bulk": {
+      "total": 12,
+      "success": 0,
+      "failed": 12,
+      "avg_time": 0.046305835247039795
+    },
+    "openstates": {
+      "total": 10,
+      "success": 0,
+      "failed": 10,
+      "avg_time": 0.05259850025177002
+    },
+    "openlegislature": {
+      "total": 3,
+      "success": 0,
+      "failed": 3,
+      "avg_time": 0.061202685038248696
+    }
+  },
+  "gpu_utilization": {
+    "2": {
+      "jobs": 8,
+      "total_time": 6.488694667816162
+    },
+    "1": {
+      "jobs": 19,
+      "total_time": 8.508018970489502
+    },
+    "0": {
+      "jobs": 16,
+      "total_time": 9.252360582351685
+    }
+  },
+  "system_metrics": {
+    "avg_cpu_utilization": 18.8,
+    "avg_memory_usage": 24.25,
+    "gpu_utilization_history": [
+      [
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0
+      ]
+    ]
+  },
+  "processed_jobs": [
+    {
+      "id": "congress_api_bills_103-107_20251108_222335",
+      "type": "bills",
+      "source": "congress_api",
+      "script": "tools/ingestion/core/ingest_federal_data.py",
+      "params": {
+        "start_congress": 107,
+        "end_congress": 103,
+        "batch_size": 1000
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.518799",
+      "processed_at": "2025-11-08T22:23:36.736988",
+      "success": false,
+      "worker_id": 2,
+      "processing_time_seconds": 1.2007453441619873,
+      "gpu_device": 2
+    },
+    {
+      "id": "congress_api_bills_108-112_20251108_222335",
+      "type": "bills",
+      "source": "congress_api",
+      "script": "tools/ingestion/core/ingest_federal_data.py",
+      "params": {
+        "start_congress": 112,
+        "end_congress": 108,
+        "batch_size": 1000
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.518815",
+      "processed_at": "2025-11-08T22:23:36.773500",
+      "success": false,
+      "worker_id": 4,
+      "processing_time_seconds": 1.236351728439331,
+      "gpu_device": 1
+    },
+    {
+      "id": "congress_api_bills_113-117_20251108_222335",
+      "type": "bills",
+      "source": "congress_api",
+      "script": "tools/ingestion/core/ingest_federal_data.py",
+      "params": {
+        "start_congress": 117,
+        "end_congress": 113,
+        "batch_size": 1000
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.518832",
+      "processed_at": "2025-11-08T22:23:36.846780",
+      "success": false,
+      "worker_id": 3,
+      "processing_time_seconds": 1.3086750507354736,
+      "gpu_device": 0
+    },
+    {
+      "id": "congress_api_bills_93-97_20251108_222335",
+      "type": "bills",
+      "source": "congress_api",
+      "script": "tools/ingestion/core/ingest_federal_data.py",
+      "params": {
+        "start_congress": 97,
+        "end_congress": 93,
+        "batch_size": 1000
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.518739",
+      "processed_at": "2025-11-08T22:23:36.876126",
+      "success": false,
+      "worker_id": 0,
+      "processing_time_seconds": 1.3425824642181396,
+      "gpu_device": 0
+    },
+    {
+      "id": "congress_api_committees_93-97_20251108_222335",
+      "type": "committees",
+      "source": "congress_api",
+      "script": "tools/ingestion/core/ingest_federal_data.py",
+      "params": {
+        "start_congress": 97,
+        "end_congress": 93,
+        "batch_size": 1000
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.518869",
+      "processed_at": "2025-11-08T22:23:36.879423",
+      "success": false,
+      "worker_id": 7,
+      "processing_time_seconds": 1.3381798267364502,
+      "gpu_device": 1
+    },
+    {
+      "id": "congress_api_bills_98-102_20251108_222335",
+      "type": "bills",
+      "source": "congress_api",
+      "script": "tools/ingestion/core/ingest_federal_data.py",
+      "params": {
+        "start_congress": 102,
+        "end_congress": 98,
+        "batch_size": 1000
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.518780",
+      "processed_at": "2025-11-08T22:23:36.880678",
+      "success": false,
+      "worker_id": 1,
+      "processing_time_seconds": 1.3455755710601807,
+      "gpu_device": 1
+    },
+    {
+      "id": "congress_api_bills_118-119_20251108_222335",
+      "type": "bills",
+      "source": "congress_api",
+      "script": "tools/ingestion/core/ingest_federal_data.py",
+      "params": {
+        "start_congress": 119,
+        "end_congress": 118,
+        "batch_size": 1000
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.518849",
+      "processed_at": "2025-11-08T22:23:36.897773",
+      "success": false,
+      "worker_id": 5,
+      "processing_time_seconds": 1.3585493564605713,
+      "gpu_device": 2
+    },
+    {
+      "id": "congress_api_committees_98-102_20251108_222335",
+      "type": "committees",
+      "source": "congress_api",
+      "script": "tools/ingestion/core/ingest_federal_data.py",
+      "params": {
+        "start_congress": 102,
+        "end_congress": 98,
+        "batch_size": 1000
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.518885",
+      "processed_at": "2025-11-08T22:23:36.993896",
+      "success": false,
+      "worker_id": 6,
+      "processing_time_seconds": 1.4507431983947754,
+      "gpu_device": 0
+    },
+    {
+      "id": "congress_api_committees_103-107_20251108_222335",
+      "type": "committees",
+      "source": "congress_api",
+      "script": "tools/ingestion/core/ingest_federal_data.py",
+      "params": {
+        "start_congress": 107,
+        "end_congress": 103,
+        "batch_size": 1000
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.518912",
+      "processed_at": "2025-11-08T22:23:37.975028",
+      "success": false,
+      "worker_id": 2,
+      "processing_time_seconds": 1.2358362674713135,
+      "gpu_device": 2
+    },
+    {
+      "id": "congress_api_committees_113-117_20251108_222335",
+      "type": "committees",
+      "source": "congress_api",
+      "script": "tools/ingestion/core/ingest_federal_data.py",
+      "params": {
+        "start_congress": 117,
+        "end_congress": 113,
+        "batch_size": 1000
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.518948",
+      "processed_at": "2025-11-08T22:23:37.987573",
+      "success": false,
+      "worker_id": 3,
+      "processing_time_seconds": 1.1390061378479004,
+      "gpu_device": 0
+    },
+    {
+      "id": "congress_api_committees_118-119_20251108_222335",
+      "type": "committees",
+      "source": "congress_api",
+      "script": "tools/ingestion/core/ingest_federal_data.py",
+      "params": {
+        "start_congress": 119,
+        "end_congress": 118,
+        "batch_size": 1000
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.518965",
+      "processed_at": "2025-11-08T22:23:38.012482",
+      "success": false,
+      "worker_id": 0,
+      "processing_time_seconds": 1.1255838871002197,
+      "gpu_device": 0
+    },
+    {
+      "id": "govinfo_bulk_BILLS_chunk_0_20251108_222335",
+      "type": "bulk",
+      "source": "govinfo_bulk",
+      "script": "tools/govinfo/govinfo_bill_ingestion.py",
+      "params": {
+        "collection": "BILLS",
+        "congress_range": "93-119",
+        "chunk_id": 0,
+        "total_chunks": 3
+      },
+      "gpu_enabled": true,
+      "async_enabled": true,
+      "gpu_device": 0,
+      "priority": 2,
+      "enqueued_at": "2025-11-08T22:23:35.521708",
+      "processed_at": "2025-11-08T22:23:38.059747",
+      "success": false,
+      "worker_id": 0,
+      "processing_time_seconds": 0.045038700103759766
+    },
+    {
+      "id": "congress_api_committees_108-112_20251108_222335",
+      "type": "committees",
+      "source": "congress_api",
+      "script": "tools/ingestion/core/ingest_federal_data.py",
+      "params": {
+        "start_congress": 112,
+        "end_congress": 108,
+        "batch_size": 1000
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.518932",
+      "processed_at": "2025-11-08T22:23:38.075718",
+      "success": false,
+      "worker_id": 4,
+      "processing_time_seconds": 1.300475835800171,
+      "gpu_device": 1
+    },
+    {
+      "id": "govinfo_bulk_BILLS_chunk_1_20251108_222335",
+      "type": "bulk",
+      "source": "govinfo_bulk",
+      "script": "tools/govinfo/govinfo_bill_ingestion.py",
+      "params": {
+        "collection": "BILLS",
+        "congress_range": "93-119",
+        "chunk_id": 1,
+        "total_chunks": 3
+      },
+      "gpu_enabled": true,
+      "async_enabled": true,
+      "gpu_device": 0,
+      "priority": 2,
+      "enqueued_at": "2025-11-08T22:23:35.521731",
+      "processed_at": "2025-11-08T22:23:38.106260",
+      "success": false,
+      "worker_id": 0,
+      "processing_time_seconds": 0.04457545280456543
+    },
+    {
+      "id": "govinfo_bulk_BILLS_chunk_2_20251108_222335",
+      "type": "bulk",
+      "source": "govinfo_bulk",
+      "script": "tools/govinfo/govinfo_bill_ingestion.py",
+      "params": {
+        "collection": "BILLS",
+        "congress_range": "93-119",
+        "chunk_id": 2,
+        "total_chunks": 3
+      },
+      "gpu_enabled": true,
+      "async_enabled": true,
+      "gpu_device": 1,
+      "priority": 2,
+      "enqueued_at": "2025-11-08T22:23:35.521748",
+      "processed_at": "2025-11-08T22:23:38.123729",
+      "success": false,
+      "worker_id": 4,
+      "processing_time_seconds": 0.04583168029785156
+    },
+    {
+      "id": "govinfo_bulk_BILLSTATUS_chunk_0_20251108_222335",
+      "type": "bulk",
+      "source": "govinfo_bulk",
+      "script": "tools/govinfo/govinfo_bill_ingestion.py",
+      "params": {
+        "collection": "BILLSTATUS",
+        "congress_range": "93-119",
+        "chunk_id": 0,
+        "total_chunks": 3
+      },
+      "gpu_enabled": true,
+      "async_enabled": true,
+      "gpu_device": 0,
+      "priority": 2,
+      "enqueued_at": "2025-11-08T22:23:35.521765",
+      "processed_at": "2025-11-08T22:23:38.152333",
+      "success": false,
+      "worker_id": 0,
+      "processing_time_seconds": 0.044246673583984375
+    },
+    {
+      "id": "congress_api_members_98-102_20251108_222335",
+      "type": "members",
+      "source": "congress_api",
+      "script": "tools/ingestion/core/ingest_federal_data.py",
+      "params": {
+        "start_congress": 102,
+        "end_congress": 98,
+        "batch_size": 1000
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.519025",
+      "processed_at": "2025-11-08T22:23:38.171816",
+      "success": false,
+      "worker_id": 1,
+      "processing_time_seconds": 1.2873497009277344,
+      "gpu_device": 1
+    },
+    {
+      "id": "govinfo_bulk_BILLSTATUS_chunk_1_20251108_222335",
+      "type": "bulk",
+      "source": "govinfo_bulk",
+      "script": "tools/govinfo/govinfo_bill_ingestion.py",
+      "params": {
+        "collection": "BILLSTATUS",
+        "congress_range": "93-119",
+        "chunk_id": 1,
+        "total_chunks": 3
+      },
+      "gpu_enabled": true,
+      "async_enabled": true,
+      "gpu_device": 1,
+      "priority": 2,
+      "enqueued_at": "2025-11-08T22:23:35.521780",
+      "processed_at": "2025-11-08T22:23:38.172502",
+      "success": false,
+      "worker_id": 4,
+      "processing_time_seconds": 0.04621720314025879
+    },
+    {
+      "id": "govinfo_bulk_BILLSTATUS_chunk_2_20251108_222335",
+      "type": "bulk",
+      "source": "govinfo_bulk",
+      "script": "tools/govinfo/govinfo_bill_ingestion.py",
+      "params": {
+        "collection": "BILLSTATUS",
+        "congress_range": "93-119",
+        "chunk_id": 2,
+        "total_chunks": 3
+      },
+      "gpu_enabled": true,
+      "async_enabled": true,
+      "gpu_device": 0,
+      "priority": 2,
+      "enqueued_at": "2025-11-08T22:23:35.521795",
+      "processed_at": "2025-11-08T22:23:38.199858",
+      "success": false,
+      "worker_id": 0,
+      "processing_time_seconds": 0.045621633529663086
+    },
+    {
+      "id": "govinfo_bulk_COMMITTEES_chunk_1_20251108_222335",
+      "type": "bulk",
+      "source": "govinfo_bulk",
+      "script": "tools/govinfo/govinfo_bill_ingestion.py",
+      "params": {
+        "collection": "COMMITTEES",
+        "congress_range": "93-119",
+        "chunk_id": 1,
+        "total_chunks": 3
+      },
+      "gpu_enabled": true,
+      "async_enabled": true,
+      "gpu_device": 1,
+      "priority": 2,
+      "enqueued_at": "2025-11-08T22:23:35.521831",
+      "processed_at": "2025-11-08T22:23:38.221781",
+      "success": false,
+      "worker_id": 4,
+      "processing_time_seconds": 0.045172691345214844
+    },
+    {
+      "id": "govinfo_bulk_COMMITTEES_chunk_0_20251108_222335",
+      "type": "bulk",
+      "source": "govinfo_bulk",
+      "script": "tools/govinfo/govinfo_bill_ingestion.py",
+      "params": {
+        "collection": "COMMITTEES",
+        "congress_range": "93-119",
+        "chunk_id": 0,
+        "total_chunks": 3
+      },
+      "gpu_enabled": true,
+      "async_enabled": true,
+      "gpu_device": 1,
+      "priority": 2,
+      "enqueued_at": "2025-11-08T22:23:35.521810",
+      "processed_at": "2025-11-08T22:23:38.223240",
+      "success": false,
+      "worker_id": 1,
+      "processing_time_seconds": 0.04836392402648926
+    },
+    {
+      "id": "congress_api_members_93-97_20251108_222335",
+      "type": "members",
+      "source": "congress_api",
+      "script": "tools/ingestion/core/ingest_federal_data.py",
+      "params": {
+        "start_congress": 97,
+        "end_congress": 93,
+        "batch_size": 1000
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.518991",
+      "processed_at": "2025-11-08T22:23:38.228617",
+      "success": false,
+      "worker_id": 7,
+      "processing_time_seconds": 1.3469934463500977,
+      "gpu_device": 1
+    },
+    {
+      "id": "govinfo_bulk_COMMITTEES_chunk_2_20251108_222335",
+      "type": "bulk",
+      "source": "govinfo_bulk",
+      "script": "tools/govinfo/govinfo_bill_ingestion.py",
+      "params": {
+        "collection": "COMMITTEES",
+        "congress_range": "93-119",
+        "chunk_id": 2,
+        "total_chunks": 3
+      },
+      "gpu_enabled": true,
+      "async_enabled": true,
+      "gpu_device": 0,
+      "priority": 2,
+      "enqueued_at": "2025-11-08T22:23:35.521847",
+      "processed_at": "2025-11-08T22:23:38.248911",
+      "success": false,
+      "worker_id": 0,
+      "processing_time_seconds": 0.046547651290893555
+    },
+    {
+      "id": "congress_api_members_103-107_20251108_222335",
+      "type": "members",
+      "source": "congress_api",
+      "script": "tools/ingestion/core/ingest_federal_data.py",
+      "params": {
+        "start_congress": 107,
+        "end_congress": 103,
+        "batch_size": 1000
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.519044",
+      "processed_at": "2025-11-08T22:23:38.255305",
+      "success": false,
+      "worker_id": 5,
+      "processing_time_seconds": 1.3557045459747314,
+      "gpu_device": 2
+    },
+    {
+      "id": "govinfo_bulk_CREC_chunk_0_20251108_222335",
+      "type": "bulk",
+      "source": "govinfo_bulk",
+      "script": "tools/govinfo/govinfo_bill_ingestion.py",
+      "params": {
+        "collection": "CREC",
+        "congress_range": "93-119",
+        "chunk_id": 0,
+        "total_chunks": 3
+      },
+      "gpu_enabled": true,
+      "async_enabled": true,
+      "gpu_device": 1,
+      "priority": 2,
+      "enqueued_at": "2025-11-08T22:23:35.521863",
+      "processed_at": "2025-11-08T22:23:38.271765",
+      "success": false,
+      "worker_id": 4,
+      "processing_time_seconds": 0.04733014106750488
+    },
+    {
+      "id": "govinfo_bulk_CREC_chunk_1_20251108_222335",
+      "type": "bulk",
+      "source": "govinfo_bulk",
+      "script": "tools/govinfo/govinfo_bill_ingestion.py",
+      "params": {
+        "collection": "CREC",
+        "congress_range": "93-119",
+        "chunk_id": 1,
+        "total_chunks": 3
+      },
+      "gpu_enabled": true,
+      "async_enabled": true,
+      "gpu_device": 1,
+      "priority": 2,
+      "enqueued_at": "2025-11-08T22:23:35.521877",
+      "processed_at": "2025-11-08T22:23:38.273814",
+      "success": false,
+      "worker_id": 1,
+      "processing_time_seconds": 0.04685616493225098
+    },
+    {
+      "id": "congress_api_members_108-112_20251108_222335",
+      "type": "members",
+      "source": "congress_api",
+      "script": "tools/ingestion/core/ingest_federal_data.py",
+      "params": {
+        "start_congress": 112,
+        "end_congress": 108,
+        "batch_size": 1000
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.519060",
+      "processed_at": "2025-11-08T22:23:38.279834",
+      "success": false,
+      "worker_id": 6,
+      "processing_time_seconds": 1.2839157581329346,
+      "gpu_device": 0
+    },
+    {
+      "id": "govinfo_bulk_CREC_chunk_2_20251108_222335",
+      "type": "bulk",
+      "source": "govinfo_bulk",
+      "script": "tools/govinfo/govinfo_bill_ingestion.py",
+      "params": {
+        "collection": "CREC",
+        "congress_range": "93-119",
+        "chunk_id": 2,
+        "total_chunks": 3
+      },
+      "gpu_enabled": true,
+      "async_enabled": true,
+      "gpu_device": 1,
+      "priority": 2,
+      "enqueued_at": "2025-11-08T22:23:35.521891",
+      "processed_at": "2025-11-08T22:23:38.280632",
+      "success": false,
+      "worker_id": 7,
+      "processing_time_seconds": 0.049868106842041016
+    },
+    {
+      "id": "openstates_CA_20251108_222335",
+      "type": "state_data",
+      "source": "openstates",
+      "script": "tools/ingestion/openstates/openstates_ingestion.py",
+      "params": {
+        "state": "CA",
+        "years": "2005-2025"
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.523696",
+      "processed_at": "2025-11-08T22:23:38.303101",
+      "success": false,
+      "worker_id": 5,
+      "processing_time_seconds": 0.04578042030334473,
+      "gpu_device": 2
+    },
+    {
+      "id": "openstates_NY_20251108_222335",
+      "type": "state_data",
+      "source": "openstates",
+      "script": "tools/ingestion/openstates/openstates_ingestion.py",
+      "params": {
+        "state": "NY",
+        "years": "2005-2025"
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.523676",
+      "processed_at": "2025-11-08T22:23:38.303730",
+      "success": false,
+      "worker_id": 0,
+      "processing_time_seconds": 0.0525355339050293,
+      "gpu_device": 0
+    },
+    {
+      "id": "openstates_TX_20251108_222335",
+      "type": "state_data",
+      "source": "openstates",
+      "script": "tools/ingestion/openstates/openstates_ingestion.py",
+      "params": {
+        "state": "TX",
+        "years": "2005-2025"
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.523711",
+      "processed_at": "2025-11-08T22:23:38.321717",
+      "success": false,
+      "worker_id": 4,
+      "processing_time_seconds": 0.0466761589050293,
+      "gpu_device": 1
+    },
+    {
+      "id": "openstates_IL_20251108_222335",
+      "type": "state_data",
+      "source": "openstates",
+      "script": "tools/ingestion/openstates/openstates_ingestion.py",
+      "params": {
+        "state": "IL",
+        "years": "2005-2025"
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.523739",
+      "processed_at": "2025-11-08T22:23:38.333195",
+      "success": false,
+      "worker_id": 6,
+      "processing_time_seconds": 0.049690961837768555,
+      "gpu_device": 0
+    },
+    {
+      "id": "openstates_FL_20251108_222335",
+      "type": "state_data",
+      "source": "openstates",
+      "script": "tools/ingestion/openstates/openstates_ingestion.py",
+      "params": {
+        "state": "FL",
+        "years": "2005-2025"
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.523725",
+      "processed_at": "2025-11-08T22:23:38.337957",
+      "success": false,
+      "worker_id": 1,
+      "processing_time_seconds": 0.05948495864868164,
+      "gpu_device": 1
+    },
+    {
+      "id": "openstates_PA_20251108_222335",
+      "type": "state_data",
+      "source": "openstates",
+      "script": "tools/ingestion/openstates/openstates_ingestion.py",
+      "params": {
+        "state": "PA",
+        "years": "2005-2025"
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.523753",
+      "processed_at": "2025-11-08T22:23:38.338691",
+      "success": false,
+      "worker_id": 7,
+      "processing_time_seconds": 0.05332684516906738,
+      "gpu_device": 1
+    },
+    {
+      "id": "openstates_OH_20251108_222335",
+      "type": "state_data",
+      "source": "openstates",
+      "script": "tools/ingestion/openstates/openstates_ingestion.py",
+      "params": {
+        "state": "OH",
+        "years": "2005-2025"
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.523766",
+      "processed_at": "2025-11-08T22:23:38.353046",
+      "success": false,
+      "worker_id": 5,
+      "processing_time_seconds": 0.04699277877807617,
+      "gpu_device": 2
+    },
+    {
+      "id": "openstates_GA_20251108_222335",
+      "type": "state_data",
+      "source": "openstates",
+      "script": "tools/ingestion/openstates/openstates_ingestion.py",
+      "params": {
+        "state": "GA",
+        "years": "2005-2025"
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.523778",
+      "processed_at": "2025-11-08T22:23:38.361766",
+      "success": false,
+      "worker_id": 0,
+      "processing_time_seconds": 0.054204463958740234,
+      "gpu_device": 0
+    },
+    {
+      "id": "openstates_NC_20251108_222335",
+      "type": "state_data",
+      "source": "openstates",
+      "script": "tools/ingestion/openstates/openstates_ingestion.py",
+      "params": {
+        "state": "NC",
+        "years": "2005-2025"
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.523791",
+      "processed_at": "2025-11-08T22:23:38.371479",
+      "success": false,
+      "worker_id": 4,
+      "processing_time_seconds": 0.04771542549133301,
+      "gpu_device": 1
+    },
+    {
+      "id": "openlegislature_bills_20251108_222335",
+      "type": "collection",
+      "source": "openlegislature",
+      "script": "tools/ingestion/openlegislature/ny_legislation_ingestion.py",
+      "params": {
+        "collection": "bills",
+        "years": "2005-2025",
+        "batch_size": 2000
+      },
+      "gpu_enabled": true,
+      "async_enabled": true,
+      "gpu_device": 1,
+      "priority": 2,
+      "enqueued_at": "2025-11-08T22:23:35.525386",
+      "processed_at": "2025-11-08T22:23:38.388759",
+      "success": false,
+      "worker_id": 1,
+      "processing_time_seconds": 0.047769784927368164
+    },
+    {
+      "id": "openstates_MI_20251108_222335",
+      "type": "state_data",
+      "source": "openstates",
+      "script": "tools/ingestion/openstates/openstates_ingestion.py",
+      "params": {
+        "state": "MI",
+        "years": "2005-2025"
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.523805",
+      "processed_at": "2025-11-08T22:23:38.404937",
+      "success": false,
+      "worker_id": 6,
+      "processing_time_seconds": 0.06957745552062988,
+      "gpu_device": 0
+    },
+    {
+      "id": "openlegislature_laws_20251108_222335",
+      "type": "collection",
+      "source": "openlegislature",
+      "script": "tools/ingestion/openlegislature/ny_legislation_ingestion.py",
+      "params": {
+        "collection": "laws",
+        "years": "2005-2025",
+        "batch_size": 2000
+      },
+      "gpu_enabled": true,
+      "async_enabled": true,
+      "gpu_device": 1,
+      "priority": 2,
+      "enqueued_at": "2025-11-08T22:23:35.525406",
+      "processed_at": "2025-11-08T22:23:38.411899",
+      "success": false,
+      "worker_id": 7,
+      "processing_time_seconds": 0.06847977638244629
+    },
+    {
+      "id": "openlegislature_calendars_20251108_222335",
+      "type": "collection",
+      "source": "openlegislature",
+      "script": "tools/ingestion/openlegislature/ny_legislation_ingestion.py",
+      "params": {
+        "collection": "calendars",
+        "years": "2005-2025",
+        "batch_size": 2000
+      },
+      "gpu_enabled": true,
+      "async_enabled": true,
+      "gpu_device": 2,
+      "priority": 2,
+      "enqueued_at": "2025-11-08T22:23:35.525421",
+      "processed_at": "2025-11-08T22:23:38.422385",
+      "success": false,
+      "worker_id": 5,
+      "processing_time_seconds": 0.06735849380493164
+    },
+    {
+      "id": "congress_api_members_118-119_20251108_222335",
+      "type": "members",
+      "source": "congress_api",
+      "script": "tools/ingestion/core/ingest_federal_data.py",
+      "params": {
+        "start_congress": 119,
+        "end_congress": 118,
+        "batch_size": 1000
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.519094",
+      "processed_at": "2025-11-08T22:23:39.139347",
+      "success": false,
+      "worker_id": 3,
+      "processing_time_seconds": 1.149815559387207,
+      "gpu_device": 0
+    },
+    {
+      "id": "congress_api_members_113-117_20251108_222335",
+      "type": "members",
+      "source": "congress_api",
+      "script": "tools/ingestion/core/ingest_federal_data.py",
+      "params": {
+        "start_congress": 117,
+        "end_congress": 113,
+        "batch_size": 1000
+      },
+      "gpu_enabled": false,
+      "async_enabled": true,
+      "rate_limit": 1000,
+      "priority": 1,
+      "enqueued_at": "2025-11-08T22:23:35.519077",
+      "processed_at": "2025-11-08T22:23:39.155213",
+      "success": false,
+      "worker_id": 2,
+      "processing_time_seconds": 1.177727460861206,
+      "gpu_device": 2
+    }
+  ]
+}
