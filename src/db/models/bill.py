@@ -475,7 +475,7 @@ class BillEmbedding(Base):
     bill_print_no: Mapped[str] = mapped_column(String)
     bill_session_year: Mapped[int] = mapped_column(SmallInteger)
     embedding: Mapped[Optional[List[float]]] = mapped_column(PGVector(1536))
-    metadata: Mapped[Optional[dict]] = mapped_column(JSONB)
+    embedding_metadata: Mapped[Optional[dict]] = mapped_column(JSONB)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     bill: Mapped[Bill] = relationship("Bill", back_populates="embeddings")

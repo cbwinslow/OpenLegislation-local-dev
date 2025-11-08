@@ -45,10 +45,19 @@ import json
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Any, Union
 import logging
+from pathlib import Path
+
+# Add tools to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))  # Add project root for decorators
 
 from tools.config.settings import settings
-from generic_ingestion_tracker import GenericIngestionTracker, IngestionRecord
-from ingestion_progress import create_progress_tracker
+from .generic_ingestion_tracker import GenericIngestionTracker, IngestionRecord
+from .ingestion_progress import create_progress_tracker
+from decorators import (
+    ingestion_performance, telemetry, performance_monitor,
+    feature_flag, TelemetryCollector, PerformanceMonitor
+)
 
 
 class BaseIngestionProcess(ABC):
@@ -105,6 +114,7 @@ class BaseIngestionProcess(ABC):
         pass
 
     @abstractmethod
+    @ingestion_performance(track_records=True)
     def process_record(self, record: Dict[str, Any]) -> bool:
         """Process a single record
 
@@ -181,17 +191,22 @@ class BaseIngestionProcess(ABC):
         pending = self.tracker.get_pending_records()
         return pending
 
+    @ingestion_performance(track_records=True, track_api_calls=True)
+    @feature_flag("ingestion_enabled", default_enabled=True)
     def run(
-        self, resume: bool = True, reset: bool = False, limit: Optional[int] = None
+        self, resume: bool = True, reset: bool = False, dry_run: bool = False
     ):
         """Run the complete ingestion process
 
         Args:
             resume: Whether to resume from previous run
             reset: Whether to reset all records to pending
-            limit: Maximum number of records to process
         """
         print(f"Starting {self.get_data_source()} ingestion process...")
+        
+        if dry_run:
+            print("🔍 DRY RUN MODE - No changes will be made")
+            return
 
         # Initialize tracker
         self.initialize_tracker()
@@ -219,10 +234,8 @@ class BaseIngestionProcess(ABC):
             print("All records already processed!")
             return
 
-        # Apply limit if specified
-        if limit:
-            records_to_process = records_to_process[:limit]
-            print(f"Limited to {len(records_to_process)} records")
+        # Process all records without limits
+        print(f"Processing all {len(records_to_process)} records")
 
         # Initialize progress tracking
         if self.enable_progress:
@@ -323,7 +336,6 @@ def create_cli_parser(process_name: str) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=f"Ingest {process_name} data")
     parser.add_argument("--db-config", help="Database config JSON file")
     parser.add_argument("--session-id", help="Custom session ID for tracking")
-    parser.add_argument("--limit", type=int, help="Limit number of records to process")
     parser.add_argument(
         "--no-resume", action="store_true", help="Start fresh instead of resuming"
     )
@@ -332,6 +344,9 @@ def create_cli_parser(process_name: str) -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--no-progress", action="store_true", help="Disable progress reporting"
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Simulate without making changes"
     )
     return parser
 
@@ -360,7 +375,7 @@ def run_ingestion_process(process_class, process_name: str):
 
     try:
         resume = not args.no_resume
-        process.run(resume=resume, reset=args.reset, limit=args.limit)
+        process.run(resume=resume, reset=args.reset, dry_run=getattr(args, 'dry_run', False))
     except KeyboardInterrupt:
         print("\nInterrupted by user")
         if process.progress:

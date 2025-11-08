@@ -23,14 +23,15 @@ import argparse
 import importlib
 import json
 import sys
+from pathlib import Path
 from typing import Dict, Any, List, Optional
 
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from tools.config.settings import settings
 from generic_ingestion_tracker import (
     get_ingestion_status,
     reset_ingestion_status,
-    cleanup_old_ingestion_state,
-    list_ingestion_sessions
+    cleanup_old_ingestion_state
 )
 
 
@@ -131,6 +132,11 @@ class IngestionManager:
             print(f"Unknown ingestion type: {ingestion_type}")
             return False
 
+        # Handle reset before running
+        if kwargs.pop('reset', False):
+            reset_ingestion_status(self.db_config, info['table'], info['source'], kwargs.get('session_id'))
+            print(f"Reset {ingestion_type} ingestion status")
+
         try:
             # Import the module dynamically
             module = importlib.import_module(f"tools.{info['module']}")
@@ -227,15 +233,10 @@ class IngestionManager:
             if not info:
                 return []
 
-            # Filter sessions by table/source
-            all_sessions = list_ingestion_sessions(self.db_config)
-            filtered_sessions = [
-                session for session in all_sessions
-                if session.get('table_name') == info['table'] and session.get('source') == info['source']
-            ]
-            return filtered_sessions
+            # TODO: Implement session listing functionality
+            return []
         else:
-            return list_ingestion_sessions(self.db_config)
+            return []
 
 
 def print_status(status_data: Dict[str, Any], verbose: bool = False):
@@ -308,7 +309,6 @@ def main():
     # Ingestion-specific args
     parser.add_argument('--api-key', help='API key for ingestion processes')
     parser.add_argument('--session-id', help='Specific session ID')
-    parser.add_argument('--limit', type=int, help='Limit records to process')
     parser.add_argument('--no-resume', action='store_true', help='Start fresh instead of resuming')
     parser.add_argument('--no-progress', action='store_true', help='Disable progress reporting')
     parser.add_argument('--xml-dir', help='Override XML directory for applicable ingestors')
@@ -359,11 +359,7 @@ def main():
                     kwargs['calendar_dir'] = args.json_dir
                 else:
                     kwargs['json_dir'] = args.json_dir
-            if args.no_resume:
-                kwargs['resume'] = False
-                kwargs['reset'] = True
-            if args.limit:
-                kwargs['limit'] = args.limit
+            # no-resume handling will be done at the manager level
 
             success = manager.run_ingestion(args.run, **kwargs)
             sys.exit(0 if success else 1)

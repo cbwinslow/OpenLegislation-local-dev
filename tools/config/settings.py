@@ -8,52 +8,54 @@ in the tools directory. Settings are loaded from environment variables and .env 
 import os
 from typing import Optional
 from pydantic import Field
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables and .env file."""
 
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="allow"  # Allow extra fields from environment variables
+    )
+
     # Database Configuration
-    pghost: str = Field(default="localhost", env="PGHOST")
-    pgport: int = Field(default=5432, env="PGPORT")
-    pguser: str = Field(default="postgres", env="PGUSER")
-    pgpassword: str = Field(default="", env="PGPASSWORD")
-    pgdatabase: str = Field(default="openleg", env="PGDATABASE")
+    pghost: str = Field(default="localhost")
+    pgport: int = Field(default=5432)
+    pguser: str = Field(default="postgres")
+    pgpassword: str = Field(default="")
+    pgdatabase: str = Field(default="openleg")
 
     # JDBC URL (computed from DB settings)
-    jdbc_database_url: Optional[str] = Field(default=None, env="JDBC_DATABASE_URL")
+    jdbc_database_url: Optional[str] = Field(default=None)
 
     # Test Database Configuration
-    test_db_host: str = Field(default="localhost", env="TEST_DB_HOST")
-    test_db_port: int = Field(default=5432, env="TEST_DB_PORT")
-    test_db_name: str = Field(default="openleg_test", env="TEST_DB_NAME")
-    test_db_user: str = Field(default="postgres", env="TEST_DB_USER")
-    test_db_password: str = Field(default="", env="TEST_DB_PASSWORD")
+    test_db_host: str = Field(default="localhost")
+    test_db_port: int = Field(default=5432)
+    test_db_name: str = Field(default="openleg_test")
+    test_db_user: str = Field(default="postgres")
+    test_db_password: str = Field(default="")
 
     # API Keys
-    congress_api_key: str = Field(default="", env="CONGRESS_API_KEY")
-    govinfo_api_key: str = Field(default="", env="GOVINFO_API_KEY")
+    congress_api_key: str = Field(default="")
+    govinfo_api_key: str = Field(default="")
 
     # GPU Configuration
-    use_gpu: bool = Field(default=False, env="USE_GPU")
-    cuda_visible_devices: str = Field(default="", env="CUDA_VISIBLE_DEVICES")
+    use_gpu: bool = Field(default=False)
+    cuda_visible_devices: str = Field(default="")
 
-    # Script Configuration
+    # Script Configuration - Updated for full data ingestion
     max_errors: int = Field(
-        default=100, description="Maximum number of errors before script fails"
+        default=10000, description="Maximum number of errors before script fails (increased for full ingestion)"
     )
     request_timeout: int = Field(
-        default=30, description="HTTP request timeout in seconds"
+        default=120, description="HTTP request timeout in seconds (increased for large datasets)"
     )
     rate_limit_delay: float = Field(
-        default=0.5, description="Delay between API requests in seconds"
+        default=0.1, description="Delay between API requests in seconds (reduced for faster ingestion)"
     )
-
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
 
     @property
     def db_config(self) -> dict:

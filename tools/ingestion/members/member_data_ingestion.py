@@ -9,17 +9,22 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import sys
 from pathlib import Path
 from typing import Dict, Iterable, Iterator, List, Optional
 
 import ijson
 
-from base_ingestion_process import BaseIngestionProcess
+# Add tools to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
+
+from tools.ingestion.core.base_ingestion_process import BaseIngestionProcess
 from tools.config.settings import settings
 
 from govinfo.models import GovInfoMemberRecord, GovInfoMemberSession
 from govinfo.persistence import persist_member_record
-from db.session import session_scope
+from src.db.session import session_scope
 
 logger = logging.getLogger(__name__)
 

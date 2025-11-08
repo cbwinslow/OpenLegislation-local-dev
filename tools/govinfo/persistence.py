@@ -1,13 +1,18 @@
 from __future__ import annotations
 
+import sys
 from dataclasses import asdict
 from datetime import datetime, date
 from typing import Optional
 import logging
+from pathlib import Path
 
 from sqlalchemy.orm import Session
 
-from db.models.bill import (
+# Add src to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from src.db.models.bill import (
     Bill,
     BillAmendment,
     BillAmendmentAction,
@@ -15,52 +20,77 @@ from db.models.bill import (
     BillAmendmentVoteRoll,
     BillMilestone,
 )
-from db.models.agenda import (
+from src.db.models.agenda import (
     Agenda,
     AgendaInfoAddendum,
     AgendaInfoCommittee,
     AgendaInfoCommitteeItem,
     AgendaVoteAddendum,
     AgendaVoteCommittee,
-    AgendaVoteCommitteeAttend,
     AgendaVoteCommitteeVote,
+    AgendaVoteCommitteeAttend,
 )
-from db.models.calendar import (
+from src.db.models.calendar import (
     Calendar,
     CalendarActiveList,
     CalendarActiveListEntry,
     CalendarSupplemental,
     CalendarSupplementalEntry,
 )
-from db.models.member import Person, Member, SessionMember
-from db.models.raw import GovInfoRawPayload
-from db.models.bill import BillEmbedding
+from src.db.models.member import Person, Member, SessionMember
+from src.db.models.raw import GovInfoRawPayload
+from src.db.models.bill import BillEmbedding
 
 from tools.embeddings.embedder import EmbeddingService
 from tools.storage.minio_client import archive_json_payload
 
-from .models import (
-    GovInfoBillRecord,
-    GovInfoAction,
-    GovInfoAgendaRecord,
-    GovInfoAgendaAddendum,
-    GovInfoAgendaCommittee,
-    GovInfoAgendaCommitteeItem,
-    GovInfoAgendaVoteAddendum,
-    GovInfoAgendaVoteCommittee,
-    GovInfoAgendaVoteAttendance,
-    GovInfoAgendaVoteDecision,
-    GovInfoCalendarRecord,
-    GovInfoCalendarActiveList,
-    GovInfoCalendarEntry,
-    GovInfoCalendarSupplemental,
-    GovInfoMemberRecord,
-    GovInfoMemberSession,
-    GovInfoVoteRecord,
-    GovInfoVoteRollEntry,
-    GovInfoBillStatusRecord,
-    GovInfoBillMilestone,
-)
+try:
+    from tools.govinfo.models import (
+        GovInfoBillRecord,
+        GovInfoAction,
+        GovInfoAgendaRecord,
+        GovInfoAgendaAddendum,
+        GovInfoAgendaCommittee,
+        GovInfoAgendaCommitteeItem,
+        GovInfoAgendaVoteAddendum,
+        GovInfoAgendaVoteCommittee,
+        GovInfoAgendaVoteAttendance,
+        GovInfoAgendaVoteDecision,
+        GovInfoCalendarRecord,
+        GovInfoCalendarActiveList,
+        GovInfoCalendarEntry,
+        GovInfoCalendarSupplemental,
+        GovInfoMemberRecord,
+        GovInfoMemberSession,
+        GovInfoVoteRecord,
+        GovInfoVoteRollEntry,
+        GovInfoBillStatusRecord,
+        GovInfoBillMilestone,
+    )
+except ImportError:
+    # Fallback for direct execution
+    from models import (
+        GovInfoBillRecord,
+        GovInfoAction,
+        GovInfoAgendaRecord,
+        GovInfoAgendaAddendum,
+        GovInfoAgendaCommittee,
+        GovInfoAgendaCommitteeItem,
+        GovInfoAgendaVoteAddendum,
+        GovInfoAgendaVoteCommittee,
+        GovInfoAgendaVoteAttendance,
+        GovInfoAgendaVoteDecision,
+        GovInfoCalendarRecord,
+        GovInfoCalendarActiveList,
+        GovInfoCalendarEntry,
+        GovInfoCalendarSupplemental,
+        GovInfoMemberRecord,
+        GovInfoMemberSession,
+        GovInfoVoteRecord,
+        GovInfoVoteRollEntry,
+        GovInfoBillStatusRecord,
+        GovInfoBillMilestone,
+    )
 
 
 def persist_bill_record(session: Session, record: GovInfoBillRecord) -> Bill:

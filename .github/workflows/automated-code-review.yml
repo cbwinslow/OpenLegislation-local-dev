@@ -47,7 +47,7 @@ concurrency:
 
 defaults:
   run:
-    shell: bash -euo pipefail
+    shell: bash
 
 env:
   FORCE_COLOR: "1"
@@ -174,6 +174,7 @@ jobs:
 
       - name: Install deps (auto-detect package manager)
         run: |
+          set -euo pipefail
           if [[ -f pnpm-lock.yaml ]]; then npm i -g pnpm && pnpm i --frozen-lockfile; 
           elif [[ -f yarn.lock ]]; then corepack enable && yarn install --frozen-lockfile; 
           elif [[ -f bun.lockb ]]; then curl -fsSL https://bun.sh/install | bash && ~/.bun/bin/bun install; 
@@ -221,6 +222,7 @@ jobs:
 
       - name: Install tooling
         run: |
+          set -euo pipefail
           python -m pip install --upgrade pip
           pip install ruff mypy bandit pytest pytest-cov
           if [[ -f requirements.txt ]]; then pip install -r requirements.txt || true; fi
@@ -428,6 +430,7 @@ jobs:
         with: { fetch-depth: 0 }
       - name: Generate complexity report
         run: |
+          set -euo pipefail
           mkdir -p "$REPORT_DIR"
           echo "# Code Complexity Analysis" > "$REPORT_DIR/complexity-report.md"
           echo >> "$REPORT_DIR/complexity-report.md"
