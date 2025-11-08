@@ -91,3 +91,4 @@ src/test/java/gov/nysenate/openleg/SillyTests.java
 
 # AI rules/instructions that shouldn't be committed
 .github/instructions/codacy.instructions.md
+actionlint
