@@ -30,14 +30,19 @@ Usage:
 """
 
 import uuid
+import sys
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Union, Tuple
 from dataclasses import dataclass
+from pathlib import Path
 
 import psycopg2
 import psycopg2.extras
 
-from tools.config.settings import settings
+# Add tools to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from config.settings import settings
 
 
 @dataclass

@@ -17,19 +17,23 @@ Requirements:
 
 import json
 import sys
+from pathlib import Path
 from typing import Dict, List, Optional, Any
 
 import psycopg2
 import psycopg2.extras
 import requests
 
-from tools.config.settings import settings
+# Add tools to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from config.settings import settings
 from member_utils import (
     normalize_chamber,
     derive_chamber_from_terms,
     derive_state_from_term,
 )
-from base_ingestion_process import BaseIngestionProcess, run_ingestion_process
+from ingestion.core.base_ingestion_process import BaseIngestionProcess, run_ingestion_process
 
 
 class CongressMemberIngestor(BaseIngestionProcess):

@@ -45,10 +45,14 @@ import json
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional, Any, Union
 import logging
+from pathlib import Path
 
-from tools.config.settings import settings
-from generic_ingestion_tracker import GenericIngestionTracker, IngestionRecord
-from ingestion_progress import create_progress_tracker
+# Add tools to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from config.settings import settings
+from .generic_ingestion_tracker import GenericIngestionTracker, IngestionRecord
+from .ingestion_progress import create_progress_tracker
 
 
 class BaseIngestionProcess(ABC):
@@ -182,7 +186,7 @@ class BaseIngestionProcess(ABC):
         return pending
 
     def run(
-        self, resume: bool = True, reset: bool = False, limit: Optional[int] = None
+        self, resume: bool = True, reset: bool = False, limit: Optional[int] = None, dry_run: bool = False
     ):
         """Run the complete ingestion process
 
@@ -192,6 +196,10 @@ class BaseIngestionProcess(ABC):
             limit: Maximum number of records to process
         """
         print(f"Starting {self.get_data_source()} ingestion process...")
+        
+        if dry_run:
+            print("🔍 DRY RUN MODE - No changes will be made")
+            return
 
         # Initialize tracker
         self.initialize_tracker()
@@ -333,6 +341,9 @@ def create_cli_parser(process_name: str) -> argparse.ArgumentParser:
     parser.add_argument(
         "--no-progress", action="store_true", help="Disable progress reporting"
     )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Simulate without making changes"
+    )
     return parser
 
 
@@ -360,7 +371,7 @@ def run_ingestion_process(process_class, process_name: str):
 
     try:
         resume = not args.no_resume
-        process.run(resume=resume, reset=args.reset, limit=args.limit)
+        process.run(resume=resume, reset=args.reset, limit=args.limit, dry_run=getattr(args, 'dry_run', False))
     except KeyboardInterrupt:
         print("\nInterrupted by user")
         if process.progress:

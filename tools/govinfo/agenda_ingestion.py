@@ -13,21 +13,17 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-import os
-from datetime import datetime
+import sys
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 
-from base_ingestion_process import BaseIngestionProcess
-from tools.config.settings import settings
+# Add tools to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from .models import (
-    GovInfoAgendaRecord,
-    GovInfoAgendaAddendum,
-    GovInfoAgendaCommittee,
-    GovInfoAgendaCommitteeItem,
-)
-from .persistence import persist_agenda_record
+from ingestion.core.base_ingestion_process import BaseIngestionProcess
+from config.settings import settings
+
 from db.session import session_scope
 
 logger = logging.getLogger(__name__)
