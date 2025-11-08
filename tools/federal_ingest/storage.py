@@ -5,7 +5,7 @@ import json
 import logging
 from datetime import date, datetime
 from pathlib import Path
-from typing import Iterable
+from typing import Any, Iterable
 
 import requests
 
@@ -14,19 +14,7 @@ from .normalization import NormalizedRecord
 logger = logging.getLogger(__name__)
 
 
-def _json_default(value):  # type: ignore[override]
-    """
-    Provide JSON-serializable representations for non-standard Python values.
-    
-    Parameters:
-        value: The value to convert for JSON serialization (commonly datetime, date, or set).
-    
-    Returns:
-        An ISO 8601 string for `datetime`/`date` objects, a `list` for `set` objects, or the original value if already serializable.
-    
-    Raises:
-        TypeError: If `value` is not a `datetime`, `date`, or `set` and cannot be serialized by this helper.
-    """
+
     if isinstance(value, (datetime, date)):
         return value.isoformat()
     if isinstance(value, set):
