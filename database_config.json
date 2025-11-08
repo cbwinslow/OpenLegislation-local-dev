@@ -1,0 +1,49 @@
+{
+  "database": {
+    "host": "100.90.23.60",
+    "port": 5432,
+    "database": "opendiscourse",
+    "user": "opendiscourse",
+    "password": "opendiscourse123",
+    "connection_string": "postgresql://opendiscourse:opendiscourse123@100.90.23.60:5432/opendiscourse",
+    "ssl_mode": "require",
+    "connection_timeout": 30,
+    "max_connections": 20,
+    "min_connections": 5
+  },
+  "redis": {
+    "host": "100.90.23.60",
+    "port": 6379,
+    "password": "",
+    "db": 0,
+    "connection_string": "redis://100.90.23.60:6379/0"
+  },
+  "external_apis": {
+    "congress_gov": {
+      "base_url": "https://api.congress.gov/v3",
+      "timeout": 30,
+      "retry_attempts": 3,
+      "rate_limit_per_minute": 1000
+    },
+    "govinfo": {
+      "base_url": "https://api.govinfo.gov",
+      "timeout": 30,
+      "retry_attempts": 3,
+      "rate_limit_per_minute": 1000
+    }
+  },
+  "ingestion": {
+    "batch_size": 1000,
+    "max_workers": 8,
+    "gpu_acceleration": true,
+    "parallel_processing": true,
+    "error_retry_attempts": 3,
+    "error_retry_delay": 60
+  },
+  "monitoring": {
+    "enabled": true,
+    "metrics_interval": 30,
+    "health_check_interval": 60,
+    "alert_email": "admin@openlegislation.org"
+  }
+}

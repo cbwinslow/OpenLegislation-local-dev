@@ -1,0 +1,29 @@
+{
+  "operation": "master_ingestion",
+  "ingestion_type": "all",
+  "results": {
+    "migrations": {
+      "operation": "sql_migrations",
+      "migrations_run": [
+        "src/main/resources/sql/migrations/V20250921.0004__federal_member_schema.sql",
+        "src/main/resources/sql/migrations/V20250921.0003__universal_bill_schema.sql",
+        "src/main/resources/db/migration/V20250930.0001__federal_all_tables.sql",
+        "src/main/resources/db/migration/V20250928.0001__ingestion_optimizations.sql"
+      ],
+      "errors": [],
+      "start_time": "2025-11-08T21:12:11.654660",
+      "end_time": "2025-11-08T21:12:11.654957"
+    },
+    "congress_api": {
+      "error": "No module named 'structlog'"
+    },
+    "federal_members": {
+      "error": "No module named 'pydantic'"
+    },
+    "govinfo": {
+      "error": "No module named 'base_ingestion_process'"
+    }
+  },
+  "start_time": "2025-11-08T21:12:11.654543",
+  "end_time": "2025-11-08T21:12:12.743364"
+}

@@ -1,0 +1,131 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "openlegislation"
+version = "0.1.0"
+description = "Open Legislation Processing Platform"
+readme = "README.md"
+requires-python = ">=3.10,<3.14"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    # Core dependencies
+    "requests>=2.31.0",
+    "SQLAlchemy>=2.0.23",
+    "psycopg2-binary>=2.9.9",
+    "tenacity>=8.2.3",
+    "structlog>=23.2.0",
+    "python-dotenv>=1.0.0",
+    "pydantic[email]>=1.10.15",
+    "redis>=5.0.1",
+
+    # CrewAI dependencies
+    "crewai>=0.32.0",
+    "crewai-tools>=0.4.26",
+    "langchain>=0.1.20",
+    "langchain-openai>=0.1.7",
+    "langchain-anthropic>=0.1.11",
+    "openai>=1.35.7",
+    "anthropic>=0.28.0",
+
+    # Web crawling dependencies
+    "crawl4ai>=0.3.0",
+
+    # ML and NLP dependencies for political analysis
+    "sentence-transformers>=2.2.2",
+    "transformers>=4.36.2",
+    "torch>=2.1.2",
+    "scikit-learn>=1.3.2",
+    "pandas>=2.1.4",
+    "numpy>=1.24.3",
+    "matplotlib>=3.8.2",
+    "seaborn>=0.13.0",
+
+    # Additional dependencies found in codebase
+    "aiohttp>=3.8.0",
+    "tqdm>=4.64.0",
+    "schedule>=1.2.0",
+    "flask>=2.3.0",
+    "psutil>=5.9.0",
+    "pydantic-settings>=2.0.0",
+
+    # Testing dependencies
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-mock>=3.10.0",
+    "asyncpg>=0.29.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+    "pre-commit>=3.0.0",
+]
+test = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-mock>=3.10.0",
+    "asyncpg>=0.29.0",
+    "coverage>=7.0.0",
+]
+docs = [
+    "sphinx>=5.0.0",
+    "sphinx-rtd-theme>=1.2.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src", "tools", "crewai", "agents", "automation", "webhook-server"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "performance: Performance tests",
+    "asyncio: Async tests",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["src", "tools", "crewai", "agents", "automation"]
+skip = ["__init__.py"]

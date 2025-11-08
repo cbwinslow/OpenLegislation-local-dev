@@ -19,6 +19,9 @@ anthropic==0.28.0
 python-dotenv==1.0.0
 pydantic==2.7.1
 
+# Web crawling dependencies
+crawl4ai==0.3.0
+
 # ML and NLP dependencies for political analysis
 sentence-transformers==2.2.2
 transformers==4.36.2

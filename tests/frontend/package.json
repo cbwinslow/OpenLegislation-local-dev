@@ -1,0 +1,45 @@
+{
+  "name": "openlegislation-frontend-tests",
+  "version": "1.0.0",
+  "description": "Frontend test suite for Open Legislation platform",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": ["<rootDir>/setupTests.js"],
+    "moduleNameMapping": {
+      "^@/(.*)$": "<rootDir>/src/$1",
+      "^@/components/(.*)$": "<rootDir>/components/$1",
+      "^@/lib/(.*)$": "<rootDir>/lib/$1",
+      "^@/utils/(.*)$": "<rootDir>/utils/$1"
+    },
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx,ts,tsx}",
+      "components/**/*.{js,jsx,ts,tsx}",
+      "!src/index.js",
+      "!src/serviceWorker.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 70,
+        "functions": 70,
+        "lines": 70,
+        "statements": 70
+      }
+    }
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^5.16.4",
+    "@testing-library/react": "^13.3.0",
+    "@testing-library/user-event": "^14.4.3",
+    "jest": "^27.5.1",
+    "jest-environment-jsdom": "^27.5.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "dependencies": {}
+}

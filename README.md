@@ -77,6 +77,15 @@ Past Developers
 
 This repository is organized into several key directories, each serving a specific purpose in the OpenLegislation ecosystem:
 
+### Project Documentation
+- **`project_summary.md`** - High-level project overview and capabilities
+- **`knowledge_base.md`** - Essential notes and crucial information for understanding the repository
+- **`README.md`** - Main project documentation
+- **`docs/`** - Comprehensive documentation including setup guides, API references, and development docs
+- **`demos/`** - Demo scripts and sample outputs
+- **`logs/`** - Application and ingestion log files
+- **`scripts/`** - Setup and utility scripts
+
 ### Core Application
 - **`src/`** - Java source code for the OpenLegislation application
   - `main/` - Main application code including API controllers, data processors, and business logic
@@ -146,6 +155,7 @@ This repository is organized into several key directories, each serving a specif
   - Federal data integration guides (Congress.gov, GovInfo)
   - Database schema documentation
   - Deployment and setup guides
+  - Automation and ingestion guides (moved from root)
   - See [docs/pr-automation-README.md](docs/pr-automation-README.md) for PR automation details
 
 ### Testing & Quality Assurance
