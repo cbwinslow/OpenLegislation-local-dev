@@ -44,28 +44,53 @@ from src.db.models.bill import BillEmbedding
 from tools.embeddings.embedder import EmbeddingService
 from tools.storage.minio_client import archive_json_payload
 
-from .models import (
-    GovInfoBillRecord,
-    GovInfoAction,
-    GovInfoAgendaRecord,
-    GovInfoAgendaAddendum,
-    GovInfoAgendaCommittee,
-    GovInfoAgendaCommitteeItem,
-    GovInfoAgendaVoteAddendum,
-    GovInfoAgendaVoteCommittee,
-    GovInfoAgendaVoteAttendance,
-    GovInfoAgendaVoteDecision,
-    GovInfoCalendarRecord,
-    GovInfoCalendarActiveList,
-    GovInfoCalendarEntry,
-    GovInfoCalendarSupplemental,
-    GovInfoMemberRecord,
-    GovInfoMemberSession,
-    GovInfoVoteRecord,
-    GovInfoVoteRollEntry,
-    GovInfoBillStatusRecord,
-    GovInfoBillMilestone,
-)
+try:
+    from tools.govinfo.models import (
+        GovInfoBillRecord,
+        GovInfoAction,
+        GovInfoAgendaRecord,
+        GovInfoAgendaAddendum,
+        GovInfoAgendaCommittee,
+        GovInfoAgendaCommitteeItem,
+        GovInfoAgendaVoteAddendum,
+        GovInfoAgendaVoteCommittee,
+        GovInfoAgendaVoteAttendance,
+        GovInfoAgendaVoteDecision,
+        GovInfoCalendarRecord,
+        GovInfoCalendarActiveList,
+        GovInfoCalendarEntry,
+        GovInfoCalendarSupplemental,
+        GovInfoMemberRecord,
+        GovInfoMemberSession,
+        GovInfoVoteRecord,
+        GovInfoVoteRollEntry,
+        GovInfoBillStatusRecord,
+        GovInfoBillMilestone,
+    )
+except ImportError:
+    # Fallback for direct execution
+    from models import (
+        GovInfoBillRecord,
+        GovInfoAction,
+        GovInfoAgendaRecord,
+        GovInfoAgendaAddendum,
+        GovInfoAgendaCommittee,
+        GovInfoAgendaCommitteeItem,
+        GovInfoAgendaVoteAddendum,
+        GovInfoAgendaVoteCommittee,
+        GovInfoAgendaVoteAttendance,
+        GovInfoAgendaVoteDecision,
+        GovInfoCalendarRecord,
+        GovInfoCalendarActiveList,
+        GovInfoCalendarEntry,
+        GovInfoCalendarSupplemental,
+        GovInfoMemberRecord,
+        GovInfoMemberSession,
+        GovInfoVoteRecord,
+        GovInfoVoteRollEntry,
+        GovInfoBillStatusRecord,
+        GovInfoBillMilestone,
+    )
 
 
 def persist_bill_record(session: Session, record: GovInfoBillRecord) -> Bill:

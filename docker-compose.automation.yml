@@ -1,0 +1,302 @@
+version: '3.8'
+
+services:
+  # n8n - Workflow Automation Platform
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: openlegislation-n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_USER:-admin}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD:-secure_password_change_me}
+      - N8N_HOST=${N8N_HOST:-localhost}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL:-http://localhost:5678}
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=${POSTGRES_DB:-openlegislation}
+      - DB_POSTGRESDB_USER=${POSTGRES_USER:-postgres}
+      - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
+      - EXECUTIONS_PROCESS=main
+      - QUEUE_BULL_REDIS_HOST=redis
+      - QUEUE_BULL_REDIS_PORT=6379
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./automation/n8n_workflows:/home/node/.n8n/workflows
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - automation
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5678/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Flowise - AI Workflow Builder
+  flowise:
+    image: flowiseai/flowise:latest
+    container_name: openlegislation-flowise
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - FLOWISE_USERNAME=${FLOWISE_USER:-admin}
+      - FLOWISE_PASSWORD=${FLOWISE_PASSWORD:-secure_password_change_me}
+      - DATABASE_TYPE=postgres
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=${POSTGRES_DB:-openlegislation}
+      - DATABASE_USER=${POSTGRES_USER:-postgres}
+      - DATABASE_PASSWORD=${POSTGRES_PASSWORD}
+      - APIKEY_PATH=/app/packages/server/data
+      - SECRETKEY_PATH=/app/packages/server/data
+      - LOG_LEVEL=info
+    volumes:
+      - flowise_data:/app/packages/server/data
+      - ./automation/flowise_workflows:/app/packages/server/workflows
+    depends_on:
+      - postgres
+    networks:
+      - automation
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/v1/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Graphite - Real-time Monitoring & Metrics
+  graphite:
+    image: graphiteapp/graphite-web:latest
+    container_name: openlegislation-graphite
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - GRAPHITE_ROOT=/opt/graphite
+      - SECRET_KEY=${GRAPHITE_SECRET_KEY:-change_me_to_random_string}
+      - TIME_ZONE=UTC
+      - USE_X_FORWARDED_HOST=true
+      - DATABASE_TYPE=postgres
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=${POSTGRES_DB:-openlegislation}
+      - DATABASE_USER=${POSTGRES_USER:-postgres}
+      - DATABASE_PASSWORD=${POSTGRES_PASSWORD}
+      - MEMCACHE_HOST=memcached
+      - CARBONLINK_HOSTS=carbon:7002
+    volumes:
+      - graphite_data:/opt/graphite/storage
+      - graphite_config:/opt/graphite/conf
+      - ./automation/graphite_config:/opt/graphite/conf/custom
+    depends_on:
+      - postgres
+      - carbon
+      - memcached
+    networks:
+      - automation
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Carbon (Graphite's data storage backend)
+  carbon:
+    image: graphiteapp/graphite-web:latest
+    container_name: openlegislation-carbon
+    restart: unless-stopped
+    ports:
+      - "2003:2003"  # Carbon line receiver
+      - "2004:2004"  # Carbon pickle receiver
+      - "7002:7002"  # Carbon cache query
+    environment:
+      - GRAPHITE_ROOT=/opt/graphite
+    volumes:
+      - graphite_data:/opt/graphite/storage
+      - graphite_config:/opt/graphite/conf
+    command: /opt/graphite/bin/carbon-cache.py --config=/opt/graphite/conf/carbon.conf start
+    networks:
+      - automation
+
+  # Memcached for Graphite caching
+  memcached:
+    image: memcached:1.6-alpine
+    container_name: openlegislation-memcached
+    restart: unless-stopped
+    command: memcached -m 64
+    networks:
+      - automation
+
+  # Agentic Knowledge Graph (Custom service)
+  agentic-kg:
+    build:
+      context: ./agentic-knowledge-graph
+      dockerfile: Dockerfile
+    container_name: openlegislation-agentic-kg
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-openlegislation}
+      - REDIS_URL=redis://redis:6379
+      - API_KEY=${AGENTIC_KG_API_KEY:-change_me}
+      - LOG_LEVEL=info
+      - MAX_WORKERS=4
+      - ENABLE_CORS=true
+    volumes:
+      - kg_data:/app/data
+      - ./agentic-knowledge-graph/config:/app/config
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - automation
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # PostgreSQL Database (Shared)
+  postgres:
+    image: postgres:15-alpine
+    container_name: openlegislation-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-openlegislation}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database_queue_system.sql:/docker-entrypoint-initdb.d/01-queue.sql
+      - ./enhanced_telemetry_audit_schema.sql:/docker-entrypoint-initdb.d/02-telemetry.sql
+      - ./automation/database_init:/docker-entrypoint-initdb.d/03-automation.sql
+    networks:
+      - automation
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-openlegislation}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Redis (Shared cache and session store)
+  redis:
+    image: redis:7-alpine
+    container_name: openlegislation-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - automation
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # OpenLegislation Main Application
+  openlegislation:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: openlegislation-app
+    restart: unless-stopped
+    ports:
+      - "8001:8000"  # Main API
+      - "8002:8001"  # Queue API
+    environment:
+      - ENVIRONMENT=production
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-openlegislation}
+      - REDIS_URL=redis://redis:6379
+      - N8N_WEBHOOK_URL=http://n8n:5678
+      - FLOWISE_API_URL=http://flowise:3000
+      - GRAPHITE_HOST=graphite
+      - GRAPHITE_PORT=2003
+      - AGENTIC_KG_URL=http://agentic-kg:8000
+      - ENABLE_AUTOMATION=true
+      - LOG_LEVEL=info
+      - GPU_ENABLED=${GPU_ENABLED:-false}
+      - MAX_WORKERS=8
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - automation
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Webhook Server for GitHub/GitLab integration
+  webhook-server:
+    build:
+      context: ./webhook-server
+      dockerfile: Dockerfile
+    container_name: openlegislation-webhook-server
+    restart: unless-stopped
+    ports:
+      - "9000:8000"
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-openlegislation}
+      - REDIS_URL=redis://redis:6379
+      - GITHUB_WEBHOOK_SECRET=${GITHUB_WEBHOOK_SECRET}
+      - GITLAB_WEBHOOK_SECRET=${GITLAB_WEBHOOK_SECRET}
+      - N8N_WEBHOOK_URL=http://n8n:5678
+      - OPENLEGISLATION_API_URL=http://openlegislation:8000
+    volumes:
+      - ./webhook-server/logs:/app/logs
+    depends_on:
+      - postgres
+      - redis
+      - openlegislation
+    networks:
+      - automation
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  # Application data volumes
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  n8n_data:
+    driver: local
+  flowise_data:
+    driver: local
+  graphite_data:
+    driver: local
+  graphite_config:
+    driver: local
+  kg_data:
+    driver: local
+
+networks:
+  automation:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

@@ -1,0 +1,106 @@
+{
+  "ingestion_jobs": [
+    {
+      "name": "Congress.gov Data Ingestion",
+      "type": "congress",
+      "description": "Ingest legislative data from Congress.gov API",
+      "parameters": {
+        "start_congress": 110,
+        "end_congress": 118,
+        "enable_gpu": true,
+        "enable_parallel": true,
+        "batch_size": 1000,
+        "max_workers": 8
+      },
+      "estimated_records": "50,000+ bills and amendments",
+      "estimated_time": "15-30 minutes"
+    },
+    {
+      "name": "GovInfo Bills Ingestion",
+      "type": "govinfo",
+      "description": "Ingest bill data from GovInfo API",
+      "parameters": {
+        "collection": "BILLS",
+        "content_type": "json",
+        "enable_gpu": true,
+        "enable_parallel": true,
+        "start_date": "2020-01-01",
+        "end_date": "2025-11-08"
+      },
+      "estimated_records": "10,000+ government publications",
+      "estimated_time": "10-20 minutes"
+    },
+    {
+      "name": "Federal Members Ingestion",
+      "type": "members",
+      "description": "Ingest federal member data",
+      "parameters": {
+        "congress": 118,
+        "include_committees": true,
+        "include_votes": false,
+        "enable_parallel": true
+      },
+      "estimated_records": "500+ members and committees",
+      "estimated_time": "5-10 minutes"
+    },
+    {
+      "name": "State Legislative Data",
+      "type": "state",
+      "description": "Ingest state legislative data",
+      "parameters": {
+        "states": [
+          "CA",
+          "NY",
+          "TX",
+          "FL",
+          "IL"
+        ],
+        "data_types": [
+          "bills",
+          "members",
+          "committees"
+        ],
+        "enable_parallel": true,
+        "max_concurrent_states": 3
+      },
+      "estimated_records": "25,000+ state bills and members",
+      "estimated_time": "20-40 minutes"
+    },
+    {
+      "name": "Local Government Data",
+      "type": "local",
+      "description": "Ingest local government legislative data",
+      "parameters": {
+        "cities": [
+          "New York City",
+          "Los Angeles",
+          "Chicago",
+          "Houston",
+          "Phoenix"
+        ],
+        "data_types": [
+          "ordinances",
+          "resolutions",
+          "meetings"
+        ],
+        "enable_parallel": true,
+        "max_concurrent_cities": 2
+      },
+      "estimated_records": "15,000+ local ordinances and meetings",
+      "estimated_time": "15-30 minutes"
+    }
+  ],
+  "summary": {
+    "total_jobs": 5,
+    "estimated_total_records": "100,500+",
+    "estimated_total_time_minutes": 130,
+    "features": [
+      "gpu_acceleration",
+      "parallel_processing",
+      "ai_monitoring",
+      "automatic_retries",
+      "real_time_monitoring"
+    ]
+  },
+  "generated_at": "2025-11-08T21:11:21.184996"
+}

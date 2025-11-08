@@ -39,15 +39,15 @@ class Settings(BaseSettings):
     use_gpu: bool = Field(default=False, env="USE_GPU")
     cuda_visible_devices: str = Field(default="", env="CUDA_VISIBLE_DEVICES")
 
-    # Script Configuration
+    # Script Configuration - Updated for full data ingestion
     max_errors: int = Field(
-        default=100, description="Maximum number of errors before script fails"
+        default=10000, description="Maximum number of errors before script fails (increased for full ingestion)"
     )
     request_timeout: int = Field(
-        default=30, description="HTTP request timeout in seconds"
+        default=120, description="HTTP request timeout in seconds (increased for large datasets)"
     )
     rate_limit_delay: float = Field(
-        default=0.5, description="Delay between API requests in seconds"
+        default=0.1, description="Delay between API requests in seconds (reduced for faster ingestion)"
     )
 
     class Config:

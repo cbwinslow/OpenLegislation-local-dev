@@ -41,17 +41,27 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Initialize AI models
-openai_model = ChatOpenAI(
-    model="gpt-4-turbo-preview",
-    temperature=0.1,
-    api_key=os.getenv("OPENAI_API_KEY")
-)
+try:
+    openai_model = ChatOpenAI(
+        model="gpt-4-turbo-preview",
+        temperature=0.1,
+        api_key=os.getenv("OPENAI_API_KEY")
+    )
+except Exception as e:
+    print(f"Warning: OpenAI model initialization failed: {e}")
+    print("Using dummy model for development")
+    openai_model = None
 
-anthropic_model = ChatAnthropic(
-    model="claude-3-sonnet-20240229",
-    temperature=0.1,
-    api_key=os.getenv("ANTHROPIC_API_KEY")
-)
+try:
+    anthropic_model = ChatAnthropic(
+        model="claude-3-sonnet-20240229",
+        temperature=0.1,
+        api_key=os.getenv("ANTHROPIC_API_KEY")
+    )
+except Exception as e:
+    print(f"Warning: Anthropic model initialization failed: {e}")
+    print("Using dummy model for development")
+    anthropic_model = None
 
 # Default to OpenAI, fallback to Anthropic
 llm = openai_model if os.getenv("OPENAI_API_KEY") else anthropic_model

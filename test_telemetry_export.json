@@ -1,0 +1,434 @@
+{
+  "telemetry": {
+    "function_calls": [
+      {
+        "timestamp": "2025-11-08T20:26:06.405549",
+        "event_type": "test_function_call_start",
+        "data": {
+          "function": "test_performance_function",
+          "start_time": "2025-11-08T20:26:06.405531"
+        },
+        "source": "function_calls"
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.405604",
+        "event_type": "test_function_call_complete",
+        "data": {
+          "function": "test_performance_function",
+          "execution_time": 7.653236389160156e-05,
+          "success": true
+        },
+        "source": "function_calls"
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.405934",
+        "event_type": "ingestion_operation_start",
+        "data": {
+          "function": "wrapper",
+          "start_time": "2025-11-08T20:26:06.405921",
+          "args_count": 1,
+          "kwargs_keys": []
+        },
+        "source": "function_calls"
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.620477",
+        "event_type": "ingestion_operation_complete",
+        "data": {
+          "function": "wrapper",
+          "execution_time": 0.2145519256591797,
+          "success": true
+        },
+        "source": "function_calls"
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.620922",
+        "event_type": "ingestion_operation_start",
+        "data": {
+          "function": "wrapper",
+          "start_time": "2025-11-08T20:26:06.620906",
+          "args_count": 1,
+          "kwargs_keys": []
+        },
+        "source": "function_calls"
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.721159",
+        "event_type": "ingestion_operation_complete",
+        "data": {
+          "function": "wrapper",
+          "execution_time": 0.1002504825592041,
+          "success": true
+        },
+        "source": "function_calls"
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.725798",
+        "event_type": "ingestion_operation_start",
+        "data": {
+          "function": "wrapper",
+          "start_time": "2025-11-08T20:26:06.725785",
+          "args_count": 1,
+          "kwargs_keys": []
+        },
+        "source": "function_calls"
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.826079",
+        "event_type": "ingestion_operation_complete",
+        "data": {
+          "function": "wrapper",
+          "execution_time": 0.10028576850891113,
+          "success": true
+        },
+        "source": "function_calls"
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.826512",
+        "event_type": "test_function_call_start",
+        "data": {
+          "function": "test_performance_function",
+          "start_time": "2025-11-08T20:26:06.826495"
+        },
+        "source": "function_calls"
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.826559",
+        "event_type": "test_function_call_complete",
+        "data": {
+          "function": "test_performance_function",
+          "execution_time": 6.437301635742188e-05,
+          "success": true
+        },
+        "source": "function_calls"
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.826890",
+        "event_type": "ingestion_operation_start",
+        "data": {
+          "function": "wrapper",
+          "start_time": "2025-11-08T20:26:06.826863",
+          "args_count": 1,
+          "kwargs_keys": []
+        },
+        "source": "function_calls"
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.927153",
+        "event_type": "ingestion_operation_complete",
+        "data": {
+          "function": "wrapper",
+          "execution_time": 0.10028862953186035,
+          "success": true
+        },
+        "source": "function_calls"
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.927506",
+        "event_type": "test_function_call_start",
+        "data": {
+          "function": "test_performance_function",
+          "start_time": "2025-11-08T20:26:06.927492"
+        },
+        "source": "function_calls"
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.927547",
+        "event_type": "test_function_call_complete",
+        "data": {
+          "function": "test_performance_function",
+          "execution_time": 5.626678466796875e-05,
+          "success": true
+        },
+        "source": "function_calls"
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.927755",
+        "event_type": "ingestion_operation_start",
+        "data": {
+          "function": "wrapper",
+          "start_time": "2025-11-08T20:26:06.927743",
+          "args_count": 1,
+          "kwargs_keys": []
+        },
+        "source": "function_calls"
+      },
+      {
+        "timestamp": "2025-11-08T20:26:07.028066",
+        "event_type": "ingestion_operation_complete",
+        "data": {
+          "function": "wrapper",
+          "execution_time": 0.10031867027282715,
+          "success": true
+        },
+        "source": "function_calls"
+      },
+      {
+        "timestamp": "2025-11-08T20:26:07.028419",
+        "event_type": "test_function_call_start",
+        "data": {
+          "function": "test_performance_function",
+          "start_time": "2025-11-08T20:26:07.028409"
+        },
+        "source": "function_calls"
+      },
+      {
+        "timestamp": "2025-11-08T20:26:07.028463",
+        "event_type": "test_function_call_complete",
+        "data": {
+          "function": "test_performance_function",
+          "execution_time": 5.555152893066406e-05,
+          "success": true
+        },
+        "source": "function_calls"
+      }
+    ],
+    "feature_flags": [
+      {
+        "timestamp": "2025-11-08T20:26:06.520274",
+        "event_type": "feature_flag_enabled",
+        "data": {
+          "flag_name": "test_ingestion_enabled",
+          "function": "test_ingestion_function"
+        },
+        "source": "feature_flags"
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.620951",
+        "event_type": "feature_flag_enabled",
+        "data": {
+          "flag_name": "test_ingestion_enabled",
+          "function": "test_ingestion_function"
+        },
+        "source": "feature_flags"
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.725821",
+        "event_type": "feature_flag_enabled",
+        "data": {
+          "flag_name": "test_ingestion_enabled",
+          "function": "test_ingestion_function"
+        },
+        "source": "feature_flags"
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.826927",
+        "event_type": "feature_flag_enabled",
+        "data": {
+          "flag_name": "test_ingestion_enabled",
+          "function": "test_ingestion_function"
+        },
+        "source": "feature_flags"
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.927782",
+        "event_type": "feature_flag_enabled",
+        "data": {
+          "flag_name": "test_ingestion_enabled",
+          "function": "test_ingestion_function"
+        },
+        "source": "feature_flags"
+      }
+    ],
+    "ingestion_operations": [
+      {
+        "timestamp": "2025-11-08T20:26:06.620451",
+        "event_type": "ingestion_complete",
+        "data": {
+          "ingestion_type": "test_ingestion_function",
+          "start_time": "2025-11-08T20:26:06.405942",
+          "class_name": "int",
+          "end_time": "2025-11-08T20:26:06.620409",
+          "success": true,
+          "api_calls": 0,
+          "records_processed": 2
+        },
+        "source": "ingestion_operations"
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.721136",
+        "event_type": "ingestion_complete",
+        "data": {
+          "ingestion_type": "test_ingestion_function",
+          "start_time": "2025-11-08T20:26:06.620931",
+          "class_name": "int",
+          "end_time": "2025-11-08T20:26:06.721094",
+          "success": true,
+          "api_calls": 0,
+          "records_processed": 2
+        },
+        "source": "ingestion_operations"
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.826046",
+        "event_type": "ingestion_complete",
+        "data": {
+          "ingestion_type": "test_ingestion_function",
+          "start_time": "2025-11-08T20:26:06.725806",
+          "class_name": "int",
+          "end_time": "2025-11-08T20:26:06.825972",
+          "success": true,
+          "api_calls": 0,
+          "records_processed": 2
+        },
+        "source": "ingestion_operations"
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.927129",
+        "event_type": "ingestion_complete",
+        "data": {
+          "ingestion_type": "test_ingestion_function",
+          "start_time": "2025-11-08T20:26:06.826904",
+          "class_name": "int",
+          "end_time": "2025-11-08T20:26:06.927087",
+          "success": true,
+          "api_calls": 0,
+          "records_processed": 2
+        },
+        "source": "ingestion_operations"
+      },
+      {
+        "timestamp": "2025-11-08T20:26:07.028039",
+        "event_type": "ingestion_complete",
+        "data": {
+          "ingestion_type": "test_ingestion_function",
+          "start_time": "2025-11-08T20:26:06.927764",
+          "class_name": "int",
+          "end_time": "2025-11-08T20:26:07.027959",
+          "success": true,
+          "api_calls": 0,
+          "records_processed": 2
+        },
+        "source": "ingestion_operations"
+      }
+    ]
+  },
+  "feature_flags": {
+    "test_feature_flag": {
+      "enabled": false,
+      "metadata": {},
+      "updated_at": "2025-11-08T20:26:06.368375"
+    },
+    "ingestion_enabled": {
+      "enabled": true,
+      "metadata": {},
+      "updated_at": "2025-11-08T20:26:06.725601"
+    },
+    "federal_bills_ingestion_enabled": {
+      "enabled": true,
+      "metadata": {},
+      "updated_at": "2025-11-08T20:26:06.725613"
+    },
+    "federal_committees_ingestion_enabled": {
+      "enabled": true,
+      "metadata": {},
+      "updated_at": "2025-11-08T20:26:06.725619"
+    }
+  },
+  "performance_metrics": {
+    "test_performance_function": [
+      {
+        "timestamp": "2025-11-08T20:26:06.405672",
+        "execution_time": 0.03719067573547363,
+        "success": true,
+        "metadata": {
+          "args_count": 1,
+          "kwargs_count": 0,
+          "memory_delta": 0,
+          "memory_end": 15728640
+        }
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.826657",
+        "execution_time": 0.0003020763397216797,
+        "success": true,
+        "metadata": {
+          "args_count": 1,
+          "kwargs_count": 0,
+          "memory_delta": 0,
+          "memory_end": 29491200
+        }
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.927603",
+        "execution_time": 0.00022459030151367188,
+        "success": true,
+        "metadata": {
+          "args_count": 1,
+          "kwargs_count": 0,
+          "memory_delta": 0,
+          "memory_end": 29491200
+        }
+      },
+      {
+        "timestamp": "2025-11-08T20:26:07.028529",
+        "execution_time": 0.0002377033233642578,
+        "success": true,
+        "metadata": {
+          "args_count": 1,
+          "kwargs_count": 0,
+          "memory_delta": 0,
+          "memory_end": 29491200
+        }
+      }
+    ],
+    "wrapper": [
+      {
+        "timestamp": "2025-11-08T20:26:06.620637",
+        "execution_time": 0.21470284461975098,
+        "success": true,
+        "metadata": {
+          "args_count": 1,
+          "kwargs_count": 0,
+          "memory_delta": 13107200,
+          "memory_end": 28835840
+        }
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.721324",
+        "execution_time": 0.1004493236541748,
+        "success": true,
+        "metadata": {
+          "args_count": 1,
+          "kwargs_count": 0,
+          "memory_delta": 0,
+          "memory_end": 28835840
+        }
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.826246",
+        "execution_time": 0.1004636287689209,
+        "success": true,
+        "metadata": {
+          "args_count": 1,
+          "kwargs_count": 0,
+          "memory_delta": 0,
+          "memory_end": 29491200
+        }
+      },
+      {
+        "timestamp": "2025-11-08T20:26:06.927313",
+        "execution_time": 0.10048723220825195,
+        "success": true,
+        "metadata": {
+          "args_count": 1,
+          "kwargs_count": 0,
+          "memory_delta": 0,
+          "memory_end": 29491200
+        }
+      },
+      {
+        "timestamp": "2025-11-08T20:26:07.028215",
+        "execution_time": 0.10044717788696289,
+        "success": true,
+        "metadata": {
+          "args_count": 1,
+          "kwargs_count": 0,
+          "memory_delta": 0,
+          "memory_end": 29491200
+        }
+      }
+    ]
+  },
+  "exported_at": "2025-11-08T20:26:07.029517"
+}

@@ -13,6 +13,7 @@ import os
 import sys
 from datetime import datetime
 from typing import Dict, List, Optional, Callable, Any
+from pathlib import Path
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -24,6 +25,13 @@ from sqlalchemy.dialects.postgresql import insert
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 import structlog  # For structured logging
 from dotenv import load_dotenv
+
+# Add decorators to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))  # Add project root
+from decorators import (
+    ingestion_performance, telemetry, performance_monitor,
+    feature_flag, TelemetryCollector, PerformanceMonitor
+)
 
 load_dotenv()  # Load .env from project root
 
@@ -184,6 +192,8 @@ def map_action_api_to_model(action_data: Dict, bill_print_no: str, session_year:
         'chamber': action_data.get('chamber', ''),
     }
 
+@ingestion_performance(track_records=True, track_api_calls=True)
+@feature_flag("federal_bills_ingestion_enabled", default_enabled=True)
 def ingest_bills_optimized(db_session, callback: IngestionCallback, start_congress: int = 118, batch_size: int = 250):
     """Optimized full ingestion starting from recent congress backwards."""
     api_session = create_api_session()
@@ -262,6 +272,8 @@ def ingest_bills_optimized(db_session, callback: IngestionCallback, start_congre
     api_session.close()
     logger.info("Total ingestion complete", total_ingested=total_ingested)
 
+@ingestion_performance(track_records=True, track_api_calls=True)
+@feature_flag("federal_committees_ingestion_enabled", default_enabled=True)
 def ingest_committees_optimized(db_session, callback: IngestionCallback, start_congress: int = 118):
     api_session = create_api_session()
     total_ingested = 0

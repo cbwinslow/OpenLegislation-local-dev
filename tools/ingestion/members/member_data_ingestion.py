@@ -19,8 +19,8 @@ import ijson
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
-from ingestion.core.base_ingestion_process import BaseIngestionProcess
-from config.settings import settings
+from tools.ingestion.core.base_ingestion_process import BaseIngestionProcess
+from tools.config.settings import settings
 
 from govinfo.models import GovInfoMemberRecord, GovInfoMemberSession
 from govinfo.persistence import persist_member_record

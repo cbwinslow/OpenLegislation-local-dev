@@ -28,6 +28,7 @@ const (
 	mainMenu view = iota
 	dataSourceList
 	parameterConfig
+	progressView
 )
 
 // Data source configuration
@@ -61,87 +62,57 @@ var (
 	dataSources = []dataSource{
 		{
 			id:          "congress_api",
-			name:        "Congress API",
-			description: "Download congressional data from Congress.gov API",
-			scriptPath:  "congress_gov.py",
+			name:        "Congress API (Unlimited)",
+			description: "Download ALL congressional data from Congress.gov API (no limits)",
+			scriptPath:  "master_ingestion.py",
 			defaultParams: map[string]string{
-				"api-key":     "",
-				"start-date":  "2023-01-01",
-				"end-date":    "2024-12-31",
-				"congress":    "118",
-				"bill-types":  "hr,s,hres,sres",
-				"limit":       "1000",
-				"output-dir":  "./data/congress",
-				"batch-size":  "100",
-				"rate-limit":  "10",
-				"retry-count": "3",
+				"ingestion_type": "congress",
+				"api_key":        "",
+				"start_congress": "80",
+				"end_congress":   "118",
+				"run_migrations": "true",
 			},
-			optionalParams: []string{"api-key", "limit", "output-dir", "batch-size", "rate-limit", "retry-count"},
+			optionalParams: []string{"api_key", "start_congress", "end_congress", "run_migrations"},
 			paramHelp: map[string]string{
-				"api-key":     "Congress.gov API key (leave empty for public access)",
-				"start-date":  "Start date for data collection (YYYY-MM-DD)",
-				"end-date":    "End date for data collection (YYYY-MM-DD)",
-				"congress":    "Congress number (e.g., 118 for 118th Congress)",
-				"bill-types":  "Bill types to download (hr,s,hres,sres,hj,sj,hcon,scon)",
-				"limit":       "Maximum number of items to download",
-				"output-dir":  "Directory to save downloaded data",
-				"batch-size":  "Number of items per batch",
-				"rate-limit":  "Requests per second",
-				"retry-count": "Number of retry attempts",
+				"ingestion_type": "Type of ingestion (congress, members, govinfo, all)",
+				"api_key":        "Congress.gov API key (leave empty for public access)",
+				"start_congress": "Starting congress number (80 = 80th Congress)",
+				"end_congress":   "Ending congress number (118 = current)",
+				"run_migrations": "Run SQL migrations before ingestion (true/false)",
 			},
 			enabled: true,
 		},
 		{
 			id:          "federal_members",
-			name:        "Federal Members",
-			description: "Download information about current federal legislators",
-			scriptPath:  "federal_members.py",
+			name:        "Federal Members (Unlimited)",
+			description: "Download ALL federal legislator information (no limits)",
+			scriptPath:  "master_ingestion.py",
 			defaultParams: map[string]string{
-				"chamber":            "all",
-				"session":            "118",
-				"output-dir":         "./data/members",
-				"include-staff":      "false",
-				"include-committees": "true",
-				"format":             "json",
+				"ingestion_type": "members",
+				"run_migrations": "true",
 			},
-			optionalParams: []string{"output-dir", "include-staff", "include-committees", "format"},
+			optionalParams: []string{"run_migrations"},
 			paramHelp: map[string]string{
-				"chamber":            "Chamber: house, senate, or all",
-				"session":            "Congress session number",
-				"output-dir":         "Directory to save member data",
-				"include-staff":      "Include staff information",
-				"include-committees": "Include committee assignments",
-				"format":             "Output format: json, csv, or xml",
+				"ingestion_type": "Type of ingestion (congress, members, govinfo, all)",
+				"run_migrations": "Run SQL migrations before ingestion (true/false)",
 			},
 			enabled: true,
 		},
 		{
 			id:          "govinfo_bills",
-			name:        "GovInfo Bills",
-			description: "Download bills from GovInfo.gov",
-			scriptPath:  "govinfo_bills.py",
+			name:        "GovInfo Bills (Unlimited)",
+			description: "Download ALL bills and documents from GovInfo.gov (no limits)",
+			scriptPath:  "master_ingestion.py",
 			defaultParams: map[string]string{
-				"collection":   "BILLS",
-				"start-date":   "2023-01-01",
-				"end-date":     "2024-12-31",
-				"congress":     "118",
-				"bill-type":    "hr",
-				"output-dir":   "./data/govinfo",
-				"download-pdf": "false",
-				"download-xml": "true",
-				"batch-size":   "50",
+				"ingestion_type": "govinfo",
+				"collection":     "BILLS",
+				"run_migrations": "true",
 			},
-			optionalParams: []string{"output-dir", "download-pdf", "download-xml", "batch-size"},
+			optionalParams: []string{"collection", "run_migrations"},
 			paramHelp: map[string]string{
-				"collection":   "GovInfo collection name",
-				"start-date":   "Start date for bill collection",
-				"end-date":     "End date for bill collection",
-				"congress":     "Congress number",
-				"bill-type":    "Bill type: hr, s, hres, sres, etc.",
-				"output-dir":   "Directory to save bill data",
-				"download-pdf": "Download PDF versions",
-				"download-xml": "Download XML versions",
-				"batch-size":   "Number of bills per batch",
+				"ingestion_type": "Type of ingestion (congress, members, govinfo, all)",
+				"collection":     "GovInfo collection name (BILLS, etc.)",
+				"run_migrations": "Run SQL migrations before ingestion (true/false)",
 			},
 			enabled: true,
 		},
@@ -247,6 +218,8 @@ func (m model) View() string {
 		return m.renderDataSourceList()
 	case parameterConfig:
 		return m.renderParameterConfig()
+	case progressView:
+		return m.renderProgressView()
 	default:
 		return "Unknown view"
 	}
@@ -312,6 +285,26 @@ func (m model) renderParameterConfig() string {
 
 	content.WriteString("\n")
 	content.WriteString(helpStyle.Render("↑↓ Navigate | Enter: Run Ingestion | Esc: Back | q: Quit"))
+
+	return borderStyle.Render(content.String())
+}
+
+func (m model) renderProgressView() string {
+	var content strings.Builder
+
+	content.WriteString(titleStyle.Render("Ingestion Progress"))
+	content.WriteString("\n\n")
+
+	if m.loading {
+		content.WriteString("🔄 Running ingestion process...\n\n")
+		content.WriteString("Please wait while data is being ingested.\n")
+		content.WriteString("Check the terminal output for detailed progress.\n\n")
+	} else {
+		content.WriteString("✅ Ingestion completed!\n\n")
+		content.WriteString("Check master_ingestion_results.json for detailed results.\n\n")
+	}
+
+	content.WriteString(helpStyle.Render("Press any key to return to main menu"))
 
 	return borderStyle.Render(content.String())
 }

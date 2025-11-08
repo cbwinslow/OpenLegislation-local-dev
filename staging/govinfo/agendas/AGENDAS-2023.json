@@ -1,0 +1,32 @@
+{
+  "agendaNumber": "1001",
+  "year": 2023,
+  "publishedDateTime": "2023-01-15T10:00:00Z",
+  "modifiedDateTime": "2023-01-16T14:30:00Z",
+  "infoAddenda": [
+    {
+      "addendumId": "AD001",
+      "weekOf": "2023-01-16T00:00:00Z",
+      "modifiedDateTime": "2023-01-16T14:30:00Z",
+      "publishedDateTime": "2023-01-15T10:00:00Z",
+      "committees": [
+        {
+          "committeeName": "House Committee on Energy and Commerce",
+          "committeeChamber": "house",
+          "meetingDateTime": "2023-01-17T10:00:00Z",
+          "chair": "Rep. John Smith",
+          "location": "2123 Rayburn House Office Building",
+          "notes": "Meeting to discuss energy policy",
+          "items": [
+            {
+              "billPrintNo": "H.R.123",
+              "billSessionYear": 2023,
+              "billAmendVersion": "IH",
+              "message": "Discussion of proposed energy legislation"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

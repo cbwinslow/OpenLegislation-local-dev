@@ -19,8 +19,8 @@ import ijson
 # Add tools to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from ingestion.core.base_ingestion_process import BaseIngestionProcess
-from config.settings import settings
+from tools.ingestion.core.base_ingestion_process import BaseIngestionProcess
+from tools.config.settings import settings
 
 from govinfo.models import GovInfoVoteRecord, GovInfoVoteRollEntry
 from govinfo.persistence import persist_vote_record

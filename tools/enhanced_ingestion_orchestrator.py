@@ -37,8 +37,8 @@ from dataclasses import dataclass, asdict
 # Add tools to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from config.settings import settings
-from ingestion.core.generic_ingestion_tracker import get_ingestion_status
+from tools.config.settings import settings
+from tools.ingestion.core.generic_ingestion_tracker import get_ingestion_status
 
 
 @dataclass

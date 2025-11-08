@@ -42,7 +42,7 @@ import psycopg2.extras
 # Add tools to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from config.settings import settings
+from tools.config.settings import settings
 
 
 @dataclass

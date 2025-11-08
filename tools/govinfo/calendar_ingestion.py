@@ -14,8 +14,8 @@ from typing import Dict, Iterable, List, Optional
 # Add tools to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from ingestion.core.base_ingestion_process import BaseIngestionProcess
-from config.settings import settings
+from tools.ingestion.core.base_ingestion_process import BaseIngestionProcess
+from tools.config.settings import settings
 
 from models import (
     GovInfoCalendarRecord,

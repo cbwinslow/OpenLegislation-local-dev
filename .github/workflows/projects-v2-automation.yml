@@ -1,0 +1,228 @@
+name: Projects v2 Automation & Management
+
+on:
+  issues:
+    types: [opened, closed, reopened, assigned, labeled, unlabeled]
+  pull_request:
+    types: [opened, closed, ready_for_review, converted_to_draft, labeled, unlabeled]
+  issue_comment:
+    types: [created]
+  milestone:
+    types: [created, closed, opened, edited, deleted]
+  schedule:
+    - cron: '0 */4 * * *'  # Every 4 hours for milestone tracking
+  workflow_dispatch:
+    inputs:
+      project_number:
+        description: 'Project number to manage'
+        required: false
+        type: string
+      action:
+        description: 'Action to perform'
+        required: false
+        type: choice
+        options:
+          - sync_all_issues
+          - create_milestone_project
+          - update_status
+          - cleanup_completed
+
+permissions:
+  issues: write
+  pull-requests: write
+  contents: read
+  repository-projects: write
+
+jobs:
+  sync-project-items:
+    name: Sync Issues & PRs to Projects v2
+    runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.action == 'sync_all_issues'
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Sync items to project boards
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const script = require('./.github/scripts/project-sync.js');
+          await script.syncItemsToProjects({ github, context });
+
+  create-milestone-project:
+    name: Create Project for Milestone
+    runs-on: ubuntu-latest
+    if: github.event_name == 'milestone' && github.event.action == 'opened' || github.event.inputs.action == 'create_milestone_project'
+
+    steps:
+    - name: Create project board for milestone
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const milestone = context.payload.milestone;
+          if (!milestone) {
+            // Handle manual trigger - get latest milestone
+            const { data: milestones } = await github.rest.issues.listMilestones({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              sort: 'due_on',
+              direction: 'asc'
+            });
+            if (milestones.length === 0) return;
+            milestone = milestones[0];
+          }
+
+          const projectTitle = `Sprint: ${milestone.title}`;
+          const projectDescription = `Project board for milestone: ${milestone.description || 'No description'}\\n\\nDue: ${milestone.due_on || 'No due date'}\\nProgress: ${milestone.open_issues}/${milestone.open_issues + milestone.closed_issues} issues completed`;
+
+          // Create project using GraphQL
+          const createProjectMutation = `
+            mutation CreateProject($ownerId: ID!, $title: String!, $description: String) {
+              createProjectV2(input: { ownerId: $ownerId, title: $title, description: $description }) {
+                projectV2 {
+                  id
+                  number
+                }
+              }
+            }
+          `;
+
+          // Get repository owner ID
+          const { repository } = await github.graphql(`
+            query GetRepoOwner($owner: String!, $repo: String!) {
+              repository(owner: $owner, name: $repo) {
+                owner {
+                  ... on Organization {
+                    id
+                  }
+                  ... on User {
+                    id
+                  }
+                }
+              }
+            }
+          `, {
+            owner: context.repo.owner,
+            repo: context.repo.repo
+          });
+
+          const ownerId = repository.owner.id;
+
+          const result = await github.graphql(createProjectMutation, {
+            ownerId,
+            title: projectTitle,
+            description: projectDescription
+          });
+
+          const projectId = result.createProjectV2.projectV2.id;
+          const projectNumber = result.createProjectV2.projectV2.number;
+
+          console.log(`Created project #${projectNumber} with ID: ${projectId}`);
+
+          // Store project info for future reference
+          // You might want to store this in repository variables or a config file
+
+  update-item-status:
+    name: Update Item Status in Projects
+    runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.action == 'update_status'
+
+    steps:
+    - name: Update project item status
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const script = require('./.github/scripts/project-status-update.js');
+          await script.updateItemStatus({ github, context });
+
+  link-issue-to-milestone:
+    name: Link Issues to Milestone Projects
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues' && github.event.action == 'milestone'
+
+    steps:
+    - name: Link issue to milestone project
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const issue = context.payload.issue;
+          const milestone = context.payload.milestone;
+
+          if (!milestone) return;
+
+          // Find project for this milestone
+          const projectTitle = `Sprint: ${milestone.title}`;
+
+          // This would require querying existing projects and adding the item
+          // Implementation depends on how you track project-milestone relationships
+
+  milestone-progress-tracking:
+    name: Track Milestone Progress
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+    - name: Update milestone progress
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          // Get all open milestones
+          const { data: milestones } = await github.rest.issues.listMilestones({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            state: 'open'
+          });
+
+          for (const milestone of milestones) {
+            const total = milestone.open_issues + milestone.closed_issues;
+            const completed = milestone.closed_issues;
+            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            console.log(`Milestone: ${milestone.title} - ${percentage}% complete (${completed}/${total})`);
+
+            // Update milestone description with progress
+            const currentDesc = milestone.description || '';
+            const progressLine = `\\n\\n📊 **Progress:** ${percentage}% complete (${completed}/${total} issues)`;
+
+            if (!currentDesc.includes('Progress:')) {
+              await github.rest.issues.updateMilestone({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                milestone_number: milestone.number,
+                description: currentDesc + progressLine
+              });
+            } else {
+              // Update existing progress
+              const updatedDesc = currentDesc.replace(
+                /📊 \*\*Progress:\*\* \d+% complete \(\d+\/\d+ issues\)/,
+                `📊 **Progress:** ${percentage}% complete (${completed}/${total} issues)`
+              );
+              await github.rest.issues.updateMilestone({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                milestone_number: milestone.number,
+                description: updatedDesc
+              });
+            }
+          }
+
+  cleanup-completed-projects:
+    name: Cleanup Completed Projects
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'cleanup_completed'
+
+    steps:
+    - name: Archive completed project boards
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          // This would archive projects where all items are completed
+          // Implementation depends on your project management strategy
