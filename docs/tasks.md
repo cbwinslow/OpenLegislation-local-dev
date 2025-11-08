@@ -1,6 +1,17 @@
-# Congress.gov Integration Tasks
+# Legacy Congress.gov Integration Tasks
 
-## Phase 1: Analysis & Planning
+> **⚠️ IMPORTANT**: This document contains legacy task tracking for the original federal integration scope.  
+> **📖 Current comprehensive project roadmap is available in [tasks-enhanced.md](tasks-enhanced.md)**
+
+The enhanced roadmap includes:
+- **Multi-Source Integration**: NY State + Congress.gov + GovInfo.gov + OpenStates (all 50 states)
+- **AI-Powered Features**: Semantic search, content analysis, predictive analytics
+- **Modern Architecture**: FastAPI, Next.js frontend, advanced automation
+- **Enterprise-Grade Quality**: 99.9% uptime, comprehensive monitoring
+
+---
+
+## Phase 1: Analysis & Planning (Completed)
 - [x] Analyze existing OpenLegislation codebase structure
 - [x] Review current SQL schema and data models
 - [x] Examine govinfo mapping documentation

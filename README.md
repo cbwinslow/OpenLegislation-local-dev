@@ -212,11 +212,15 @@ OpenLegislation has evolved to address comprehensive legislative data needs:
 - **Community Support**: Developer forums, documentation, and tutorials
 
 ### Advanced Documentation
-- **[Enhanced Tasks Management](docs/tasks-enhanced.md)**: Comprehensive project roadmap with microgoals and success criteria
-- **[Software Requirements Specification](docs/srs-enhanced.md)**: Detailed technical requirements and validation criteria
-- **[Data Source Integration](docs/data-source-integration.md)**: Technical specifications for all data sources
-- **[Automation Guide](docs/AUTOMATION_README.md)**: Complete CI/CD and automation documentation
-- **[API Reference](docs/api/)**: Comprehensive API documentation and examples
+- **[📋 Enhanced Tasks Management](docs/tasks-enhanced.md)**: Comprehensive project roadmap with microgoals and success criteria
+- **[📋 Software Requirements Specification](docs/srs-enhanced.md)**: Detailed technical requirements and validation criteria
+- **[🔗 Data Source Integration](docs/data-source-integration.md)**: Technical specifications for all data sources
+- **[🚀 OpenDiscourse Integration Plan](docs/opendiscourse-integration-plan.md)**: 8-week phased integration strategy
+- **[⚙️ Automation Guide](docs/AUTOMATION_README.md)**: Complete CI/CD and automation documentation
+- **[📚 API Reference](docs/api/)**: Comprehensive API documentation and examples
+
+**Legacy Documentation** (archived for reference):
+- [Original Tasks](docs/tasks.md) | [Original SRS](docs/srs.md)
 
 ### Research & Analytics Platform
 - **Comparative Analysis**: Track policy diffusion across states and federal levels

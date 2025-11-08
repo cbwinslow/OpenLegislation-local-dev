@@ -1,9 +1,20 @@
-# Software Requirements Specification (SRS)
+# Legacy Software Requirements Specification (SRS)
+
+> **⚠️ IMPORTANT**: This document contains the original SRS for basic federal integration.  
+> **📖 Current comprehensive requirements are available in [srs-enhanced.md](srs-enhanced.md)**
+
+The enhanced SRS includes:
+- **Multi-Source Requirements**: NY State, federal, and all 50 state legislative data
+- **AI-Powered Features**: Semantic search, ML-powered insights, automated analysis
+- **Modern Architecture**: Microservices, vector databases, real-time processing
+- **Enterprise Standards**: Security, scalability, performance requirements
+
+---
 
 ## 1. Introduction
 
 ### 1.1 Purpose
-The OpenLegislation system is designed to ingest, process, store, and serve legislative data from New York State and federal government sources. This SRS defines the functional and non-functional requirements for the system.
+The OpenLegislation system is designed to ingest, process, store, and serve legislative data from New York State and federal government sources. This SRS defines functional and non-functional requirements for the system.
 
 ### 1.2 Scope
 The system encompasses:
