@@ -12,6 +12,21 @@ from ..storage import download_resource
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """
+    Create an ArgumentParser configured for ingesting GovInfo bulkdata and common CLI options.
+    
+    The parser includes the following options:
+    - --collection (required): GovInfo collection code (e.g., BILLS, BILLSTATUS)
+    - --congress: optional congress filter (e.g., 118)
+    - --export: optional Path to write JSONL export
+    - --download-dir: optional Path to download bulk resources
+    - --upsert: flag to persist results into PostgreSQL
+    - --database-url: override database connection string
+    - --verbose: enable debug logging
+    
+    Returns:
+        argparse.ArgumentParser: Parser configured with the CLI options described above.
+    """
     parser = argparse.ArgumentParser(description="Crawl bulkdata.govinfo.gov resources")
     parser.add_argument("--collection", required=True, help="GovInfo collection code (e.g., BILLS, BILLSTATUS)")
     parser.add_argument("--congress", help="Optional congress filter (e.g., 118)")
@@ -27,6 +42,14 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> None:
+    """
+    Entrypoint for the GovInfo bulk ingestion CLI.
+    
+    Parses CLI arguments, configures logging, streams GovInfo bulk resources for the requested collection and optional congress, optionally downloads each resource to a specified directory, and then exports/upserts the collected records according to the provided options.
+    
+    Parameters:
+        argv (list[str] | None): Command-line arguments to parse. If `None`, the parser reads arguments from the process's argv.
+    """
     parser = build_parser()
     args = parser.parse_args(argv)
     configure_logging(args.verbose)

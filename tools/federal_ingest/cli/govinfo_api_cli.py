@@ -9,6 +9,21 @@ from ..cli.common import configure_logging, handle_records
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """
+    Create an ArgumentParser configured for the GovInfo ingestion command-line interface.
+    
+    The parser supports a required positional `command` (choices: "packages", "downloads") and these optional arguments:
+    - `--collection`: GovInfo collection code (used with `packages`).
+    - `--package-id`: Package identifier (used with `downloads`).
+    - `--page-size`: Number of items to request per page (defaults to 100).
+    - `--export`: Path to write JSONL export.
+    - `--upsert`: Flag to persist results into PostgreSQL.
+    - `--database-url`: Override the database connection string.
+    - `--verbose`: Enable debug logging.
+    
+    Returns:
+        argparse.ArgumentParser: Configured parser for the GovInfo REST API ingestion CLI.
+    """
     parser = argparse.ArgumentParser(description="Ingest data from api.govinfo.gov")
     parser.add_argument("command", choices=["packages", "downloads"], help="Resource to fetch")
     parser.add_argument("--collection", help="GovInfo collection code for package listing")
@@ -25,6 +40,14 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> None:
+    """
+    Run the GovInfo ingestion command-line interface using the provided argv.
+    
+    Parses command-line arguments, configures logging, opens a GovInfoApiIngestClient, validates required flags for the selected command ("packages" requires --collection; "downloads" requires --package-id), streams records from the API, and delegates record processing to handle_records with the specified export path, upsert flag, and database URL.
+    
+    Parameters:
+        argv (list[str] | None): List of command-line arguments to parse (excluding program name). If None, arguments are taken from sys.argv.
+    """
     parser = build_parser()
     args = parser.parse_args(argv)
     configure_logging(args.verbose)
