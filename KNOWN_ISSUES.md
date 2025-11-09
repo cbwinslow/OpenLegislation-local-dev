@@ -50,28 +50,28 @@ The following scripts reference these incomplete processors and may not work:
 
 ## NPM Security Vulnerabilities
 
-**Status**: Requires Dependency Updates  
-**Severity**: Moderate (6 vulnerabilities)  
+**Status**: ✅ RESOLVED  
+**Severity**: Moderate (6 vulnerabilities) - NOW FIXED  
 **Last Updated**: 2025-11-09
 
 ### Description
-The PostCSS and related Tailwind CSS dependencies have known security vulnerabilities:
+The PostCSS and related Tailwind CSS dependencies had known security vulnerabilities:
 - PostCSS: CVE-2023-44270 (Regular Expression Denial of Service)
 - PostCSS: GHSA-7fh5-64p2-3v2j (line return parsing error)
 
-### Affected Packages
-- `postcss` (versions <=8.4.30)
-- `autoprefixer` (via postcss)
-- `@tailwindcss/postcss7-compat`
-- `postcss-functions`
-- `postcss-js`
-- `postcss-nested`
+### Resolution Applied
+Upgraded vulnerable dependencies in `src/main/webapp/package.json`:
+- `tailwindcss`: Upgraded from `@tailwindcss/postcss7-compat@^2.2.17` to `^3.4.15`
+- `postcss`: Upgraded from `^8.4.6` to `^8.4.47`
+- `postcss-nested`: Upgraded from `^5.0.6` to `^6.2.0`
 
-### Resolution
-Run `npm audit fix` in the affected directories, or manually update PostCSS to version 8.4.31 or later.
-Note: Some dependencies may not have automatic fixes available and may require manual dependency resolution.
+All npm vulnerabilities are now resolved (verified with `npm audit`).
 
-### Affected Directories
-- `src/main/webapp/`
-- `frontend/`
-- `tests/frontend/`
+### Note
+The upgrade to Tailwind CSS 3.x may introduce breaking changes in CSS class names or configuration.
+If styling issues are observed, consult the [Tailwind CSS v3 upgrade guide](https://tailwindcss.com/docs/upgrade-guide).
+
+### Remaining Directories
+The following directories were not checked/updated as they were not part of the main build:
+- `frontend/` (separate Next.js app)
+- `tests/frontend/` (frontend tests)
