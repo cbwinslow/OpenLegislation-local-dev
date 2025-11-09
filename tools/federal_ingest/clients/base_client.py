@@ -71,6 +71,6 @@ class BaseAPIClient:
         time.sleep(self.config.rate_limit_delay)
         return response.json()
 
-    def _resolve_url(self, *parts: Iterable[str]) -> str:
+    def _resolve_url(self, *parts: str) -> str:
         cleaned = [str(part).strip("/") for part in parts if part is not None]
         return "/".join([self.config.base_url.rstrip("/")] + cleaned)
