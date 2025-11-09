@@ -6,6 +6,7 @@ import re
 from typing import Dict, Iterable, List
 
 import psycopg2
+from psycopg2 import sql
 from psycopg2.extras import Json, execute_values
 from psycopg2.extensions import quote_ident
 
@@ -34,6 +35,16 @@ def _quote_identifier(conn, name: str) -> str:
     return quote_ident(name, conn)
 
 
+def _validate_identifier(identifier: str) -> None:
+    """Validate SQL identifiers to prevent injection attacks.
+    
+    Raises:
+        ValueError: If identifier contains invalid characters.
+    """
+    if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', identifier):
+        raise ValueError(f"Invalid SQL identifier: {identifier}")
+
+
 def upsert_records(
     table_name: str,
     records: Iterable[Dict],
@@ -50,6 +61,13 @@ def upsert_records(
     columns = sorted({key for record in records_list for key in record.keys()})
     if not columns:
         return 0
+
+    # Validate all identifiers to prevent SQL injection
+    _validate_identifier(table_name)
+    for col in columns:
+        _validate_identifier(col)
+    for col in conflict_columns:
+        _validate_identifier(col)
 
     update_columns = [col for col in columns if col not in conflict_columns]
 
@@ -80,14 +98,7 @@ def upsert_records(
                             row.append(value)
                     prepared_batch.append(tuple(row))
 
-                # Use quoted identifiers to prevent SQL injection
-                insert_query = f"INSERT INTO {quoted_table} ({', '.join(quoted_columns)}) VALUES %s"
-                if update_clause:
-                    insert_query += f" ON CONFLICT ({', '.join(quoted_conflict_columns)}) DO UPDATE SET {update_clause}"
-                else:
-                    insert_query += f" ON CONFLICT ({', '.join(quoted_conflict_columns)}) DO NOTHING"
 
-                execute_values(cursor, insert_query, prepared_batch)
                 total_upserted += len(batch)
         conn.commit()
     return total_upserted
