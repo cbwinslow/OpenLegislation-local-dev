@@ -31,6 +31,7 @@ public class AIIngestionAgent {
 
     /**
      * Use the curated ingestion jobs that already exist in {@link IngestionService}.
+     * Each ingestion is wrapped in error handling to ensure remaining sources are processed.
      */
     public void ingestKnownSources() {
         logger.info("AIIngestionAgent ingesting known sources");
