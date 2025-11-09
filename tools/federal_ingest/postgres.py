@@ -8,6 +8,31 @@ from typing import Dict, Iterable, List
 import psycopg2
 from psycopg2 import sql
 from psycopg2.extras import Json, execute_values
+from psycopg2.extensions import quote_ident
+
+
+def _validate_identifier(name: str) -> None:
+    """Validate that an identifier (table or column name) is safe to use in SQL.
+    
+    Raises ValueError if the identifier contains suspicious characters.
+    """
+    if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', name):
+        raise ValueError(f"Invalid SQL identifier: {name}")
+
+
+def _quote_identifier(conn, name: str) -> str:
+    """Safely quote a SQL identifier (table or column name).
+    
+    Args:
+        conn: psycopg2 connection object
+        name: identifier to quote
+        
+    Returns:
+        Properly quoted identifier safe for SQL interpolation
+    """
+    _validate_identifier(name)
+    # Use psycopg2's quote_ident for proper SQL identifier quoting
+    return quote_ident(name, conn)
 
 
 def _validate_identifier(identifier: str) -> None:
@@ -47,6 +72,17 @@ def upsert_records(
     update_columns = [col for col in columns if col not in conflict_columns]
 
     with psycopg2.connect(**db_config) as conn:
+        # Validate and quote all identifiers
+        quoted_table = _quote_identifier(conn, table_name)
+        quoted_columns = [_quote_identifier(conn, col) for col in columns]
+        quoted_conflict_columns = [_quote_identifier(conn, col) for col in conflict_columns]
+        
+        # Build UPDATE clause with quoted identifiers
+        update_clause = ", ".join(
+            f"{_quote_identifier(conn, col)} = EXCLUDED.{_quote_identifier(conn, col)}"
+            for col in update_columns
+        )
+        
         with conn.cursor() as cursor:
             total_upserted = 0
             for start in range(0, len(records_list), chunk_size):
@@ -62,28 +98,7 @@ def upsert_records(
                             row.append(value)
                     prepared_batch.append(tuple(row))
 
-                # Build INSERT query using psycopg2.sql for safe identifier composition
-                insert_query = sql.SQL("INSERT INTO {} ({}) VALUES %s").format(
-                    sql.Identifier(table_name),
-                    sql.SQL(', ').join(sql.Identifier(col) for col in columns)
-                )
-                
-                if update_columns:
-                    update_clause = sql.SQL(', ').join(
-                        sql.SQL("{} = EXCLUDED.{}").format(sql.Identifier(col), sql.Identifier(col))
-                        for col in update_columns
-                    )
-                    conflict_clause = sql.SQL(" ON CONFLICT ({}) DO UPDATE SET {}").format(
-                        sql.SQL(', ').join(sql.Identifier(col) for col in conflict_columns),
-                        update_clause
-                    )
-                else:
-                    conflict_clause = sql.SQL(" ON CONFLICT ({}) DO NOTHING").format(
-                        sql.SQL(', ').join(sql.Identifier(col) for col in conflict_columns)
-                    )
-                
-                full_query = insert_query.as_string(conn) + conflict_clause.as_string(conn)
-                execute_values(cursor, full_query, prepared_batch)
+
                 total_upserted += len(batch)
         conn.commit()
     return total_upserted
