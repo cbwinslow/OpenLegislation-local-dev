@@ -2,10 +2,22 @@
 
 from __future__ import annotations
 
+import re
 from typing import Dict, Iterable, List
 
 import psycopg2
+from psycopg2 import sql
 from psycopg2.extras import Json, execute_values
+
+
+def _validate_identifier(identifier: str) -> None:
+    """Validate SQL identifiers to prevent injection attacks.
+    
+    Raises:
+        ValueError: If identifier contains invalid characters.
+    """
+    if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', identifier):
+        raise ValueError(f"Invalid SQL identifier: {identifier}")
 
 
 def upsert_records(
@@ -25,8 +37,14 @@ def upsert_records(
     if not columns:
         return 0
 
+    # Validate all identifiers to prevent SQL injection
+    _validate_identifier(table_name)
+    for col in columns:
+        _validate_identifier(col)
+    for col in conflict_columns:
+        _validate_identifier(col)
+
     update_columns = [col for col in columns if col not in conflict_columns]
-    update_clause = ", ".join(f"{col} = EXCLUDED.{col}" for col in update_columns)
 
     with psycopg2.connect(**db_config) as conn:
         with conn.cursor() as cursor:
@@ -44,13 +62,28 @@ def upsert_records(
                             row.append(value)
                     prepared_batch.append(tuple(row))
 
-                insert_query = f"INSERT INTO {table_name} ({', '.join(columns)}) VALUES %s"
-                if update_clause:
-                    insert_query += f" ON CONFLICT ({', '.join(conflict_columns)}) DO UPDATE SET {update_clause}"
+                # Build INSERT query using psycopg2.sql for safe identifier composition
+                insert_query = sql.SQL("INSERT INTO {} ({}) VALUES %s").format(
+                    sql.Identifier(table_name),
+                    sql.SQL(', ').join(sql.Identifier(col) for col in columns)
+                )
+                
+                if update_columns:
+                    update_clause = sql.SQL(', ').join(
+                        sql.SQL("{} = EXCLUDED.{}").format(sql.Identifier(col), sql.Identifier(col))
+                        for col in update_columns
+                    )
+                    conflict_clause = sql.SQL(" ON CONFLICT ({}) DO UPDATE SET {}").format(
+                        sql.SQL(', ').join(sql.Identifier(col) for col in conflict_columns),
+                        update_clause
+                    )
                 else:
-                    insert_query += f" ON CONFLICT ({', '.join(conflict_columns)}) DO NOTHING"
-
-                execute_values(cursor, insert_query, prepared_batch)
+                    conflict_clause = sql.SQL(" ON CONFLICT ({}) DO NOTHING").format(
+                        sql.SQL(', ').join(sql.Identifier(col) for col in conflict_columns)
+                    )
+                
+                full_query = insert_query.as_string(conn) + conflict_clause.as_string(conn)
+                execute_values(cursor, full_query, prepared_batch)
                 total_upserted += len(batch)
         conn.commit()
     return total_upserted

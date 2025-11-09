@@ -36,7 +36,7 @@ class CongressGovClient(BaseAPIClient):
             params["api_key"] = self.config.api_key
         return self._request("GET", url, params=params)
 
-    def get_resource(self, resource: str, *path_segments: Iterable[Any], **filters: Any) -> Dict[str, Any]:
+    def get_resource(self, resource: str, *path_segments: Any, **filters: Any) -> Dict[str, Any]:
         """Fetch a specific resource using additional path segments."""
 
         url = self._resolve_url(resource, *path_segments)
