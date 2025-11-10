@@ -79,6 +79,12 @@ class IngestionResult:
     data_quality_metrics: Dict[str, Any] = None
 
     def __post_init__(self):
+        """
+        Ensure mutable fields are initialized to empty containers when omitted.
+        
+        If `errors`, `performance_metrics`, or `data_quality_metrics` are `None` after datantiation,
+        they are replaced with an empty list or empty dicts respectively to provide safe mutable defaults.
+        """
         if self.errors is None:
             self.errors = []
         if self.performance_metrics is None:
@@ -110,21 +116,72 @@ class BaseDatabaseAdapter:
     """Interface for ingestion database interactions."""
 
     def prefetch_bill_keys(self, start: Optional[int], end: Optional[int]) -> Iterable[str]:
+        """
+        Retrieve bill identifier keys optionally constrained to a year range.
+        
+        Parameters:
+        	start (Optional[int]): Earliest year (inclusive) to include when fetching bill keys. If `None`, no lower bound is applied.
+        	end (Optional[int]): Latest year (inclusive) to include when fetching bill keys. If `None`, no upper bound is applied.
+        
+        Returns:
+        	iterable_of_keys (Iterable[str]): An iterable of bill identifier strings that fall within the specified year range.
+        """
         return []
 
     def prefetch_member_keys(self) -> Iterable[str]:
+        """
+        Provide existing member identifier keys from the adapter's store.
+        
+        Returns:
+            Iterable[str]: An iterable of member identifier strings currently present; may be empty.
+        """
         return []
 
     def prefetch_govinfo_keys(self) -> Iterable[str]:
+        """
+        Provide existing GovInfo record identifiers available in the adapter.
+        
+        Returns:
+            Iterable[str]: An iterable of GovInfo record identifier strings; may be empty.
+        """
         return []
 
     def bulk_upsert_bills(self, records: List[Dict[str, Any]]) -> UpsertSummary:
+        """
+        Perform a bulk upsert of bill records into the configured datastore.
+        
+        Parameters:
+            records (List[Dict[str, Any]]): List of canonical bill records to insert or update.
+        
+        Returns:
+            UpsertSummary: Summary of the upsert operation containing counts for `inserted`, `duplicates`, and `errors`.
+        """
         return UpsertSummary(inserted=len(records))
 
     def bulk_upsert_members(self, records: List[Dict[str, Any]]) -> UpsertSummary:
+        """
+        Perform a bulk upsert of member records into the adapter's store.
+        
+        Records provided in `records` are treated as upsert candidates and counted as inserted by this adapter implementation.
+        
+        Parameters:
+            records (List[Dict[str, Any]]): Member records to upsert, each represented as a dictionary.
+        
+        Returns:
+            UpsertSummary: Summary of the operation. `inserted` equals the number of provided records; `duplicates` and `errors` are set to 0.
+        """
         return UpsertSummary(inserted=len(records))
 
     def bulk_upsert_govinfo(self, records: List[Dict[str, Any]]) -> UpsertSummary:
+        """
+        Perform a bulk upsert of GovInfo records into the adapter's store.
+        
+        Parameters:
+            records (List[Dict[str, Any]]): List of GovInfo-formatted records to upsert.
+        
+        Returns:
+            UpsertSummary: Summary of the upsert operation. The default implementation treats all provided records as inserted (Inserted count equals number of input records).
+        """
         return UpsertSummary(inserted=len(records))
 
 
@@ -132,6 +189,18 @@ class SQLAlchemyAdapter(BaseDatabaseAdapter):
     """Database adapter that persists to the real PostgreSQL database."""
 
     def __init__(self):
+        """
+        Initialize the SQLAlchemy-backed database adapter by loading DB models, creating an engine and session factory, and wiring up model and upsert callables.
+        
+        This sets up:
+        - self.engine: SQLAlchemy engine from database_models.get_engine()
+        - self.Session: session factory bound to the engine
+        - self.Bill, self.FederalMember, self.GovInfoBill: model classes
+        - self._upsert_bill, self._upsert_member, self._upsert_govinfo: helper callables for upsert operations
+        
+        Raises:
+            RuntimeError: If SQLAlchemy's sessionmaker is not available in the runtime.
+        """
         from database_models import (
             get_engine,
             Bill,
@@ -155,6 +224,14 @@ class SQLAlchemyAdapter(BaseDatabaseAdapter):
 
     @contextmanager
     def session_scope(self):
+        """
+        Provide a transactional SQLAlchemy session context.
+        
+        Yields a Session that is committed when the context block exits normally, rolled back if an exception is raised, and closed in all cases.
+        
+        Returns:
+            session (Session): A SQLAlchemy Session instance to use within the context manager.
+        """
         session = self.Session()
         try:
             yield session
@@ -166,6 +243,16 @@ class SQLAlchemyAdapter(BaseDatabaseAdapter):
             session.close()
 
     def prefetch_bill_keys(self, start: Optional[int], end: Optional[int]) -> Iterable[str]:
+        """
+        Fetches bill identifier keys from the database, optionally filtered by session year.
+        
+        Parameters:
+            start (Optional[int]): Minimum session year to include (inclusive). If None, no lower bound is applied.
+            end (Optional[int]): Maximum session year to include (inclusive). If None, no upper bound is applied.
+        
+        Returns:
+            Iterable[str]: An iterable of keys in the format "bill_print_no:session_year" for matching bills.
+        """
         if select is None:
             return []
         with self.session_scope() as session:
@@ -182,6 +269,14 @@ class SQLAlchemyAdapter(BaseDatabaseAdapter):
             return results
 
     def prefetch_member_keys(self) -> Iterable[str]:
+        """
+        Return all stored federal member Bioguide IDs from the database adapter.
+        
+        Queries the configured SQLAlchemy session for the `bioguide_id` column of the `FederalMember` model and returns a list of non-empty IDs. If the SQLAlchemy `select` function is unavailable in the environment, returns an empty list.
+        
+        Returns:
+            Iterable[str]: List of Bioguide ID strings (empty list if unavailable or none found).
+        """
         if select is None:
             return []
         with self.session_scope() as session:
@@ -189,6 +284,12 @@ class SQLAlchemyAdapter(BaseDatabaseAdapter):
             return [row[0] for row in query if row[0]]
 
     def prefetch_govinfo_keys(self) -> Iterable[str]:
+        """
+        Return the list of existing GovInfo package IDs stored in the database.
+        
+        Returns:
+            list[str]: A list of package ID strings for GovInfo bills; returns an empty list if the SQLAlchemy `select` helper is unavailable or no package IDs are found.
+        """
         if select is None:
             return []
         with self.session_scope() as session:
@@ -196,6 +297,15 @@ class SQLAlchemyAdapter(BaseDatabaseAdapter):
             return [row[0] for row in query if row[0]]
 
     def bulk_upsert_bills(self, records: List[Dict[str, Any]]) -> UpsertSummary:
+        """
+        Upserts a list of bill records into the configured database adapter, returning counts of inserted, duplicate, and failed records.
+        
+        Parameters:
+            records (List[Dict[str, Any]]): List of bill records in the adapter's expected schema to be upserted.
+        
+        Returns:
+            UpsertSummary: Summary of the operation with `inserted`, `duplicates`, and `errors` counts. Integrity constraint violations are counted as duplicates; other SQLAlchemy errors are counted as errors and logged.
+        """
         summary = UpsertSummary()
         if not records:
             return summary
@@ -215,6 +325,19 @@ class SQLAlchemyAdapter(BaseDatabaseAdapter):
         return summary
 
     def bulk_upsert_members(self, records: List[Dict[str, Any]]) -> UpsertSummary:
+        """
+        Upserts a list of member records into the configured database and returns a summary of the operation.
+        
+        Parameters:
+            records (List[Dict[str, Any]]): Iterable of member records in the internal canonical schema to be upserted.
+        
+        Returns:
+            UpsertSummary: Summary with counts for `inserted`, `duplicates`, and `errors`.
+            
+        Notes:
+            - Records that violate unique constraints are counted as duplicates.
+            - Database errors during an individual upsert are logged and counted as errors.
+        """
         summary = UpsertSummary()
         if not records:
             return summary
@@ -234,6 +357,17 @@ class SQLAlchemyAdapter(BaseDatabaseAdapter):
         return summary
 
     def bulk_upsert_govinfo(self, records: List[Dict[str, Any]]) -> UpsertSummary:
+        """
+        Upserts a batch of GovInfo records into the database and returns a summary of the operation.
+        
+        Parameters:
+            records (List[Dict[str, Any]]): Iterable of GovInfo record dictionaries in the adapter's expected schema.
+        
+        Returns:
+            UpsertSummary: Counts of `inserted`, `duplicates`, and `errors` produced while processing `records`.
+            - `duplicates` is incremented for records that violate uniqueness constraints.
+            - `errors` is incremented for other database-related failures; such failures are logged.
+        """
         summary = UpsertSummary()
         if not records:
             return summary
@@ -257,25 +391,75 @@ class InMemoryAdapter(BaseDatabaseAdapter):
     """In-memory adapter used for tests and local development."""
 
     def __init__(self):
+        """
+        Initialize the in-memory persistence adapter used for testing and local runs.
+        
+        Attributes:
+            _bills (dict): Mapping of bill keys to bill records.
+            _members (dict): Mapping of member identifiers to member records.
+            _govinfo (dict): Mapping of GovInfo identifiers to GovInfo records.
+            _lock (threading.Lock): Thread-safe lock protecting concurrent access to the in-memory stores.
+        """
         self._bills: Dict[str, Dict[str, Any]] = {}
         self._members: Dict[str, Dict[str, Any]] = {}
         self._govinfo: Dict[str, Dict[str, Any]] = {}
         self._lock = threading.Lock()
 
     def _prefetch(self, store: Dict[str, Dict[str, Any]]) -> Iterable[str]:
+        """
+        Retrieve all keys from the given in-memory store in a thread-safe manner.
+        
+        Parameters:
+            store (Dict[str, Dict[str, Any]]): Mapping of record keys to record data used by the adapter.
+        
+        Returns:
+            keys (Iterable[str]): List of keys present in the provided store.
+        """
         with self._lock:
             return list(store.keys())
 
     def prefetch_bill_keys(self, start: Optional[int], end: Optional[int]) -> Iterable[str]:
+        """
+        Return all stored bill keys.
+        
+        Parameters:
+            start (Optional[int]): Inclusive start year to filter keys by year; currently ignored.
+            end (Optional[int]): Inclusive end year to filter keys by year; currently ignored.
+        
+        Returns:
+            Iterable[str]: An iterable of bill identifier strings present in the in-memory store.
+        """
         return self._prefetch(self._bills)
 
     def prefetch_member_keys(self) -> Iterable[str]:
+        """
+        Return all stored federal member identifiers from the in-memory adapter.
+        
+        Returns:
+            Iterable[str]: An iterable of member identifier strings currently present in the in-memory store.
+        """
         return self._prefetch(self._members)
 
     def prefetch_govinfo_keys(self) -> Iterable[str]:
+        """
+        Return all stored GovInfo record keys from the in-memory adapter.
+        
+        Returns:
+            Iterable[str]: An iterable of GovInfo record identifiers (strings) present in the adapter's store.
+        """
         return self._prefetch(self._govinfo)
 
     def _bulk_store(self, store: Dict[str, Dict[str, Any]], records: List[Tuple[str, Dict[str, Any]]]) -> UpsertSummary:
+        """
+        Atomically insert new records into an in-memory store while counting inserted and duplicate entries.
+        
+        Parameters:
+            store (Dict[str, Dict[str, Any]]): In-memory mapping of keys to records that will be updated in-place.
+            records (List[Tuple[str, Dict[str, Any]]]): Sequence of (key, record) pairs to insert.
+        
+        Returns:
+            UpsertSummary: Summary with `inserted` set to the number of records added and `duplicates` set to the number of keys that already existed.
+        """
         summary = UpsertSummary()
         with self._lock:
             for key, record in records:
@@ -287,14 +471,43 @@ class InMemoryAdapter(BaseDatabaseAdapter):
         return summary
 
     def bulk_upsert_bills(self, records: List[Dict[str, Any]]) -> UpsertSummary:
+        """
+        Upserts multiple bill records into the in-memory bills store and returns a summary of the operation.
+        
+        Each input record must include the keys 'bill_print_no' and 'bill_session_year'; records are keyed as "bill_print_no:bill_session_year" to detect duplicates.
+        
+        Parameters:
+            records (List[Dict[str, Any]]): List of bill records to insert or update.
+        
+        Returns:
+            UpsertSummary: Counts of inserted records, detected duplicates, and errors.
+        """
         tuples = [(f"{r['bill_print_no']}:{r['bill_session_year']}", r) for r in records]
         return self._bulk_store(self._bills, tuples)
 
     def bulk_upsert_members(self, records: List[Dict[str, Any]]) -> UpsertSummary:
+        """
+        Insert or update multiple member records into the in-memory member store using `bioguide_id` as the key.
+        
+        Parameters:
+            records (List[Dict[str, Any]]): Iterable of member record dictionaries. Only records with a truthy `bioguide_id` field are considered; others are ignored.
+        
+        Returns:
+            UpsertSummary: Counts of inserted records, detected duplicates, and errors.
+        """
         tuples = [(r['bioguide_id'], r) for r in records if r.get('bioguide_id')]
         return self._bulk_store(self._members, tuples)
 
     def bulk_upsert_govinfo(self, records: List[Dict[str, Any]]) -> UpsertSummary:
+        """
+        Insert or update GovInfo records into the in-memory store using each record's `package_id` as the key.
+        
+        Parameters:
+            records (List[Dict[str, Any]]): List of GovInfo record dictionaries. Records without a `package_id` are ignored.
+        
+        Returns:
+            UpsertSummary: Summary of the upsert operation with `inserted`, `duplicates`, and `errors` counts.
+        """
         tuples = [(r['package_id'], r) for r in records if r.get('package_id')]
         return self._bulk_store(self._govinfo, tuples)
 
@@ -308,7 +521,24 @@ class IngestionEngine:
                  enable_gpu: bool = False, gpu_memory_limit: int = None,
                  batch_size: int = 1000, timeout: int = 3600,
                  db_adapter: Optional[BaseDatabaseAdapter] = None):
-        self.enable_parallel = enable_parallel
+        """
+                 Initialize the ingestion engine and configure execution, GPU, batching, and persistence.
+                 
+                 Parameters:
+                     enable_parallel (bool): Whether to enable concurrent execution across threads/processes.
+                     max_workers (int): Maximum number of worker threads/processes to allocate when parallelism is enabled.
+                     enable_gpu (bool): Request GPU-accelerated processing; actual GPU use depends on availability.
+                     gpu_memory_limit (int | None): Per-device GPU memory limit in megabytes to apply if GPU is enabled.
+                     batch_size (int): Number of records processed per batch during ingestion.
+                     timeout (int): Default operation timeout in seconds for long-running ingestion tasks.
+                     db_adapter (BaseDatabaseAdapter | None): Optional persistence adapter; a default adapter is created if omitted.
+                 
+                 Side effects:
+                     - Creates thread and (optional) process executors for concurrent work.
+                     - Attempts to configure GPU resources when requested and available.
+                     - Initializes performance monitoring, HTTP session placeholders, persistence adapter, deduplication caches, and internal synchronization/metrics structures.
+                 """
+                 self.enable_parallel = enable_parallel
         self.max_workers = max_workers
         self.enable_gpu = enable_gpu and GPU_AVAILABLE
         self.gpu_memory_limit = gpu_memory_limit
@@ -344,7 +574,11 @@ class IngestionEngine:
         logger.info(f"IngestionEngine initialized: parallel={enable_parallel}, gpu={self.enable_gpu}, workers={max_workers}")
 
     def _setup_gpu(self):
-        """Setup GPU environment"""
+        """
+        Configure the GPU environment for the ingestion engine.
+        
+        If GPUs are not available, disables GPU usage on the engine. If a per-process GPU memory limit is configured, applies that limit to the primary CUDA device and clears the CUDA cache to free memory. If configuration or initialization fails, disables GPU usage and records the failure.
+        """
         if not GPU_AVAILABLE:
             logger.warning("GPU requested but not available")
             self.enable_gpu = False
@@ -366,6 +600,12 @@ class IngestionEngine:
             self.enable_gpu = False
 
     def _create_default_adapter(self) -> BaseDatabaseAdapter:
+        """
+        Create the default database adapter for ingestion.
+        
+        Returns:
+            A BaseDatabaseAdapter instance: a SQLAlchemyAdapter when available, otherwise an InMemoryAdapter as a fallback.
+        """
         try:
             adapter = SQLAlchemyAdapter()
             logger.info("Using SQLAlchemyAdapter for ingestion persistence")
@@ -378,10 +618,30 @@ class IngestionEngine:
             return InMemoryAdapter()
 
     async def _run_in_thread(self, func: Callable, *args, **kwargs):
+        """
+        Execute a synchronous callable in the engine's thread pool and return its result.
+        
+        Parameters:
+            func (Callable): The synchronous function to execute.
+            *args: Positional arguments to pass to `func`.
+            **kwargs: Keyword arguments to pass to `func`.
+        
+        Returns:
+            The value returned by `func` when executed with the provided arguments.
+        """
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(self.thread_executor, lambda: func(*args, **kwargs))
 
     async def _ensure_existing_bill_keys(self, start: Optional[int], end: Optional[int]):
+        """
+        Ensure bill keys within an optional year range are loaded into the engine's in-memory cache.
+        
+        If the cache is already populated for bills, this is a no-op. Otherwise it fetches existing bill keys from the configured database adapter and updates the engine's internal cache and loaded flag.
+        
+        Parameters:
+            start (Optional[int]): Start year (inclusive) to restrict which bill keys to prefetch. If None, no lower bound is applied.
+            end (Optional[int]): End year (inclusive) to restrict which bill keys to prefetch. If None, no upper bound is applied.
+        """
         if self._existing_loaded["bills"]:
             return
         keys = await self._run_in_thread(self.db_adapter.prefetch_bill_keys, start, end)
@@ -391,6 +651,11 @@ class IngestionEngine:
         logger.debug("Prefetched bill keys", extra={"count": len(self._existing_bill_keys)})
 
     async def _ensure_existing_member_ids(self):
+        """
+        Populate the engine's in-memory cache of existing federal member IDs by fetching them from the configured database adapter.
+        
+        If the cache is already populated this method is a no-op. On success it updates the engine's internal member ID set and marks the members cache as loaded; it also emits a debug log with the resulting count.
+        """
         if self._existing_loaded["members"]:
             return
         ids = await self._run_in_thread(self.db_adapter.prefetch_member_keys)
@@ -400,6 +665,11 @@ class IngestionEngine:
         logger.debug("Prefetched member ids", extra={"count": len(self._existing_member_ids)})
 
     async def _ensure_existing_govinfo_keys(self):
+        """
+        Populate the in-memory cache of existing GovInfo keys if they haven't been loaded yet.
+        
+        If the cache is not yet populated, fetches GovInfo keys from the configured database adapter (performed in a worker thread), updates the engine's in-memory key set under the internal state lock, and marks the GovInfo cache as loaded. If the cache is already marked loaded, this is a no-op. Logs the resulting cached key count for debugging.
+        """
         if self._existing_loaded["govinfo"]:
             return
         keys = await self._run_in_thread(self.db_adapter.prefetch_govinfo_keys)
@@ -409,6 +679,17 @@ class IngestionEngine:
         logger.debug("Prefetched GovInfo keys", extra={"count": len(self._existing_govinfo_keys)})
 
     def _dedupe_records(self, records: List[Dict[str, Any]], cache: set, key_func: Callable[[Dict[str, Any]], str]) -> Tuple[List[Dict[str, Any]], int]:
+        """
+        Filter the input records by removing those whose generated keys are already present in the provided cache, updating the cache with new keys.
+        
+        Parameters:
+            records (List[Dict[str, Any]]): Iterable of record dictionaries to deduplicate.
+            cache (set): Mutable set of keys representing already-seen records; the set is updated in-place with keys of returned records.
+            key_func (Callable[[Dict[str, Any]], str]): Function that returns a string key for a record; records with falsy keys are skipped.
+        
+        Returns:
+            Tuple[List[Dict[str, Any]], int]: A tuple `(new_records, duplicates)` where `new_records` is the list of records whose keys were not found in `cache`, and `duplicates` is the number of records skipped because their key was already present.
+        """
         new_records = []
         duplicates = 0
         with self._state_lock:
@@ -426,6 +707,15 @@ class IngestionEngine:
         return new_records, duplicates
 
     def _record_summary(self, summary: UpsertSummary, prefix: str):
+        """
+        Update the engine's run metrics counters for a batch upsert.
+        
+        Parameters:
+            summary (UpsertSummary): Counts from a single upsert operation (inserted, duplicates, errors).
+            prefix (str): Metric name prefix (e.g., 'bills', 'members', 'govinfo') used to update keys
+                '{prefix}_inserted', '{prefix}_duplicates', and '{prefix}_errors'.
+        
+        """
         with self._state_lock:
             self._run_metrics[f'{prefix}_duplicates'] += summary.duplicates
             self._run_metrics[f'{prefix}_errors'] += summary.errors
@@ -433,7 +723,24 @@ class IngestionEngine:
 
     def _build_completion_criteria(self, category: str, inserted: int, duplicates: int,
                                    extra: Dict[str, Any]) -> Dict[str, Any]:
-        criteria = {
+        """
+                                   Builds a structured completion criteria dictionary for a given ingestion category.
+                                   
+                                   Parameters:
+                                   	category (str): Category of ingestion; one of 'congress', 'members', or 'govinfo'.
+                                   	inserted (int): Number of records inserted during the ingestion step.
+                                   	duplicates (int): Number of duplicate records detected during deduplication.
+                                   	extra (Dict[str, Any]): Additional context used to populate criteria. Expected keys by category:
+                                   		- 'congress': may include 'api_calls' (int) and 'congress' (int).
+                                   		- 'members': may include 'chunks_processed' (int).
+                                   		- 'govinfo': may include 'collection' (str) and 'time_window' (any truthy value).
+                                   
+                                   Returns:
+                                   	criteria (Dict[str, Any]): A dictionary with two top-level keys:
+                                   		- 'mandatory': mapping of checks that must be satisfied (booleans or presence checks).
+                                   		- 'optional': mapping of supplemental metadata or flags relevant to the category.
+                                   """
+                                   criteria = {
             "mandatory": {
                 "records_inserted_non_negative": inserted >= 0,
                 "deduplication_executed": duplicates >= 0,
@@ -459,6 +766,15 @@ class IngestionEngine:
 
     @staticmethod
     def _parse_date(date_value: Optional[str]):
+        """
+        Parse a date string using common ISO-like formats.
+        
+        Parameters:
+            date_value (Optional[str]): A date/time string to parse. Accepted formats: "YYYY-MM-DD", "YYYY-MM-DDTHH:MM:SSZ", and "YYYY-MM-DDTHH:MM:SS". If falsy or not matching supported formats, parsing fails.
+        
+        Returns:
+            `datetime.date` if the input was successfully parsed, `None` otherwise.
+        """
         if not date_value:
             return None
         for fmt in ("%Y-%m-%d", "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S"):
@@ -469,6 +785,29 @@ class IngestionEngine:
         return None
 
     def _map_congress_bill(self, bill: Dict[str, Any], congress_num: int) -> Dict[str, Any]:
+        """
+        Map a raw Congress.gov bill payload into the engine's canonical bill schema.
+        
+        Parameters:
+        	bill (Dict[str, Any]): Raw bill object as returned by the Congress.gov API; may contain alternate field names (e.g., "type" or "billType", "number" or "billNumber", "latestAction" or "latestActionDetails").
+        	congress_num (int): Congress session number to associate with the mapped bill.
+        
+        Returns:
+        	Dict[str, Any]: Canonical bill dictionary with keys:
+        		- bill_print_no: Print identifier (e.g., "HR123").
+        		- bill_session_year: The provided congress_num.
+        		- title: Official or provided title.
+        		- summary: Bill summary if present.
+        		- active_version: Active/latest version code or value.
+        		- data_source: Literal "congress.gov".
+        		- congress: The provided congress_num.
+        		- bill_type: Uppercase bill type (e.g., "HR", "S").
+        		- sponsor_party: Sponsor party if available.
+        		- sponsor_state: Sponsor state if available.
+        		- status: Human-readable latest status or action text.
+        		- status_date: Parsed date of the latest action (or None if unparsable).
+        		- short_title: Short title when available, otherwise the title.
+        """
         bill_type = (bill.get("type") or bill.get("billType") or "").upper()
         number = str(bill.get("number") or bill.get("billNumber") or "").upper()
         bill_print_no = f"{bill_type}{number}".strip()
@@ -493,6 +832,34 @@ class IngestionEngine:
         }
 
     def _map_member(self, member: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Map a raw member record from the source API into the engine's canonical member schema.
+        
+        Parameters:
+        	member (Dict[str, Any]): Raw member object returned by the source API (e.g., Congress.gov).
+        
+        Returns:
+        	Dict[str, Any]: Canonical member dictionary with keys:
+        		- bioguide_id: Bioguide identifier if present.
+        		- first_name: Given name.
+        		- last_name: Family name.
+        		- full_name: Preferred full name.
+        		- party: Party affiliation.
+        		- state: State represented.
+        		- district: Congressional district (if applicable).
+        		- chamber: Lowercased chamber name ("house"/"senate") or None.
+        		- active: `True` if currently serving, `False` otherwise.
+        		- congress: Congress number associated with the record or its first term.
+        		- date_of_birth: Parsed birth date (or `None` if unavailable).
+        		- place_of_birth: Birth place string (if available).
+        		- education: Education information from the biography.
+        		- profession: Profession information from the biography.
+        		- contact_website: Public contact website (if provided).
+        		- office_address: Office address string (if provided).
+        		- terms: List of term objects as provided by the source.
+        		- committees: List of committee assignments (if provided).
+        		- last_updated: Timestamp of the last update from biography or record.
+        """
         biography = member.get("biography", {})
         terms = member.get("terms") or []
         return {
@@ -518,6 +885,18 @@ class IngestionEngine:
         }
 
     def _store_members_sync(self, members: List[Dict[str, Any]]) -> UpsertSummary:
+        """
+        Persist a list of member records into the configured database adapter after deduplicating against the in-memory member ID cache.
+        
+        Parameters:
+            members (List[Dict[str, Any]]): Member records already mapped to the internal schema; each record should include a `bioguide_id` when available.
+        
+        Returns:
+            UpsertSummary: Summary counts for the operation:
+                - `inserted`: number of records inserted,
+                - `duplicates`: number of duplicates (including those found during deduplication and reported by the adapter),
+                - `errors`: number of records that failed to upsert.
+        """
         if not members:
             return UpsertSummary()
 
@@ -532,6 +911,23 @@ class IngestionEngine:
         return summary
 
     def _map_govinfo_bill(self, bill: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Map a raw GovInfo API item into the engine's canonical GovInfo bill schema.
+        
+        Parameters:
+            bill (dict): Raw GovInfo item (API response) containing top-level fields and a nested "metadata" object.
+        
+        Returns:
+            dict: Canonical GovInfo bill with keys:
+                - package_id: GovInfo package identifier.
+                - congress: Congress number associated with the bill.
+                - bill_number: Official bill number.
+                - title: Bill title.
+                - collection_code: Collection code or name for the GovInfo item.
+                - last_modified: Last modified timestamp from metadata.
+                - originating_office: Originating office information.
+                - download_url: Primary download URL for the item.
+        """
         metadata = bill.get("metadata", {})
         return {
             "package_id": bill.get("packageId") or bill.get("package_id"),
@@ -545,7 +941,12 @@ class IngestionEngine:
         }
 
     async def __aenter__(self):
-        """Async context manager entry"""
+        """
+        Prepare the ingestion engine for use by initializing the HTTP client session used for API requests.
+        
+        Returns:
+            self: The engine instance with an active aiohttp ClientSession assigned to `self.aiohttp_session`.
+        """
         # Create HTTP sessions
         connector = aiohttp.TCPConnector(limit=100, limit_per_host=10)
         self.aiohttp_session = aiohttp.ClientSession(connector=connector)
@@ -569,8 +970,22 @@ class IngestionEngine:
     async def ingest_congress_data(self, api_key: str = None, start_congress: int = 80,
                                   end_congress: int = 118) -> IngestionResult:
         """
-        Ingest congressional data with parallel processing and GPU acceleration
-        """
+                                  Orchestrates ingestion of congressional bills across a range of Congress sessions.
+                                  
+                                  Parameters:
+                                      api_key (str | None): Optional API key to authenticate requests against the Congress.gov API.
+                                      start_congress (int): Starting Congress number (inclusive).
+                                      end_congress (int): Ending Congress number (inclusive).
+                                  
+                                  Returns:
+                                      IngestionResult: Aggregated ingestion outcome containing:
+                                          - records_processed: total number of records ingested,
+                                          - duration: elapsed time in seconds,
+                                          - success: `true` if no errors occurred, `false` otherwise,
+                                          - errors: list of error messages encountered,
+                                          - performance_metrics: runtime metrics including API call counts and monitoring data,
+                                          - data_quality_metrics: includes `duplicates_skipped`, `segments_processed`, and a `completion_criteria` structure with per-segment completion details.
+                                  """
         start_time = time.time()
         monitor_id = await self.performance_monitor.start_monitoring("congress_ingestion")
 
@@ -664,7 +1079,19 @@ class IngestionEngine:
             return IngestionResult(success=False, errors=[str(e)])
 
     async def _gpu_ingest_congress(self, congress_num: int, api_key: str = None) -> IngestionResult:
-        """GPU-accelerated congress data ingestion"""
+        """
+        Ingest congressional bills for a given Congress using RAPIDS GPU acceleration; falls back to the CPU ingestion path if RAPIDS is unavailable or an error occurs.
+        
+        Parameters:
+            congress_num (int): Numeric identifier of the Congress to ingest (e.g., 117).
+            api_key (str, optional): API key for Congress.gov requests; if omitted, the engine's default behavior is used.
+        
+        Returns:
+            IngestionResult: Summary of the ingestion run including:
+                - records_processed: number of records inserted.
+                - performance_metrics: contains at least 'gpu_processing_time' (seconds) when GPU was used and 'api_calls'.
+                - data_quality_metrics: contains at least 'duplicates_skipped', 'source', and 'completion_criteria'.
+        """
         if not RAPIDS_AVAILABLE:
             # Fallback to CPU if RAPIDS not available
             return await self._cpu_ingest_congress(congress_num, api_key)
@@ -738,7 +1165,22 @@ class IngestionEngine:
         return df
 
     async def _cpu_ingest_congress(self, congress_num: int, api_key: str = None) -> IngestionResult:
-        """CPU-based congress data ingestion"""
+        """
+        Ingest congressional bills for a specific Congress using the CPU processing path and persist them via the engine's database adapter.
+        
+        Parameters:
+        	congress_num (int): Numeric identifier of the Congress to ingest (e.g., 117).
+        	api_key (str, optional): API key to use for upstream requests; if omitted, the engine's default configuration is used.
+        
+        Returns:
+        	IngestionResult: Result summary containing
+        		- records_processed: number of records inserted,
+        		- duration: total time taken (may be zero if not measured here),
+        		- success: boolean indicating overall success,
+        		- errors: list of error messages per failed batch,
+        		- performance_metrics: includes `api_calls` used,
+        		- data_quality_metrics: includes `duplicates_skipped`, `source`, and `completion_criteria`.
+        """
         try:
             fetch = await self._fetch_congress_bills(congress_num, api_key)
             bills_data = fetch.records
@@ -785,7 +1227,20 @@ class IngestionEngine:
             raise
 
     async def _fetch_congress_bills(self, congress_num: int, api_key: str = None) -> FetchResponse:
-        """Fetch and map bills from Congress.gov API with pagination."""
+        """
+        Fetch mapped bill records for a specific Congress from the Congress.gov API, following pagination until no further pages.
+        
+        Parameters:
+            congress_num (int): Numeric Congress identifier to fetch bills for.
+            api_key (str, optional): Congress.gov API key to include in requests.
+        
+        Returns:
+            FetchResponse: Container with:
+                - `records`: list of mapped bill dictionaries (only bills with a `bill_print_no` are included),
+                - `api_calls`: number of API requests made,
+                - `source`: `"congress.gov"`,
+                - `metadata`: dictionary containing the `congress` number.
+        """
         base_url = f"https://api.congress.gov/v3/bill/{congress_num}"
         params = {'format': 'json', 'limit': self.batch_size}
         if api_key:
@@ -833,7 +1288,19 @@ class IngestionEngine:
         return FetchResponse(records=records, api_calls=api_calls, source="congress.gov", metadata={"congress": congress_num})
 
     async def _insert_bills_batch(self, bills: List[Dict[str, Any]]) -> Dict[str, int]:
-        """Insert a batch of bills into the database with deduplication."""
+        """
+        Insert a batch of canonical bill records into the configured database adapter, skipping records already present.
+        
+        Parameters:
+            bills (List[Dict[str, Any]]): List of canonical bill records. Each record is expected to include keys used for deduplication such as
+                `bill_print_no` and `bill_session_year`.
+        
+        Returns:
+            Dict[str, int]: Summary counts with keys:
+                - "inserted": number of records successfully inserted,
+                - "duplicates": number of records identified as duplicates (both pre-existing and within the batch),
+                - "errors": number of records that failed to upsert.
+        """
         if not bills:
             return {"inserted": 0, "duplicates": 0, "errors": 0}
 
@@ -857,6 +1324,20 @@ class IngestionEngine:
         return {"inserted": summary.inserted, "duplicates": summary.duplicates, "errors": summary.errors}
 
     async def _insert_govinfo_batch(self, records: List[Dict[str, Any]]) -> Dict[str, int]:
+        """
+        Insert a batch of GovInfo records into the configured database adapter, deduplicating against cached package IDs.
+        
+        This method ensures existing GovInfo package IDs are prefetched, removes records whose `package_id` already exists in the engine cache, and delegates insertion of the remaining records to the engine's database adapter. It updates the engine's internal run metrics with the resulting upsert summary.
+        
+        Parameters:
+            records (List[Dict[str, Any]]): List of GovInfo records in the engine's canonical schema. Each record should include a `package_id` key used for deduplication.
+        
+        Returns:
+            dict: A summary with keys:
+                - inserted (int): number of records successfully inserted.
+                - duplicates (int): number of records identified as duplicates (both pre-existing and in-batch).
+                - errors (int): number of records that failed to insert.
+        """
         if not records:
             return {"inserted": 0, "duplicates": 0, "errors": 0}
 
@@ -876,7 +1357,16 @@ class IngestionEngine:
         return {"inserted": summary.inserted, "duplicates": summary.duplicates, "errors": summary.errors}
 
     async def ingest_federal_members(self, congress: Optional[int] = None, api_key: str = None) -> IngestionResult:
-        """Ingest federal members data"""
+        """
+        Ingest federal members from Congress.gov, process them in chunks (optionally using GPU/parallel workers), and persist results via the configured database adapter.
+        
+        Parameters:
+        	congress (Optional[int]): If provided, restricts fetched members to the specified Congress number.
+        	api_key (str): Optional API key used when calling the Congress.gov API.
+        
+        Returns:
+        	IngestionResult: Aggregated outcome including number of records processed, duration, success flag, any errors, performance metrics (including `api_calls`), and data quality metrics (`duplicates_skipped`, `source`, and `completion_criteria`).
+        """
         start_time = time.time()
         monitor_id = await self.performance_monitor.start_monitoring("members_ingestion")
 
@@ -962,7 +1452,16 @@ class IngestionEngine:
             return IngestionResult(success=False, errors=[str(e)])
 
     async def _fetch_federal_members(self, congress: Optional[int] = None, api_key: str = None) -> FetchResponse:
-        """Fetch federal members from Congress.gov API."""
+        """
+        Fetch federal member records from the Congress.gov API, mapping each API member to the engine's internal schema.
+        
+        Parameters:
+        	congress (Optional[int]): If provided, restrict results to this Congress number.
+        	api_key (str): Optional API key to include with requests.
+        
+        Returns:
+        	FetchResponse: Contains `records` (list of mapped member dicts; only members with a `bioguide_id` are included), `api_calls` (number of HTTP requests performed), `source` ("congress.gov"), and `metadata` (includes the requested `congress`).
+        """
         base_url = "https://api.congress.gov/v3/member"
         params: Dict[str, Any] = {'format': 'json', 'limit': self.batch_size}
         if congress:
@@ -1009,7 +1508,18 @@ class IngestionEngine:
         return FetchResponse(records=records, api_calls=api_calls, source="congress.gov", metadata={"congress": congress})
 
     async def _process_members_chunk_async(self, members: List[Dict[str, Any]]) -> UpsertSummary:
-        """Process a chunk of members data asynchronously."""
+        """
+        Process a chunk of federal member records and persist them to the configured adapter.
+        
+        Parameters:
+            members (List[Dict[str, Any]]): List of member records in the engine's canonical schema.
+        
+        Returns:
+            UpsertSummary: Summary of the upsert operation containing counts for inserted records, duplicates, and errors.
+        
+        Notes:
+            Updates the engine's per-run member summary metrics.
+        """
         if not members:
             return UpsertSummary()
 
@@ -1019,7 +1529,15 @@ class IngestionEngine:
         return summary
 
     def _gpu_process_members_chunk(self, members: List[Dict]) -> UpsertSummary:
-        """Process members chunk on GPU"""
+        """
+        Process a chunk of member records, using GPU acceleration when available.
+        
+        Parameters:
+            members (List[Dict]): Member records to process and persist; each dict should contain member fields (e.g., "full_name").
+        
+        Returns:
+            UpsertSummary: Summary of the upsert operation containing counts for inserted records, duplicates, and errors.
+        """
         if not members:
             return UpsertSummary()
 
@@ -1040,7 +1558,26 @@ class IngestionEngine:
 
     async def ingest_govinfo_bills(self, collection: str = 'BILLS', api_key: str = None,
                                    start_date: Optional[str] = None, end_date: Optional[str] = None) -> IngestionResult:
-        """Ingest bills from GovInfo.gov"""
+        """
+                                   Ingest GovInfo.gov collection items and persist them as canonical bill records.
+                                   
+                                   Fetches GovInfo items for the given collection and time window, processes and upserts them into the configured database adapter, and returns ingestion metrics and data-quality summaries.
+                                   
+                                   Parameters:
+                                       collection (str): GovInfo collection name to fetch (default 'BILLS').
+                                       api_key (Optional[str]): Optional API key for GovInfo requests.
+                                       start_date (Optional[str]): Inclusive start date filter (ISO-like string) for fetched items.
+                                       end_date (Optional[str]): Inclusive end date filter (ISO-like string) for fetched items.
+                                   
+                                   Returns:
+                                       IngestionResult: Summary of the ingestion containing:
+                                           - records_processed: number of records inserted.
+                                           - duration: elapsed wall-clock time for the operation.
+                                           - success: `True` when ingestion completed without unhandled exceptions (may still contain per-record errors).
+                                           - errors: list of error messages encountered during ingestion.
+                                           - performance_metrics: runtime metrics including API call count and resource usage.
+                                           - data_quality_metrics: includes `duplicates_skipped`, `source`, and `completion_criteria` describing coverage for the requested collection and time window.
+                                   """
         start_time = time.time()
         monitor_id = await self.performance_monitor.start_monitoring("govinfo_ingestion")
 
@@ -1100,7 +1637,18 @@ class IngestionEngine:
     async def _fetch_govinfo_bills(self, collection: str, api_key: str = None,
                                    start_date: Optional[str] = None,
                                    end_date: Optional[str] = None) -> FetchResponse:
-        """Fetch bill metadata from GovInfo.gov API."""
+        """
+                                   Fetches GovInfo collection items and maps them to internal bill records.
+                                   
+                                   Parameters:
+                                   	collection (str): GovInfo collection identifier to query (e.g., a collection name).
+                                   	api_key (Optional[str]): GovInfo API key to include in requests.
+                                   	start_date (Optional[str]): ISO-like start date filter for the collection (inclusive).
+                                   	end_date (Optional[str]): ISO-like end date filter for the collection (inclusive).
+                                   
+                                   Returns:
+                                   	FetchResponse: Container with `records` (list of mapped bill dicts that include `package_id`), `api_calls` (number of HTTP requests performed), and `source` set to "govinfo.gov". Metadata includes the queried `collection`.
+                                   """
         base_url = f"https://api.govinfo.gov/collections/{collection}"
         params: Dict[str, Any] = {'pageSize': self.batch_size}
         if start_date:
@@ -1144,7 +1692,15 @@ class IngestionEngine:
         return FetchResponse(records=records, api_calls=api_calls, source="govinfo.gov", metadata={"collection": collection})
 
     async def _gpu_process_govinfo_bills(self, bills: List[Dict]) -> UpsertSummary:
-        """Process GovInfo bills on GPU"""
+        """
+        Process and persist a list of GovInfo bill records using GPU acceleration when available; falls back to the CPU path on failure.
+        
+        Parameters:
+            bills (List[Dict]): GovInfo bill records in the normalized internal schema to be persisted.
+        
+        Returns:
+            UpsertSummary: Counts of `inserted`, `duplicates`, and `errors` resulting from the upsert operation.
+        """
         try:
             # Convert to GPU DataFrame
             df = cudf.DataFrame(bills)
@@ -1167,7 +1723,15 @@ class IngestionEngine:
             return await self._cpu_process_govinfo_bills(bills)
 
     async def _cpu_process_govinfo_bills(self, bills: List[Dict]) -> UpsertSummary:
-        """Process GovInfo bills on CPU"""
+        """
+        Process and persist a list of GovInfo bill records in CPU-mode batching.
+        
+        Parameters:
+            bills (List[Dict]): GovInfo records to be inserted or upserted; each dict should match the engine's internal GovInfo schema.
+        
+        Returns:
+            UpsertSummary: Aggregated counts across all batches: `inserted`, `duplicates`, and `errors`.
+        """
         summary = UpsertSummary()
         for i in range(0, len(bills), self.batch_size):
             batch = bills[i:i + self.batch_size]
@@ -1179,7 +1743,15 @@ class IngestionEngine:
         return summary
 
     async def ingest_custom_data(self, parameters: Dict[str, Any]) -> IngestionResult:
-        """Ingest custom data based on parameters"""
+        """
+        Hook for ingesting arbitrary/custom data sources according to the provided parameters.
+        
+        Parameters:
+            parameters (dict): Configuration and metadata for the custom ingestion run. Expected keys and semantics are implementation-dependent (e.g., source identifiers, pagination options, API credentials, mapping rules, or batch settings).
+        
+        Returns:
+            IngestionResult: Summary of the ingestion run including `records_processed`, `duration`, `success`, `errors`, `performance_metrics`, and `data_quality_metrics`.
+        """
         # Implementation for custom data ingestion
         return IngestionResult(records_processed=0)
 
