@@ -6,22 +6,33 @@ import re
 from typing import Dict, Iterable, List
 
 import psycopg2
-from psycopg2 import sql
+
 from psycopg2.extras import Json, execute_values
 from psycopg2.extensions import quote_ident
 
 
-def _validate_identifier(name: str) -> None:
-    """Validate that an identifier (table or column name) is safe to use in SQL.
+def _validate_identifier(identifier: str) -> None:
+    """Validate SQL identifiers to prevent injection attacks.
     
-    Raises ValueError if the identifier contains suspicious characters.
+    Supports both simple identifiers (column_name) and qualified identifiers (schema.table).
+    
+    Raises:
+        ValueError: If identifier contains invalid characters.
     """
-    if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', name):
-        raise ValueError(f"Invalid SQL identifier: {name}")
+    # Allow schema.table notation by validating each part separately
+    parts = identifier.split('.')
+    if len(parts) > 2:
+        raise ValueError(f"Invalid SQL identifier (too many parts): {identifier}")
+    
+    for part in parts:
+        if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', part):
+            raise ValueError(f"Invalid SQL identifier: {identifier}")
 
 
 def _quote_identifier(conn, name: str) -> str:
     """Safely quote a SQL identifier (table or column name).
+    
+    Supports both simple identifiers and schema-qualified identifiers (schema.table).
     
     Args:
         conn: psycopg2 connection object
@@ -31,18 +42,10 @@ def _quote_identifier(conn, name: str) -> str:
         Properly quoted identifier safe for SQL interpolation
     """
     _validate_identifier(name)
-    # Use psycopg2's quote_ident for proper SQL identifier quoting
-    return quote_ident(name, conn)
-
-
-def _validate_identifier(identifier: str) -> None:
-    """Validate SQL identifiers to prevent injection attacks.
-    
-    Raises:
-        ValueError: If identifier contains invalid characters.
-    """
-    if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', identifier):
-        raise ValueError(f"Invalid SQL identifier: {identifier}")
+    # Handle schema.table notation by quoting each part separately
+    parts = name.split('.')
+    quoted_parts = [quote_ident(part, conn) for part in parts]
+    return '.'.join(quoted_parts)
 
 
 def upsert_records(
@@ -98,7 +101,14 @@ def upsert_records(
                             row.append(value)
                     prepared_batch.append(tuple(row))
 
-
+                # Build and execute the INSERT ... ON CONFLICT statement
+                insert_query = f"""
+                    INSERT INTO {quoted_table} ({', '.join(quoted_columns)})
+                    VALUES %s
+                    ON CONFLICT ({', '.join(quoted_conflict_columns)})
+                    DO UPDATE SET {update_clause}
+                """
+                execute_values(cursor, insert_query, prepared_batch)
                 total_upserted += len(batch)
         conn.commit()
     return total_upserted

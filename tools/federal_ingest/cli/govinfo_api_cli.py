@@ -55,7 +55,7 @@ def main() -> None:
 
     if args.upsert:
         if not args.table:
-            raise SystemExit("--table is required when --upsert is set")
+            raise SystemExit("Error: --table argument is required when using --upsert. Specify the target PostgreSQL table (e.g., --table staging.govinfo_packages)")
         upsert_to_postgres(args.table, normalized, args.conflict_columns)
 
     if not args.output_dir and not args.upsert:

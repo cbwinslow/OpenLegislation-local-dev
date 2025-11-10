@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, List, Optional
 
 from tools.settings import settings
 
@@ -32,6 +32,7 @@ class CongressGovClient(BaseAPIClient):
 
         url = self._resolve_url(resource)
         params = {"limit": limit, "offset": offset, **filters}
+        # Note: Congress.gov API requires the key as a query parameter
         if self.config.api_key:
             params["api_key"] = self.config.api_key
         return self._request("GET", url, params=params)
@@ -41,6 +42,7 @@ class CongressGovClient(BaseAPIClient):
 
         url = self._resolve_url(resource, *path_segments)
         params = dict(filters)
+        # Note: Congress.gov API requires the key as a query parameter
         if self.config.api_key:
             params["api_key"] = self.config.api_key
         return self._request("GET", url, params=params)
