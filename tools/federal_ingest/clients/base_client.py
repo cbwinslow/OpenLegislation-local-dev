@@ -46,8 +46,6 @@ class BaseAPIClient:
         headers = {"Accept": "application/json"}
         if self.config.headers:
             headers.update(self.config.headers)
-        if self.config.api_key:
-            headers["X-API-Key"] = self.config.api_key
         return headers
 
     def _request(self, method: str, url: str, params: Optional[Dict[str, Any]] = None) -> dict:
