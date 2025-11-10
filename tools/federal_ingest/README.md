@@ -1,9 +1,9 @@
 # Federal Ingestion Toolkit
 
 This package provides Python clients and command line utilities for working with
-federal legislative data sources. The layout mirrors the legacy
-`tools/govdata_ingest` toolkit and offers consistent interfaces for fetching,
-normalizing, exporting, and loading data from the following services:
+federal legislative data sources. This toolkit replaces previous scattered scripts
+and offers consistent interfaces for fetching, normalizing, exporting, and loading
+data from the following services:
 
 - [`Congress.gov`](https://api.congress.gov/) (REST v3 API)
 - [`api.govinfo.gov`](https://api.govinfo.gov/) (GovInfo REST API)

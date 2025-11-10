@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Iterable, List, Optional
 
 from tools.settings import settings
@@ -14,13 +14,17 @@ from .postgres import upsert_records
 
 def write_json_records(records: Iterable[Dict], output_dir: str, prefix: str) -> List[str]:
     """Write normalized records to timestamped JSONL files."""
-
+    
+    records_list = list(records)
+    if not records_list:
+        return []
+    
     os.makedirs(output_dir, exist_ok=True)
-    timestamp = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     path = os.path.join(output_dir, f"{prefix}_{timestamp}.jsonl")
     written_paths: List[str] = []
     with open(path, "w", encoding="utf-8") as handle:
-        for record in records:
+        for record in records_list:
             handle.write(json.dumps(record, ensure_ascii=False) + "\n")
     written_paths.append(path)
     return written_paths

@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import os
-from typing import Dict, Iterable, List, Optional
+from typing import Dict, List, Optional
+from urllib.parse import urlparse
 
 import requests
 
@@ -54,7 +55,11 @@ class GovInfoBulkClient:
         download_url = package_path
         if not download_url.startswith("http"):
             download_url = f"{self.base_url}/{package_path.lstrip('/')}"
-        local_path = os.path.join(output_dir, os.path.basename(download_url))
+        
+        # Extract filename from URL path, handling query parameters
+        parsed_url = urlparse(download_url)
+        filename = os.path.basename(parsed_url.path)
+        local_path = os.path.join(output_dir, filename)
         with requests.get(download_url, stream=True, timeout=settings.request_timeout) as response:
             response.raise_for_status()
             with open(local_path, "wb") as f:
