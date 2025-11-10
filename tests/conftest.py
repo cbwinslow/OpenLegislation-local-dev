@@ -12,15 +12,7 @@ import tempfile
 import shutil
 from typing import Dict, Any, Generator
 from unittest.mock import Mock, MagicMock, patch
-try:  # pragma: no cover - optional dependency for tests
-    import psycopg2
-except ImportError:  # pragma: no cover
-    psycopg2 = MagicMock()
 
-try:  # pragma: no cover
-    import asyncpg
-except ImportError:  # pragma: no cover
-    asyncpg = MagicMock()
 
 
 @pytest.fixture(scope="session")

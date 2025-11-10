@@ -25,10 +25,11 @@ from collections import defaultdict
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Optional, Any, Callable, Union, Iterable, Tuple
+from typing import Dict, List, Optional, Any, Callable, Iterable, Tuple, Set
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 import aiohttp
+from aiohttp import ClientTimeout
 import psutil
 import requests
 from tqdm.asyncio import tqdm
@@ -200,18 +201,16 @@ class SQLAlchemyAdapter(BaseDatabaseAdapter):
         if not records:
             return summary
 
-        with self.session_scope() as session:
-            for record in records:
+        for record in records:
+            with self.session_scope() as session:
                 try:
                     self._upsert_bill(session, record)
                     summary.inserted += 1
                 except IntegrityError:
-                    session.rollback()
                     summary.duplicates += 1
                 except SQLAlchemyError as exc:  # pragma: no cover - database specific
                     logger.exception("Failed to upsert bill", extra={"error": str(exc), "record": record})
                     summary.errors += 1
-                    session.rollback()
         return summary
 
     def bulk_upsert_members(self, records: List[Dict[str, Any]]) -> UpsertSummary:
@@ -219,18 +218,16 @@ class SQLAlchemyAdapter(BaseDatabaseAdapter):
         if not records:
             return summary
 
-        with self.session_scope() as session:
-            for record in records:
+        for record in records:
+            with self.session_scope() as session:
                 try:
                     self._upsert_member(session, record)
                     summary.inserted += 1
                 except IntegrityError:
-                    session.rollback()
                     summary.duplicates += 1
                 except SQLAlchemyError as exc:  # pragma: no cover
                     logger.exception("Failed to upsert member", extra={"error": str(exc), "record": record})
                     summary.errors += 1
-                    session.rollback()
         return summary
 
     def bulk_upsert_govinfo(self, records: List[Dict[str, Any]]) -> UpsertSummary:
@@ -238,18 +235,16 @@ class SQLAlchemyAdapter(BaseDatabaseAdapter):
         if not records:
             return summary
 
-        with self.session_scope() as session:
-            for record in records:
+        for record in records:
+            with self.session_scope() as session:
                 try:
                     self._upsert_govinfo(session, record)
                     summary.inserted += 1
                 except IntegrityError:
-                    session.rollback()
                     summary.duplicates += 1
                 except SQLAlchemyError as exc:  # pragma: no cover
                     logger.exception("Failed to upsert GovInfo bill", extra={"error": str(exc), "record": record})
                     summary.errors += 1
-                    session.rollback()
         return summary
 
 
@@ -267,7 +262,21 @@ class InMemoryAdapter(BaseDatabaseAdapter):
             return list(store.keys())
 
     def prefetch_bill_keys(self, start: Optional[int], end: Optional[int]) -> Iterable[str]:
-        return self._prefetch(self._bills)
+        # Filter keys by session year if start/end are provided
+        with self._lock:
+            result = []
+            for key in self._bills.keys():
+                try:
+                    _, session_year_str = key.rsplit(":", 1)
+                    session_year = int(session_year_str)
+                except (ValueError, IndexError):
+                    continue  # skip malformed keys
+                if (start is not None and session_year < start):
+                    continue
+                if (end is not None and session_year > end):
+                    continue
+                result.append(key)
+            return result
 
     def prefetch_member_keys(self) -> Iterable[str]:
         return self._prefetch(self._members)
@@ -280,14 +289,19 @@ class InMemoryAdapter(BaseDatabaseAdapter):
         with self._lock:
             for key, record in records:
                 if key in store:
-                    summary.duplicates += 1
-                    continue
-                store[key] = record
-                summary.inserted += 1
+                    store[key] = record
+                    summary.updated += 1
+                else:
+                    store[key] = record
+                    summary.inserted += 1
         return summary
 
     def bulk_upsert_bills(self, records: List[Dict[str, Any]]) -> UpsertSummary:
-        tuples = [(f"{r['bill_print_no']}:{r['bill_session_year']}", r) for r in records]
+        tuples = [
+            (f"{r['bill_print_no']}:{r['bill_session_year']}", r)
+            for r in records
+            if r.get('bill_print_no') and r.get('bill_session_year')
+        ]
         return self._bulk_store(self._bills, tuples)
 
     def bulk_upsert_members(self, records: List[Dict[str, Any]]) -> UpsertSummary:
@@ -318,7 +332,7 @@ class IngestionEngine:
         # Initialize executors
         thread_workers = max(1, max_workers if enable_parallel else 1)
         self.thread_executor = ThreadPoolExecutor(max_workers=thread_workers)
-        process_workers = max_workers // 2 if enable_parallel and max_workers > 1 else 0
+        process_workers = max(1, max_workers // 2) if enable_parallel and max_workers >= 2 else 0
         self.process_executor = ProcessPoolExecutor(max_workers=process_workers) if process_workers else None
 
         # GPU setup
@@ -334,9 +348,9 @@ class IngestionEngine:
 
         # Database adapter and dedupe caches
         self.db_adapter = db_adapter or self._create_default_adapter()
-        self._existing_bill_keys: set[str] = set()
-        self._existing_member_ids: set[str] = set()
-        self._existing_govinfo_keys: set[str] = set()
+        self._existing_bill_keys: Set[str] = set()
+        self._existing_member_ids: Set[str] = set()
+        self._existing_govinfo_keys: Set[str] = set()
         self._existing_loaded = {"bills": False, "members": False, "govinfo": False}
         self._state_lock = threading.Lock()
         self._run_metrics = defaultdict(int)
@@ -443,7 +457,7 @@ class IngestionEngine:
         }
 
         if category == 'congress':
-            criteria['mandatory']["api_calls_recorded"] = extra.get('api_calls', 0) > 0
+            criteria['optional']["api_calls_recorded"] = extra.get('api_calls', 0) > 0
             criteria['mandatory']["congress_number"] = extra.get('congress') is not None
             criteria['optional']["gpu_enabled"] = self.enable_gpu
         elif category == 'members':
@@ -474,7 +488,6 @@ class IngestionEngine:
         bill_print_no = f"{bill_type}{number}".strip()
         latest_action = bill.get("latestAction", {}) or bill.get("latestActionDetails", {})
         status = latest_action.get("actionDescription") or latest_action.get("text") or bill.get("status")
-        introduced = bill.get("introducedDate") or bill.get("introducedOn")
 
         return {
             "bill_print_no": bill_print_no,
@@ -485,8 +498,8 @@ class IngestionEngine:
             "data_source": "congress.gov",
             "congress": congress_num,
             "bill_type": bill_type,
-            "sponsor_party": bill.get("sponsors", [{}])[0].get("party") if bill.get("sponsors") else None,
-            "sponsor_state": bill.get("sponsors", [{}])[0].get("state") if bill.get("sponsors") else None,
+            "sponsor_party": bill.get("sponsors")[0].get("party") if bill.get("sponsors") and isinstance(bill.get("sponsors"), list) and len(bill.get("sponsors")) > 0 else None,
+            "sponsor_state": bill.get("sponsors")[0].get("state") if bill.get("sponsors") and isinstance(bill.get("sponsors"), list) and len(bill.get("sponsors")) > 0 else None,
             "status": status,
             "status_date": self._parse_date(latest_action.get("actionDate") or latest_action.get("date")),
             "short_title": bill.get("shortTitle") or bill.get("title")
@@ -798,7 +811,7 @@ class IngestionEngine:
 
         while url:
             try:
-                async with self.aiohttp_session.get(url, params=next_params, timeout=self.timeout) as response:
+                async with self.aiohttp_session.get(url, params=next_params, timeout=ClientTimeout(total=self.timeout)) as response:
                     api_calls += 1
                     if response.status != 200:
                         logger.warning(
@@ -843,7 +856,12 @@ class IngestionEngine:
 
         await self._ensure_existing_bill_keys(start_year, end_year)
 
-        key_func = lambda record: f"{record.get('bill_print_no')}:{record.get('bill_session_year')}"
+        def key_func(record):
+            bill_print_no = record.get('bill_print_no', '')
+            bill_session_year = record.get('bill_session_year', '')
+            if not bill_print_no or not bill_session_year:
+                return None
+            return f"{bill_print_no}:{bill_session_year}"
         new_records, duplicates = self._dedupe_records(bills, self._existing_bill_keys, key_func)
 
         if not new_records:
@@ -909,8 +927,8 @@ class IngestionEngine:
 
                 for chunk in chunks:
                     if self.enable_gpu:
-                        executor = self.process_executor or self.thread_executor
-                        task = loop.run_in_executor(executor, self._gpu_process_members_chunk, chunk)
+                        # Always use ThreadPoolExecutor for GPU operations to avoid pickling errors
+                        task = loop.run_in_executor(self.thread_executor, self._gpu_process_members_chunk, chunk)
                     else:
                         task = self._process_members_chunk_async(chunk)
                     tasks.append(task)
@@ -977,7 +995,7 @@ class IngestionEngine:
 
         while url:
             try:
-                async with self.aiohttp_session.get(url, params=next_params, timeout=self.timeout) as response:
+                async with self.aiohttp_session.get(url, params=next_params, timeout=ClientTimeout(total=self.timeout)) as response:
                     api_calls += 1
                     if response.status != 200:
                         logger.warning("Members API request failed", extra={"status": response.status})
@@ -1117,7 +1135,7 @@ class IngestionEngine:
         while True:
             params['offset'] = offset
             try:
-                async with self.aiohttp_session.get(base_url, params=params, timeout=self.timeout) as response:
+                async with self.aiohttp_session.get(base_url, params=params, timeout=ClientTimeout(total=self.timeout)) as response:
                     api_calls += 1
                     if response.status != 200:
                         logger.warning("GovInfo API request failed", extra={"status": response.status, "collection": collection})
