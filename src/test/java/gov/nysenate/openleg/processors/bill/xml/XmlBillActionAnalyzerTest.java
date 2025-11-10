@@ -64,7 +64,7 @@ public class XmlBillActionAnalyzerTest {
     private void addTestAction(List<BillAction> actions, String actionText) {
         BillAction billAction = new BillAction(
                 LocalDate.ofYearDay(testYear, 1), actionText, testBillId.getChamber(),
-                actions.size(), testBillId);
+                actions.size(), testBillId, "UNKNOWN");
         actions.add(billAction);
     }
 }

@@ -60,32 +60,38 @@ public class BillActionTest
                                               "recalled from senate",
                                               Chamber.ASSEMBLY,
                                               1,
-                                              new BillId("S3664B", 2013));
+                                              new BillId("S3664B", 2013),
+                                              "UNKNOWN");
     private final BillAction actionB = new BillAction(LocalDate.from(eventDateFormat.parse("06/02/09")),
                                               "recalled from senate",
                                               Chamber.ASSEMBLY,
                                               1,
-                                              new BillId("S3665B", 2013));// different
+                                              new BillId("S3665B", 2013),// different
+                                              "UNKNOWN");
     private final BillAction actionC = new BillAction(LocalDate.from(eventDateFormat.parse("06/02/10")),// different
                                               "recalled from senate",
                                               Chamber.ASSEMBLY,
                                               1,
-                                              new BillId("S3664B", 2013));
+                                              new BillId("S3664B", 2013),
+                                              "UNKNOWN");
     private final BillAction actionD = new BillAction(LocalDate.from(eventDateFormat.parse("06/02/09")),
                                               "recalled from senate",
                                               Chamber.ASSEMBLY,
                                               1,
-                                              new BillId("S3664B", 2011));// different
+                                              new BillId("S3664B", 2011),// different
+                                              "UNKNOWN");
     private final BillAction actionE = new BillAction(LocalDate.from(eventDateFormat.parse("06/02/09")),
                                               "RECALLED FROM SENATE",// different
                                               Chamber.SENATE,// different
                                               1,
-                                              new BillId("S3664B", 2013));
+                                              new BillId("S3664B", 2013),
+                                              "UNKNOWN");
     private final BillAction actionF = new BillAction(LocalDate.from(eventDateFormat.parse("06/02/09")),
                                               "recalled from senate",
                                               Chamber.ASSEMBLY,
                                               2,// different
-                                              new BillId("S3664B", 2013));
+                                              new BillId("S3664B", 2013),
+                                              "UNKNOWN");
     @Test
     public void billActionInequality() {
         // null
@@ -113,12 +119,14 @@ public class BillActionTest
                 "recalled from senate",
                 Chamber.ASSEMBLY,
                 1,
-                new BillId("S3664B", 2013));
+                new BillId("S3664B", 2013),
+                "UNKNOWN");
         final BillAction action2 = new BillAction(LocalDate.from(eventDateFormat.parse("06/02/09")),
                 "recalled from senate",
                 Chamber.ASSEMBLY,
                 1,
-                new BillId("S3664B", 2013));
+                new BillId("S3664B", 2013),
+                "UNKNOWN");
 
         // separately constructed
         assertEquals(action1, action2);
