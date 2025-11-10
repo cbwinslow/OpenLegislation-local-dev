@@ -11,13 +11,14 @@ from psycopg2.extras import Json, execute_values
 from psycopg2.extensions import quote_ident
 
 
-def _validate_identifier(name: str) -> None:
-    """Validate that an identifier (table or column name) is safe to use in SQL.
+def _validate_identifier(identifier: str) -> None:
+    """Validate SQL identifiers to prevent injection attacks.
     
-    Raises ValueError if the identifier contains suspicious characters.
+    Raises:
+        ValueError: If identifier contains invalid characters.
     """
-    if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', name):
-        raise ValueError(f"Invalid SQL identifier: {name}")
+    if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', identifier):
+        raise ValueError(f"Invalid SQL identifier: {identifier}")
 
 
 def _quote_identifier(conn, name: str) -> str:
@@ -33,16 +34,6 @@ def _quote_identifier(conn, name: str) -> str:
     _validate_identifier(name)
     # Use psycopg2's quote_ident for proper SQL identifier quoting
     return quote_ident(name, conn)
-
-
-def _validate_identifier(identifier: str) -> None:
-    """Validate SQL identifiers to prevent injection attacks.
-    
-    Raises:
-        ValueError: If identifier contains invalid characters.
-    """
-    if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', identifier):
-        raise ValueError(f"Invalid SQL identifier: {identifier}")
 
 
 def upsert_records(
