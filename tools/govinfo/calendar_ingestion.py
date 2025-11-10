@@ -2,23 +2,28 @@
 """GovInfo calendar ingestion using the shared ORM persistence helpers."""
 from __future__ import annotations
 
+import argparse
 import json
 import logging
 import os
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 
-from base_ingestion_process import BaseIngestionProcess
-from settings import settings
+# Add tools to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from .models import (
+from tools.ingestion.core.base_ingestion_process import BaseIngestionProcess
+from tools.config.settings import settings
+
+from models import (
     GovInfoCalendarRecord,
     GovInfoCalendarActiveList,
     GovInfoCalendarEntry,
     GovInfoCalendarSupplemental,
 )
-from .persistence import persist_calendar_record
+from persistence import persist_calendar_record
 from db.session import session_scope
 
 logger = logging.getLogger(__name__)
@@ -133,7 +138,17 @@ def _parse_datetime(value: Optional[str]) -> Optional[datetime]:
     return None
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Ingest GovInfo calendar JSON files")
+    parser.add_argument("--json-dir", dest="calendar_dir", help="Directory containing GovInfo calendar JSON files")
+    parser.add_argument("--reset", action="store_true", help="Reset ingestion tracker before running")
+    parser.add_argument("--limit", type=int, help="Limit number of records processed in this run")
+    parser.add_argument("--log-level", default="INFO", help="Logging level (default: INFO)")
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    ingestor = GovInfoCalendarIngestor()
-    ingestor.run()
+    args = parse_args()
+    logging.basicConfig(level=getattr(logging, args.log_level.upper(), logging.INFO))
+    ingestor = GovInfoCalendarIngestor(calendar_dir=args.calendar_dir)
+    ingestor.run(resume=not args.reset, reset=args.reset, limit=args.limit)

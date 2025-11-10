@@ -1,0 +1,177 @@
+name: Copilot-Powered Code Review & Enhancement
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: [main, develop]
+  pull_request_review_comment:
+    types: [created]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to review'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  repository-projects: write
+
+jobs:
+  copilot-pr-analysis:
+    name: Copilot PR Analysis & Suggestions
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.pull_request.draft == false
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Analyze PR with Copilot
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const script = require('./.github/scripts/copilot-pr-analysis.js');
+          await script.analyzePR({ github, context });
+
+  copilot-code-suggestions:
+    name: Generate Code Suggestions
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Generate improvement suggestions
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const script = require('./.github/scripts/copilot-suggestions.js');
+          await script.generateSuggestions({ github, context });
+
+  copilot-review-integration:
+    name: Copilot Review Integration
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request_review_comment' || (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@copilot'))
+
+    steps:
+    - name: Process Copilot mentions
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const comment = context.payload.comment;
+          const body = comment.body;
+
+          if (body.includes('@copilot')) {
+            // Extract the request
+            const request = body.replace('@copilot', '').trim();
+
+            // Create a Copilot-assisted response
+            const response = await generateCopilotResponse(request, context);
+
+            // Post the response
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue?.number || context.payload.pull_request?.number,
+              body: `🤖 **Copilot Analysis:**\\n\\n${response}`
+            });
+          }
+
+  copilot-test-generation:
+    name: Copilot Test Generation
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && contains(github.event.pull_request.title, 'test') || contains(github.event.pull_request.body, 'test')
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Generate tests with Copilot
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const script = require('./.github/scripts/copilot-test-gen.js');
+          await script.generateTests({ github, context });
+
+  copilot-documentation:
+    name: Copilot Documentation Enhancement
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && (contains(github.event.pull_request.title, 'docs') || contains(github.event.pull_request.body, 'documentation'))
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Enhance documentation
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const script = require('./.github/scripts/copilot-docs.js');
+          await script.enhanceDocumentation({ github, context });
+
+  copilot-security-review:
+    name: Copilot Security Analysis
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Security analysis with Copilot
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const script = require('./.github/scripts/copilot-security.js');
+          await script.securityReview({ github, context });
+
+  copilot-performance-analysis:
+    name: Copilot Performance Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Performance analysis
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const script = require('./.github/scripts/copilot-performance.js');
+          await script.performanceAnalysis({ github, context });
+
+  copilot-summary:
+    name: Copilot Review Summary
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'ready_for_review'
+    needs: [copilot-pr-analysis, copilot-code-suggestions, copilot-security-review, copilot-performance-analysis]
+
+    steps:
+    - name: Generate comprehensive review summary
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const script = require('./.github/scripts/copilot-summary.js');
+          await script.generateSummary({ github, context });

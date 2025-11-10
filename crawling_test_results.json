@@ -1,0 +1,86 @@
+[
+  {
+    "status": "success",
+    "url": "https://www.congress.gov/search?q=%7B%22source%22%3A%22legislation%22%7D",
+    "jurisdiction": "federal",
+    "content_length": 8987491,
+    "data": [
+      {
+        "title": "Legislative Search Results | Congress.gov | Library of Congress",
+        "links_found": 413,
+        "sample_links": [
+          {
+            "url": "https://www.congress.gov/legislation?q=%7B%22congress%22%3A119%7D",
+            "text": "Legislation",
+            "type": "potential_bill"
+          },
+          {
+            "url": "https://www.congress.gov/contact-us",
+            "text": "Contact",
+            "type": "potential_bill"
+          },
+          {
+            "url": "https://www.congress.gov/legislation?q=%7B%22congress%22%3A119%7D",
+            "text": "Legislation",
+            "type": "potential_bill"
+          },
+          {
+            "url": "https://www.congress.gov/contact-us",
+            "text": "Contact",
+            "type": "potential_bill"
+          },
+          {
+            "url": "https://www.congress.gov/contact-us",
+            "text": "Contact",
+            "type": "potential_bill"
+          }
+        ],
+        "jurisdiction": "federal",
+        "source_url": "https://www.congress.gov/search?q=%7B%22source%22%3A%22legislation%22%7D"
+      }
+    ],
+    "timestamp": "2025-11-08T21:06:33.686557"
+  },
+  {
+    "status": "success",
+    "url": "https://www.nysenate.gov/search/legislation",
+    "jurisdiction": "nys",
+    "content_length": 52476,
+    "data": [
+      {
+        "title": "| NYSenate.gov",
+        "links_found": 6,
+        "sample_links": [
+          {
+            "url": "https://www.congress.gov/legislation",
+            "text": "Bills & Laws",
+            "type": "potential_bill"
+          },
+          {
+            "url": "https://www.congress.gov/search/legislation",
+            "text": "Advanced Legislation Search",
+            "type": "potential_bill"
+          },
+          {
+            "url": "https://www.congress.gov/search/legislation",
+            "text": "Advanced Legislation Search",
+            "type": "potential_bill"
+          },
+          {
+            "url": "https://www.congress.gov/search/legislation",
+            "text": "Advanced Legislation Search",
+            "type": "potential_bill"
+          },
+          {
+            "url": "https://www.congress.gov/legislation",
+            "text": "Bills & Laws",
+            "type": "potential_bill"
+          }
+        ],
+        "jurisdiction": "nys",
+        "source_url": "https://www.nysenate.gov/search/legislation"
+      }
+    ],
+    "timestamp": "2025-11-08T21:06:38.909383"
+  }
+]

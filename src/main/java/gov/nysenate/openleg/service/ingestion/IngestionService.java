@@ -1,5 +1,6 @@
 package gov.nysenate.openleg.service.ingestion;
 
+import com.google.gson.Gson;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.SyndFeedInput;
@@ -34,6 +35,9 @@ public class IngestionService {
     private DocumentRepository documentRepository;
 
     private final RestTemplate restTemplate = new RestTemplate();
+
+    @Autowired
+    private Gson gson;
 
     /**
      * Ingest documents from RSS feed.

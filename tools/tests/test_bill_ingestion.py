@@ -20,8 +20,8 @@ from lxml import etree
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
-from govinfo_bill_ingestion import GovInfoBillIngestor
-from settings import settings
+from tools.ingestion.govinfo.govinfo_bill_ingestion import GovInfoBillIngestor
+from tools.config.settings import settings
 
 
 @pytest.fixture(scope="session")

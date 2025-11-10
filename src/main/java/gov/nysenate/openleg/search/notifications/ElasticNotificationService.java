@@ -53,16 +53,22 @@ public class ElasticNotificationService extends IndexedSearchService<RegisteredN
             ))._toQuery());
         }
 
+        // TODO: Fix RangeQuery API for Elasticsearch 8.x
+        /*
         if (from != null || to != null) {
-            var rangeQuery = new RangeQuery.Builder().field("occurred");
-            if (from != null) {
-                rangeQuery.from(from.toString());
-            }
-            if (to != null) {
-                rangeQuery.to(to.toString());
-            }
-            filterQuery.filter(rangeQuery.build()._toQuery());
+            RangeQuery rangeQuery = RangeQuery.of(b -> {
+                var builder = b.field("occurred");
+                if (from != null) {
+                    builder = builder.from(from.toString());
+                }
+                if (to != null) {
+                    builder = builder.to(to.toString());
+                }
+                return builder;
+            });
+            filterQuery.filter(rangeQuery._toQuery());
         }
+        */
 
         String sortString = (order == null || order == SortOrder.NONE)
                 ? "" : "occurred:" + order;

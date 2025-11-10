@@ -1,114 +1,52 @@
-import React from 'react'
-import useWindowSize from "app/shared/useWindowSize";
-import { List } from "phosphor-react";
+import React, { createContext, useContext, useState } from 'react';
 
-/**
- * Renders tabs responsively. On screens >= 768px a typical tab like component is rendered, on smaller screens
- * an alternative select element is rendered.
- * @param tabs An array of tabs, each tab should be an object with 'name', 'quantity', 'isDisable',
- * and 'component' fields. The 'component' is the component to render when this tab is active.
- * @param activeTab The 'name' of the currently active tab.
- * @param setActiveTab A callback which is executed whenever a users selects a tab.
- *                     It is passed the name of the selected tab.
- * @param showZeroQuantity If true a count will be shown even if it is zero.
- */
-export default function Tabs({ tabs, activeTab, setActiveTab, showZeroQuantity = false }) {
-  const [ tabComponent, setTabComponent ] = React.useState()
-  const windowSize = useWindowSize()
+const TabsContext = createContext();
 
-  React.useEffect(() => {
-    tabs.forEach((tab) => {
-      if (tab.name === activeTab) {
-        setTabComponent(tab.component)
-      }
-    })
-  }, [ tabs, activeTab ])
-
-  if (windowSize[0] >= 768) {
-    return (
-      <DefaultTabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} showZeroQuantity={showZeroQuantity}>
-        {tabComponent}
-      </DefaultTabs>
-    )
-  } else {
-    return (
-      <MobileTabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} showZeroQuantity={showZeroQuantity}>
-        {tabComponent}
-      </MobileTabs>
-    )
-  }
-}
-
-/**
- * "Tab" component for mobile or small displays
- */
-function MobileTabs({ tabs, activeTab, setActiveTab, showZeroQuantity, children }) {
+export const Tabs = ({ value, onValueChange, children, className = '', ...props }) => {
   return (
-    <React.Fragment>
-      <div className="mx-5">
-        <label className="label label--top font-semibold">
-          Go to
-        </label>
-        <div className="flex items-center border-2 border-blue-500 rounded">
-          <List size="1.5rem" className="mx-2" />
-          <select value={activeTab} onChange={(e) => setActiveTab(e.target.value)} className="py-1 w-full">
-            {tabs.map((tab) =>
-              <option key={tab.name} value={tab.name} disabled={tab.isDisabled}>
-                {tabLabel(tab, showZeroQuantity)}
-              </option>
-            )}
-          </select>
-        </div>
+    <TabsContext.Provider value={{ value, onValueChange }}>
+      <div className={className} {...props}>
+        {children}
       </div>
-      {children}
-    </React.Fragment>
-  )
-}
+    </TabsContext.Provider>
+  );
+};
 
-/**
- * The default tab component, rendered on medium to large size screens.
- */
-function DefaultTabs({ tabs, activeTab, setActiveTab, showZeroQuantity, children }) {
+export const TabsList = ({ children, className = '', ...props }) => {
   return (
-    <React.Fragment>
-      <div className="flex pl-5 border-b-1 border-blue-600">
-        {tabs.map((tab) => {
-          return (
-            <Tab key={tab.name}
-                 tab={tab}
-                 isActive={tab.name === activeTab}
-                 setActiveTab={setActiveTab}
-                 showZeroQuantity={showZeroQuantity} />
-          )
-        })}
-      </div>
+    <div className={`inline-flex h-10 items-center justify-center rounded-md bg-gray-100 p-1 text-gray-500 ${className}`} {...props}>
       {children}
-    </React.Fragment>
-  )
-}
-
-function Tab({ tab, isActive, setActiveTab, showZeroQuantity }) {
-  let tabClass = "px-3 py-1 mr-3 whitespace-nowrap border-t-1 border-l-1 border-r-1"
-
-  if (tab.isDisabled) {
-    tabClass += " cursor-default bg-gray-50 text-gray-400 font-extralight border-gray-50"
-  } else if (isActive) {
-    tabClass += " text-blue-600 font-semibold bg-white border-blue-600 -mb-px"
-  } else {
-    tabClass += " text-gray-500 font-light cursor-pointer bg-gray-100"
-  }
-
-  return (
-    <div className={tabClass}
-         onClick={tab.isDisabled ? undefined : () => setActiveTab(tab.name)}>
-      {tabLabel(tab, showZeroQuantity)}
     </div>
-  )
-}
+  );
+};
 
-const tabLabel = (tab, showZeroQuantity) => {
-  if (!showZeroQuantity) {
-    return tab.name + (tab.quantity ? ` (${tab.quantity})` : "")
-  }
-  return tab.name + ((tab.quantity || tab.quantity === 0) ? ` (${tab.quantity})` : "")
-}
+export const TabsTrigger = ({ value, children, className = '', ...props }) => {
+  const { value: selectedValue, onValueChange } = useContext(TabsContext);
+  const isSelected = selectedValue === value;
+
+  return (
+    <button
+      className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${
+        isSelected
+          ? 'bg-white text-gray-950 shadow-sm'
+          : 'text-gray-500 hover:text-gray-900'
+      } ${className}`}
+      onClick={() => onValueChange(value)}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+};
+
+export const TabsContent = ({ value, children, className = '', ...props }) => {
+  const { value: selectedValue } = useContext(TabsContext);
+
+  if (selectedValue !== value) return null;
+
+  return (
+    <div className={`mt-2 ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 focus-visible:ring-offset-2 ${className}`} {...props}>
+      {children}
+    </div>
+  );
+};

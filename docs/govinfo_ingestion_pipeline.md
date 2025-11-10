@@ -60,7 +60,9 @@
 - `tools/ingest_govinfo_chunks.py`: CLI entry handling concurrency and resume features.
 - `models/`: fully ported domain models used during parsing.
 - `src/db/`: SQLAlchemy data-access layer (`base.py`, ORM models, Pydantic schemas, CRUD helpers, and service functions for API integrations).
-- `tools/govinfo/models.py` / `tools/govinfo/persistence.py`: lightweight dataclasses and persistence utilities shared across bill/agenda/calendar ingestors.
+- `tools/govinfo/models.py` / `tools/govinfo/persistence.py`: lightweight dataclasses and persistence utilities shared across bill/agenda/calendar/member/vote/status ingestors.
+- `tools/govinfo/agenda_ingestion.py`, `tools/govinfo/calendar_ingestion.py`, `tools/member_data_ingestion.py`, `tools/bill_vote_ingestion.py`, `tools/bill_status_ingestion.py`: CLI wrappers for JSON payload ingestion (run with `--help` for options).
+- `tools/govinfo_bill_ingestion.py`: supports multiple directories, glob patterns, explicit file lists, and recursive discovery via CLI flags (`--xml-dir`, `--pattern`, `--file`, `--recursive`).
 
 ### ORM Usage
 
@@ -117,6 +119,33 @@ layer backs both ETL and the public API.
 5. Integrate parser + writer into `GovInfoBillIngestor`, enabling CLI-driven runs (per congress, optionally incremental via API).
 6. Add PyPI dependencies to virtualenv (`requests`, `lxml`, `psycopg2-binary`, `tenacity` for retries) and document install in `README_DEV.md`.
 7. Create pytest fixtures under `tools/tests/` covering parsing and DB persistence (use SQLite/PostgreSQL docker for integration as needed).
+
+## CLI Commands
+
+```bash
+python tools/govinfo_bill_ingestion.py --xml-dir staging/govinfo/bills --pattern BILLS-*.xml BILLSTATUS-*.xml --recursive
+python tools/govinfo/agenda_ingestion.py --json-dir staging/govinfo/agendas
+python tools/govinfo/calendar_ingestion.py --json-dir staging/govinfo/calendars
+```
+
+All commands accept `--reset`, `--limit`, and `--log-level` switches for fine-grained control.
+
+From the universal manager you can run:
+
+```bash
+python tools/manage_all_ingestion.py --run govinfo_agendas --json-dir /path/to/agendas
+python tools/manage_all_ingestion.py --run govinfo_calendars --json-dir /path/to/calendars
+python tools/manage_all_ingestion.py --run govinfo_bills --xml-dir /path/to/xml --pattern BILLS-*.xml --recursive
+```
+
+## Testing Guidance
+
+1. Prepare a temporary PostgreSQL schema and run `python -c "from db.session import init_db; init_db()"`.
+2. Drop sample GovInfo payloads (XML for bills, JSON for agendas/calendars) into the staging folders and execute the commands above.
+3. Validate results using the service helpers (e.g. `fetch_bill`, `fetch_agenda`).
+4. Use the unit tests in `tools/tests/test_govinfo_ingestion.py` as a template for additional persistence assertions.
+
+For a detailed step-by-step walkthrough, see `docs/govinfo_ingestion_runbook.md`.
 
 ## Open Items
 - Align with DB schema owners on canonical table names/columns (some migrations are placeholders dated 2025+).

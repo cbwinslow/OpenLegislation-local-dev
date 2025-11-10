@@ -1,0 +1,368 @@
+name: Marketplace Integrations & Enhanced Automation
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sundays
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  security-events: write
+  checks: write
+  repository-projects: write
+
+jobs:
+  codeql-analysis:
+    name: CodeQL Security Analysis
+    runs-on: ubuntu-latest
+    if: github.event_name != 'schedule' || github.event.schedule == '0 0 * * 0'
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: java, javascript, python
+
+    - name: Autobuild
+      uses: github/codeql-action/autobuild@v2
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+
+  sonarcloud-analysis:
+    name: SonarCloud Code Quality
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarqube-scan-action@v1
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Dependency Review
+      uses: actions/dependency-review-action@v3
+
+  codecov-coverage:
+    name: Code Coverage Report
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Run tests with coverage
+      run: mvn test jacoco:report
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./target/site/jacoco/jacoco.xml
+        flags: unittests
+        name: codecov-umbrella
+
+  lighthouse-performance:
+    name: Lighthouse Performance Audit
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && contains(github.event.pull_request.changed_files, 'frontend/')
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Build frontend
+      run: |
+        cd frontend
+        npm run build
+
+    - name: Run Lighthouse
+      uses: treosh/lighthouse-ci-action@v10
+      with:
+        urls: http://localhost:3000
+        configPath: .lighthouserc.json
+        uploadArtifacts: true
+        temporaryPublicStorage: true
+
+  bundle-analyzer:
+    name: Bundle Size Analysis
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && contains(github.event.pull_request.changed_files, 'frontend/')
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Build and analyze bundle
+      run: |
+        cd frontend
+        npm run build -- --analyze
+
+    - name: Upload bundle analysis
+      uses: actions/upload-artifact@v4
+      with:
+        name: bundle-analysis
+        path: frontend/bundle-analyzer-report.html
+
+  accessibility-check:
+    name: Accessibility Testing
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && contains(github.event.pull_request.changed_files, 'frontend/')
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Run accessibility tests
+      run: |
+        cd frontend
+        npm run test:a11y
+
+    - name: axe Accessibility Check
+      uses: dequelabs/axe-action@v1
+      with:
+        url: http://localhost:3000
+        wcag: WCAG2A,WCAG2AA
+
+  container-scan:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && contains(github.event.head_commit.modified, 'Dockerfile')
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Build Docker image
+      run: docker build -t openlegislation:test .
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'image'
+        scan-ref: 'openlegislation:test'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  license-check:
+    name: License Compliance Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run FOSSA scan
+      uses: fossas/fossa-action@v1
+      with:
+        api-key: ${{ secrets.FOSSA_API_KEY }}
+
+  weekly-security-audit:
+    name: Weekly Security Audit
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run npm audit
+      run: |
+        if [ -f "frontend/package.json" ]; then
+          cd frontend
+          npm audit --audit-level=moderate
+        fi
+
+    - name: Run Snyk to check for vulnerabilities
+      uses: snyk/actions/node@master
+      continue-on-error: true
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --severity-threshold=medium
+
+    - name: Create security report issue
+      if: failure()
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const title = `Security Audit Report - ${new Date().toISOString().split('T')[0]}`;
+          const body = `## Weekly Security Audit Results\\n\\n**Status:** ⚠️ Vulnerabilities Found\\n\\n**Details:** Check the workflow logs for full report.\\n\\n**Action Required:** Review and address security vulnerabilities.`;
+
+          await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: title,
+            body: body,
+            labels: ['security', 'audit', 'weekly-report']
+          });
+
+  performance-monitoring:
+    name: Performance Monitoring
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: |
+        cd frontend
+        npm ci
+
+    - name: Build and analyze
+      run: |
+        cd frontend
+        npm run build
+        npx webpack-bundle-analyzer build/static/js/*.js --mode static --report build/bundle-report.html
+
+    - name: Upload performance report
+      uses: actions/upload-artifact@v4
+      with:
+        name: performance-report
+        path: frontend/build/bundle-report.html
+
+  marketplace-summary:
+    name: Marketplace Integration Summary
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [codeql-analysis, sonarcloud-analysis, dependency-review, codecov-coverage, lighthouse-performance, bundle-analyzer, accessibility-check, container-scan, license-check]
+
+    steps:
+    - name: Generate integration summary
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const summary = `# 🤖 Marketplace Integration Summary\\n\\n**Date:** ${new Date().toISOString()}\\n\\n## Results\\n\\n`;
+
+          const jobs = [
+            { name: 'CodeQL Security', job: 'codeql-analysis' },
+            { name: 'SonarCloud Quality', job: 'sonarcloud-analysis' },
+            { name: 'Dependency Review', job: 'dependency-review' },
+            { name: 'Code Coverage', job: 'codecov-coverage' },
+            { name: 'Lighthouse Performance', job: 'lighthouse-performance' },
+            { name: 'Bundle Analysis', job: 'bundle-analyzer' },
+            { name: 'Accessibility Check', job: 'accessibility-check' },
+            { name: 'Container Security', job: 'container-scan' },
+            { name: 'License Compliance', job: 'license-check' }
+          ];
+
+          let passed = 0;
+          let failed = 0;
+
+          for (const job of jobs) {
+            const status = process.env[\`JOB_STATUS_\${job.job.toUpperCase()}\`] || 'unknown';
+            if (status === 'success') {
+              summary += `- ✅ ${job.name}\\n`;
+              passed++;
+            } else if (status === 'failure') {
+              summary += `- ❌ ${job.name}\\n`;
+              failed++;
+            } else {
+              summary += `- ⏭️ ${job.name} (skipped)\\n`;
+            }
+          }
+
+          summary += `\\n## Summary\\n- **Passed:** ${passed}\\n- **Failed:** ${failed}\\n- **Success Rate:** ${passed + failed > 0 ? Math.round((passed / (passed + failed)) * 100) : 0}%\\n`;
+
+          // Create or update summary issue
+          const title = 'Marketplace Integration Status';
+          const existing = await github.rest.issues.listForRepo({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            labels: ['marketplace-integration'],
+            state: 'open'
+          });
+
+          if (existing.data.length > 0) {
+            // Update existing
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: existing.data[0].number,
+              body: summary
+            });
+          } else {
+            // Create new
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: summary,
+              labels: ['marketplace-integration', 'automation']
+            });
+          }
