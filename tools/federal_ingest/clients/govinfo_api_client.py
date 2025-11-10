@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, List, Optional
 
 from tools.settings import settings
 
@@ -30,16 +30,13 @@ class GovInfoAPIClient(BaseAPIClient):
     ) -> Dict[str, Any]:
         url = self._resolve_url("collections", collection, "packages")
         params = {"offset": offset, "pageSize": page_size, **filters}
-        if self.config.api_key:
-            params["api_key"] = self.config.api_key
+        # API key is handled by BaseAPIClient via headers
         return self._request("GET", url, params=params)
 
     def get_package(self, package_id: str) -> Dict[str, Any]:
         url = self._resolve_url("packages", package_id)
-        params = {}
-        if self.config.api_key:
-            params["api_key"] = self.config.api_key
-        return self._request("GET", url, params=params)
+        # API key is handled by BaseAPIClient via headers
+        return self._request("GET", url)
 
     @staticmethod
     def normalize_packages(collection: str, payload: Dict[str, Any]) -> List[Dict[str, Any]]:
