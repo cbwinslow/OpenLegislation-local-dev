@@ -8,7 +8,7 @@
 ### Authentication
 - Requires API key from congress.gov
 - Rate limits: 1000 requests/hour, 5000/day
-- Header: `X-API-Key: YOUR_API_KEY`
+- Query parameter: `api_key=YOUR_API_KEY`
 
 ### Endpoints
 
