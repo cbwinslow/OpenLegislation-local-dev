@@ -6,7 +6,7 @@ import json
 import logging
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, Optional
+from typing import Any, Dict, Optional
 
 import requests
 
@@ -68,8 +68,10 @@ class BaseAPIClient:
             except ValueError:
                 payload = None
             raise HTTPError(response.status_code, message, payload)
+        
+        result = response.json()
         time.sleep(self.config.rate_limit_delay)
-        return response.json()
+        return result
 
     def _resolve_url(self, *parts: str) -> str:
         cleaned = [str(part).strip("/") for part in parts if part is not None]
