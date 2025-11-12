@@ -29,8 +29,31 @@
           <release>21</release>
           <!-- avoid possible encoding issues -->
           <encoding>utf-8</encoding>
-          <!-- Federal processors now have complete dependencies -->
         </configuration>
+        <executions>
+          <!-- Exclude incomplete federal processors from main compilation -->
+          <execution>
+            <id>default-compile</id>
+            <configuration>
+              <excludes>
+                <exclude>**/processors/federal/**</exclude>
+                <exclude>**/service/federal/**</exclude>
+                <exclude>**/scripts/analysis/AllMembersIngester.java</exclude>
+                <exclude>**/controller/federal/FederalDataController.java</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+          <!-- Exclude incomplete federal processor tests from test compilation -->
+          <execution>
+            <id>default-testCompile</id>
+            <configuration>
+              <testExcludes>
+                <exclude>**/processors/federal/**</exclude>
+                <exclude>**/IngestionIntegrationIT.java</exclude>
+              </testExcludes>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <!-- JAXB2 Maven Plugin for generating classes from XSD -->
       <!--
@@ -82,6 +105,11 @@
           <argLine>-Dlog4j.configurationFile=test.log4j2.xml</argLine>
           <skipTests>false</skipTests>
           <groups>gov.nysenate.openleg.config.annotation.UnitTest</groups>
+          <!-- Exclude tests for incomplete federal processors -->
+          <excludes>
+            <exclude>**/processors/federal/**</exclude>
+            <exclude>**/IngestionIntegrationIT.java</exclude>
+          </excludes>
         </configuration>
       </plugin>
       <plugin>

@@ -25,7 +25,7 @@ OpenLegislation is a comprehensive platform for accessing and analyzing legislat
 
 Updates to legislative data are processed in real-time from multiple sources and redistributed through unified APIs for integration with various web applications. The platform is developed and run using modern open-source technologies and frameworks including:
 
-* Java 17
+* Java 21
 * Spring 5 Framework
 * PostgreSQL
 * Elasticsearch 8

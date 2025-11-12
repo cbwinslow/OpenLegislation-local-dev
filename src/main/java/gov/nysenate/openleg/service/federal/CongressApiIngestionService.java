@@ -449,6 +449,3 @@ public class CongressApiIngestionService {
         public String getStatus() { return status; }
     }
 }
-
-    // Existing code...
-}
