@@ -104,12 +104,21 @@ public class DatabaseConfig {
 
 ### Migration Files
 ```
-src/main/resources/db/migration/
-├── V1_0__initial_schema.sql
-├── V1_1__add_bill_tables.sql
-├── V1_2__add_federal_fields.sql
-└── V1_3__add_indexes.sql
+src/main/resources/sql/migrations/
+├── core/
+│   ├── V1__openleg.db-init.sql
+│   ├── V2__openleg.schema.sql
+│   └── V3__openleg.data.sql
+├── bills/
+│   └── V20190205.0412__2019_budget_pdfs.sql
+├── federal/
+│   ├── V20250921.0004__federal_member_schema.sql
+│   └── V20250928.0001__ingestion_optimizations.sql
+└── members/
+    └── V20200527.1011__reset_member_data.sql
 ```
+
+See `src/main/resources/sql/migrations/README.md` for complete documentation on the organized structure.
 
 ### Running Migrations
 ```bash
