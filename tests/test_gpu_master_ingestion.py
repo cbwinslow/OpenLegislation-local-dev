@@ -1,4 +1,4 @@
-from typing import Dict, List
+
 import pathlib
 import sys
 import pathlib
@@ -56,7 +56,7 @@ async def test_congress_ingestion_deduplication_and_completion_criteria(monkeypa
 @pytest.mark.anyio
 async def test_members_ingestion_parallel_processing(monkeypatch):
     adapter = InMemoryAdapter()
-    members: List[Dict[str, str]] = [
+    members: List[Dict[str, Any]] = [
         {
             "bioguide_id": f"A{i:03d}",
             "first_name": "Test",
