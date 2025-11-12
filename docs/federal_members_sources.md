@@ -9,7 +9,7 @@ Congress.gov provides a free REST API (v3) for legislative data, including membe
 - `https://api.congress.gov/v3/`
 
 ### Authentication
-- Header: `X-API-KEY: your_api_key`
+- Query parameter: `api_key=your_api_key`
 - No key for basic queries, but recommended for production.
 
 ### Key Endpoints for Members/Entities
