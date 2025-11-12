@@ -6,6 +6,7 @@ import {
   CaretDown,
   CaretUp,
   Code,
+  Database,
   Files,
   GitBranch,
   IconContext,
@@ -189,6 +190,16 @@ function AdminPage({ name, icon, to }) {
 }
 
 const navCategories = [
+  {
+    name: "Data Ingestion",
+    path: "/ingestion",
+    icon: <Database />,
+    children: (
+      <React.Fragment>
+        <NavChild name="Ingestion Center" icon={<Database />} to="/ingestion" />
+      </React.Fragment>
+    )
+  },
   {
     name: "Senate Calendars",
     path: "/calendars",

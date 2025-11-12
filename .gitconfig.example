@@ -1,5 +1,0 @@
-[user]
-    name = cbwinslow
-    email = blaine.winslow@gmail.com
-
-# Usage: copy this to ~/.gitconfig or `git config --global user.name "cbwinslow"` etc.

@@ -1,0 +1,305 @@
+name: AI-Powered Code Analysis
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  ai-code-review:
+    name: AI Code Review Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Get changed files
+      id: changed-files
+      uses: tj-actions/changed-files@v46
+      with:
+        files: |
+          **/*.java
+          **/*.py
+          **/*.js
+          **/*.ts
+          
+    - name: Setup AI Review Context
+      id: context
+      run: |
+        echo "pr_number=${{ github.event.pull_request.number }}" >> $GITHUB_OUTPUT
+        echo "pr_title=${{ github.event.pull_request.title }}" >> $GITHUB_OUTPUT
+        echo "changed_files=${{ steps.changed-files.outputs.all_changed_files }}" >> $GITHUB_OUTPUT
+        
+    - name: AI-powered security analysis
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const changedFiles = `${{ steps.changed-files.outputs.all_changed_files }}`.split(' ');
+          
+          // Analyze for security patterns
+          const securityPatterns = {
+            'sql injection': /execute.*\(.*\+.*\)|query.*\(.*\+.*\)/gi,
+            'xss vulnerability': /innerHTML|outerHTML|document\.write/gi,
+            'hardcoded credentials': /password.*=.*['"]\w+['"]|api[_-]?key.*=.*['"]\w+['"]/gi,
+            'unsafe deserialization': /ObjectInputStream|readObject|XMLDecoder/gi,
+            'path traversal': /\.\.\/|\.\.\\|File\(.*\+.*\)/gi
+          };
+          
+          const findings = [];
+          
+          for (const file of changedFiles) {
+            if (!file) continue;
+            
+            try {
+              const { data: content } = await github.rest.repos.getContent({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                path: file,
+                ref: context.payload.pull_request.head.sha
+              });
+              
+              const decoded = Buffer.from(content.content, 'base64').toString();
+              
+              for (const [issue, pattern] of Object.entries(securityPatterns)) {
+                const matches = decoded.match(pattern);
+                if (matches) {
+                  findings.push({
+                    file,
+                    issue,
+                    matches: matches.length,
+                    severity: 'high'
+                  });
+                }
+              }
+            } catch (error) {
+              console.log(`Could not analyze file: ${file}`);
+            }
+          }
+          
+          if (findings.length > 0) {
+            const report = findings.map(f => 
+              `- **${f.file}**: ${f.issue} (${f.matches} occurrence${f.matches > 1 ? 's' : ''})`
+            ).join('\n');
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: `## 🔒 Security Analysis Findings\n\n${report}\n\n⚠️ Please review these potential security issues.`
+            });
+          }
+
+  complexity-analysis:
+    name: Code Complexity Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Run complexity analysis
+      run: |
+        # Install complexity analysis tools
+        mvn install -DskipTests
+        
+        # Run PMD with complexity rules
+        mvn pmd:pmd -Dpmd.analysisCache=false
+        
+    - name: Parse complexity results
+      uses: actions/github-script@v7
+      if: always()
+      with:
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          // Check if PMD report exists
+          const pmdPath = 'target/pmd.xml';
+          if (fs.existsSync(pmdPath)) {
+            const report = fs.readFileSync(pmdPath, 'utf8');
+            
+            // Parse high complexity findings
+            const complexityIssues = report.match(/CyclomaticComplexity|NPathComplexity|ExcessiveMethodLength/g);
+            
+            if (complexityIssues && complexityIssues.length > 5) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body: `## 📊 Complexity Analysis\n\n⚠️ Found ${complexityIssues.length} high complexity issues.\n\nConsider refactoring to improve maintainability.`
+              });
+            }
+          }
+
+  ai-suggestions:
+    name: AI Code Improvement Suggestions
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Get PR diff
+      id: diff
+      run: |
+        git diff origin/${{ github.base_ref }}...HEAD > pr_diff.txt
+        echo "diff_size=$(wc -l < pr_diff.txt)" >> $GITHUB_OUTPUT
+        
+    - name: Analyze code patterns
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          
+          if (!fs.existsSync('pr_diff.txt')) {
+            console.log('No diff file found');
+            return;
+          }
+          
+          const diff = fs.readFileSync('pr_diff.txt', 'utf8');
+          const suggestions = [];
+          
+          // Pattern-based suggestions
+          const patterns = [
+            {
+              pattern: /System\.out\.println/g,
+              suggestion: 'Consider using a proper logging framework (SLF4J) instead of System.out.println',
+              category: 'Logging'
+            },
+            {
+              pattern: /catch\s*\(\s*Exception\s+\w+\s*\)\s*\{[^}]*\}/g,
+              suggestion: 'Avoid catching generic Exception. Catch specific exception types.',
+              category: 'Error Handling'
+            },
+            {
+              pattern: /TODO|FIXME|XXX/gi,
+              suggestion: 'Found TODO/FIXME comments. Consider creating issues for these.',
+              category: 'Technical Debt'
+            },
+            {
+              pattern: /\.equals\s*\(\s*"[^"]+"\s*\)/g,
+              suggestion: 'Consider using constant.equals(variable) to avoid NullPointerException',
+              category: 'Best Practices'
+            }
+          ];
+          
+          for (const { pattern, suggestion, category } of patterns) {
+            const matches = diff.match(pattern);
+            if (matches && matches.length > 0) {
+              suggestions.push(`**${category}**: ${suggestion} (${matches.length} occurrence${matches.length > 1 ? 's' : ''})`);
+            }
+          }
+          
+          if (suggestions.length > 0) {
+            const comment = `## 💡 AI Code Improvement Suggestions\n\n${suggestions.map(s => `- ${s}`).join('\n')}\n\n_These are automated suggestions. Review and apply as appropriate._`;
+            
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: comment
+            });
+          }
+
+  test-coverage-analysis:
+    name: Test Coverage Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+        
+    - name: Run tests with coverage
+      run: mvn test jacoco:report
+      
+    - name: Analyze coverage
+      uses: actions/github-script@v7
+      if: always()
+      with:
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          // Check for Jacoco report
+          const jacocoPath = 'target/site/jacoco/jacoco.xml';
+          
+          if (fs.existsSync(jacocoPath)) {
+            const report = fs.readFileSync(jacocoPath, 'utf8');
+            
+            // Simple coverage extraction (would need proper XML parsing)
+            const coverageMatch = report.match(/counter type="LINE".*missed="(\d+)".*covered="(\d+)"/);
+            
+            if (coverageMatch) {
+              const missed = parseInt(coverageMatch[1]);
+              const covered = parseInt(coverageMatch[2]);
+              const total = missed + covered;
+              const percentage = total > 0 ? ((covered / total) * 100).toFixed(2) : 0;
+              
+              const icon = percentage >= 80 ? '✅' : percentage >= 60 ? '⚠️' : '❌';
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body: `## ${icon} Test Coverage Report\n\n**Line Coverage:** ${percentage}%\n- Covered: ${covered}\n- Missed: ${missed}\n- Total: ${total}`
+              });
+            }
+          }
+
+  documentation-check:
+    name: Documentation Completeness Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Check for documentation updates
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { data: files } = await github.rest.pulls.listFiles({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.payload.pull_request.number
+          });
+          
+          const hasCodeChanges = files.some(f => 
+            f.filename.match(/\.(java|py|js|ts)$/)
+          );
+          
+          const hasDocChanges = files.some(f => 
+            f.filename.match(/\.(md|rst|txt)$/) || f.filename.includes('docs/')
+          );
+          
+          if (hasCodeChanges && !hasDocChanges) {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: '📚 **Documentation Reminder**: This PR includes code changes but no documentation updates. Consider updating relevant documentation.'
+            });
+          }

@@ -21,8 +21,8 @@ from pytest_mock import MockFixture
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
-from ingest_federal_members import CongressMemberIngestor  # Import the ingestor class
-from settings import settings
+from tools.ingestion.members.ingest_federal_members import CongressMemberIngestor  # Import the ingestor class
+from tools.config.settings import settings
 
 
 @pytest.fixture(scope="session")

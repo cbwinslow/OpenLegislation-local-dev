@@ -1,0 +1,47 @@
+# Code Owners File
+# This file defines who is responsible for reviewing code in specific parts of the repository
+# When a PR is created, GitHub will automatically request reviews from the appropriate owners
+
+# Global fallback - all files
+* @cbwinslow
+
+# Backend Java code
+/src/main/java/ @cbwinslow
+/src/test/java/ @cbwinslow
+
+# API endpoints
+/src/main/java/gov/nysenate/openleg/api/ @cbwinslow
+
+# Data processing and ingestion
+/src/main/java/gov/nysenate/openleg/processors/ @cbwinslow
+/tools/ @cbwinslow
+
+# Federal integration
+/src/main/java/gov/nysenate/openleg/processors/federal/ @cbwinslow
+/tools/govinfo*.py @cbwinslow
+/tools/congress*.py @cbwinslow
+
+# Database migrations
+/src/main/resources/sql/migrations/ @cbwinslow
+
+# Frontend
+/frontend/ @cbwinslow
+/src/main/webapp/ @cbwinslow
+
+# Build and CI/CD
+/pom.xml @cbwinslow
+/.github/workflows/ @cbwinslow
+/Dockerfile @cbwinslow
+
+# Infrastructure
+/ansible/ @cbwinslow
+/infra/ @cbwinslow
+
+# Documentation
+/docs/ @cbwinslow
+*.md @cbwinslow
+
+# Configuration files
+*.yml @cbwinslow
+*.yaml @cbwinslow
+*.properties @cbwinslow

@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "print_no": { "type": "string" },
+    "session_year": { "type": "integer" },
+    "title": { "type": "string" },
+    "sponsors": { "type": "string", "format": "json-array" },
+    "actions": { "type": "string", "format": "json-array" },
+    "federal_congress": { "type": "integer" },
+    "source": { "type": "string", "enum": ["federal"] },
+    "document_type": { "type": "string", "enum": ["bill", "amendment", "resolution"] },
+    "amends_source_url": { "type": ["string", "null"] },
+    "amendment_number": { "type": ["integer", "null"] }
+  },
+  "required": ["print_no", "session_year", "federal_congress", "source", "document_type"],
+  "additionalProperties": false
+}

@@ -76,8 +76,8 @@ public class BillActionParser
                 // Uppercase the action text to aid with regex matching
                 eventText = eventText.toUpperCase();
                 // Construct and append bill action to list.
-                BillId billId = new BillId(billId, Version.ORIGINAL);
-                BillAction action = new BillAction(eventDate, eventText, eventChamber, 0, billId, "UNKNOWN");
+                BillId actionBillId = new BillId(BillId.getBaseId(billId), Version.ORIGINAL);
+                BillAction action = new BillAction(eventDate, eventText, eventChamber, 0, actionBillId, "UNKNOWN");
                 billActions.add(action);
             }
             else {
@@ -115,7 +115,7 @@ public class BillActionParser
                 // Uppercase the action text to aid with regex matching
                 eventText = eventText.toUpperCase().trim();// sometimes the CDATA comes with leading or trailing whitespace chars
                 // Construct and append bill action to list.
-                BillAction action = new BillAction(eventDate, eventText, eventChamber, sequenceNo, billId);
+                BillAction action = new BillAction(eventDate, eventText, eventChamber, sequenceNo, billId, "UNKNOWN");
                 billActions.add(action);
             }
             // Fail fast otherwise

@@ -1,6 +1,6 @@
 import pytest
 
-from member_utils import (
+from tools.ingestion.members.member_utils import (
     normalize_chamber,
     derive_chamber_from_terms,
     derive_state_from_term,

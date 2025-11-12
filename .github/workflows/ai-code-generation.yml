@@ -1,0 +1,501 @@
+name: AI Code Generation & Boilerplate
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [ main, develop ]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  detect-code-generation-requests:
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.body, '@generate') ||
+       contains(github.event.pull_request.body, 'generate code') ||
+       contains(github.event.pull_request.body, 'boilerplate')) ||
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@generate'))
+
+    outputs:
+      should_generate: ${{ steps.detect.outputs.should_generate }}
+      generation_request: ${{ steps.detect.outputs.request }}
+
+    steps:
+      - name: Detect code generation requests
+        id: detect
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            BODY="${{ github.event.pull_request.body }}"
+          else
+            BODY="${{ github.event.comment.body }}"
+          fi
+
+          # Check for generation keywords
+          if echo "$BODY" | grep -qi "@generate\|generate code\|boilerplate\|create class\|add method"; then
+            echo "should_generate=true" >> $GITHUB_OUTPUT
+            echo "request<<EOF" >> $GITHUB_OUTPUT
+            echo "$BODY" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "should_generate=false" >> $GITHUB_OUTPUT
+          fi
+
+  ai-code-generation:
+    needs: detect-code-generation-requests
+    runs-on: ubuntu-latest
+    if: needs.detect-code-generation-requests.outputs.should_generate == 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python for code generation
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install code generation dependencies
+        run: |
+          pip install openai anthropic requests jinja2
+
+      - name: Analyze project structure
+        run: |
+          # Create project structure analysis
+          find . -name "*.java" -type f | head -20 > java_files.txt
+          find . -name "*.py" -type f | head -10 > python_files.txt
+          find . -name "*.js" -type f | head -10 > js_files.txt
+
+          # Extract common patterns
+          echo "Analyzing project patterns..."
+          if [ -s java_files.txt ]; then
+            echo "Java project detected"
+            head -1 java_files.txt | xargs -I {} sh -c 'head -50 "$1" | grep -E "(package|import|public class)" | head -10' _ {} > java_patterns.txt
+          fi
+
+      - name: Generate code based on request
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GENERATION_REQUEST: ${{ needs.detect-code-generation-requests.outputs.generation_request }}
+        run: |
+          python -c "
+          import os
+          import json
+          import requests
+          from pathlib import Path
+          import re
+
+          def get_ai_code_generation(prompt, model='gpt-4'):
+              try:
+                  headers = {
+                      'Authorization': f'Bearer {os.getenv(\"OPENAI_API_KEY\")}',
+                      'Content-Type': 'application/json'
+                  }
+                  data = {
+                      'model': model,
+                      'messages': [{'role': 'user', 'content': prompt}],
+                      'max_tokens': 1000,
+                      'temperature': 0.3
+                  }
+                  response = requests.post('https://api.openai.com/v1/chat/completions', headers=headers, json=data)
+                  if response.status_code == 200:
+                      return response.json()['choices'][0]['message']['content']
+                  else:
+                      return f'Error generating code: {response.status_code}'
+              except Exception as e:
+                  return f'Code generation failed: {e}'
+
+          # Get the generation request
+          request = os.getenv('GENERATION_REQUEST', '')
+
+          # Analyze project structure
+          project_patterns = {}
+          if Path('java_files.txt').exists():
+              with open('java_files.txt', 'r') as f:
+                  java_files = f.read().split('\n')[:3]  # Sample a few files
+
+              for java_file in java_files:
+                  if java_file and Path(java_file).exists():
+                      try:
+                          with open(java_file, 'r', encoding='utf-8', errors='ignore') as f:
+                              content = f.read(2000)  # First 2000 chars
+
+                          # Extract package and imports
+                          package_match = re.search(r'package\s+([\w.]+)', content)
+                          if package_match:
+                              project_patterns['package'] = package_match.group(1)
+
+                          imports = re.findall(r'import\s+([\w.]+)', content)
+                          if imports:
+                              project_patterns['imports'] = list(set(imports[:10]))  # Top 10 unique imports
+
+                      except:
+                          pass
+
+          # Determine what to generate based on request
+          generation_type = 'unknown'
+          if 'class' in request.lower():
+              generation_type = 'class'
+          elif 'method' in request.lower() or 'function' in request.lower():
+              generation_type = 'method'
+          elif 'test' in request.lower():
+              generation_type = 'test'
+          elif 'interface' in request.lower():
+              generation_type = 'interface'
+          elif 'dto' in request.lower() or 'model' in request.lower():
+              generation_type = 'dto'
+
+          # Create generation prompt
+          base_prompt = f'''Generate code for a Java project with the following context:
+
+          Project Patterns:
+          {json.dumps(project_patterns, indent=2)}
+
+          Request: {request}
+
+          Please generate appropriate {generation_type} code that follows Java best practices and fits the project structure.
+          Include proper package declarations, imports, and documentation.
+          '''
+
+          if generation_type == 'class':
+              base_prompt += '''
+              Generate a complete Java class with:
+              - Proper package declaration
+              - Necessary imports
+              - Class documentation
+              - Fields with appropriate access modifiers
+              - Constructor(s)
+              - Getter/setter methods
+              - toString(), equals(), hashCode() methods
+              '''
+          elif generation_type == 'method':
+              base_prompt += '''
+              Generate a Java method with:
+              - Proper access modifier
+              - Method documentation
+              - Parameter validation
+              - Error handling
+              - Return type and value
+              '''
+          elif generation_type == 'test':
+              base_prompt += '''
+              Generate a JUnit test class with:
+              - Proper test annotations
+              - Test methods for various scenarios
+              - Assertions
+              - Mock usage where appropriate
+              '''
+          elif generation_type == 'interface':
+              base_prompt += '''
+              Generate a Java interface with:
+              - Proper package declaration
+              - Interface documentation
+              - Method signatures with documentation
+              - Default methods if appropriate
+              '''
+          elif generation_type == 'dto':
+              base_prompt += '''
+              Generate a Data Transfer Object class with:
+              - Proper package declaration
+              - Private fields
+              - Constructor(s)
+              - Getter/setter methods
+              - Validation annotations
+              - toString(), equals(), hashCode() methods
+              '''
+
+          # Generate the code
+          generated_code = get_ai_code_generation(base_prompt)
+
+          # Save the generated code
+          with open('generated_code.txt', 'w') as f:
+              f.write(f'Generation Type: {generation_type}\n\n')
+              f.write('Request:\n')
+              f.write(request + '\n\n')
+              f.write('Generated Code:\n')
+              f.write(generated_code)
+
+          print(f'Generated {generation_type} code based on request')
+          "
+
+      - name: Post generated code
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            if (fs.existsSync('generated_code.txt')) {
+              const generatedContent = fs.readFileSync('generated_code.txt', 'utf8');
+
+              let comment = '## 🤖 AI Code Generation Result\n\n';
+              comment += 'I analyzed your request and generated the following code:\n\n';
+              comment += '<details><summary>View Generated Code</summary>\n\n';
+              comment += '```\n' + generatedContent + '\n```\n';
+              comment += '</details>\n\n';
+
+              comment += '**Next Steps:**\n';
+              comment += '1. Review the generated code for accuracy\n';
+              comment += '2. Test the code in your development environment\n';
+              comment += '3. Make any necessary adjustments\n';
+              comment += '4. Add the code to your project\n\n';
+
+              comment += '*This is AI-generated code. Please review and test thoroughly before using in production.*';
+
+              // Post comment
+              if (context.eventName === 'pull_request') {
+                await github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: comment
+                });
+              } else if (context.eventName === 'issue_comment') {
+                await github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: comment
+                });
+              }
+            }
+
+  template-based-generation:
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'pull_request' &&
+      (contains(github.event.pull_request.body, '@template') ||
+       contains(github.event.pull_request.body, 'use template'))
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python for template processing
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install template dependencies
+        run: |
+          pip install jinja2
+
+      - name: Process code templates
+        run: |
+          python -c "
+          import os
+          from pathlib import Path
+          from jinja2 import Template
+
+          # Define common code templates
+          templates = {
+              'service': '''package {{package}};
+
+          import org.springframework.stereotype.Service;
+          import org.springframework.beans.factory.annotation.Autowired;
+          import java.util.List;
+          import java.util.Optional;
+
+          /**
+           * Service class for {{entity}} operations
+           */
+          @Service
+          public class {{entity}}Service {
+
+              @Autowired
+              private {{entity}}Repository {{entity_lower}}Repository;
+
+              /**
+               * Find all {{entity_lower}} entities
+               */
+              public List<{{entity}}> findAll() {
+                  return {{entity_lower}}Repository.findAll();
+              }
+
+              /**
+               * Find {{entity_lower}} by ID
+               */
+              public Optional<{{entity}}> findById(Long id) {
+                  return {{entity_lower}}Repository.findById(id);
+              }
+
+              /**
+               * Save {{entity_lower}} entity
+               */
+              public {{entity}} save({{entity}} {{entity_lower}}) {
+                  return {{entity_lower}}Repository.save({{entity_lower}});
+              }
+
+              /**
+               * Delete {{entity_lower}} by ID
+               */
+              public void deleteById(Long id) {
+                  {{entity_lower}}Repository.deleteById(id);
+              }
+          }
+          ''',
+
+              'controller': '''package {{package}};
+
+          import org.springframework.web.bind.annotation.*;
+          import org.springframework.http.ResponseEntity;
+          import org.springframework.http.HttpStatus;
+          import java.util.List;
+          import javax.validation.Valid;
+
+          /**
+           * REST Controller for {{entity}} operations
+           */
+          @RestController
+          @RequestMapping(\"/api/{{entity_lower}}\")
+          public class {{entity}}Controller {
+
+              private final {{entity}}Service {{entity_lower}}Service;
+
+              public {{entity}}Controller({{entity}}Service {{entity_lower}}Service) {
+                  this.{{entity_lower}}Service = {{entity_lower}}Service;
+              }
+
+              @GetMapping
+              public ResponseEntity<List<{{entity}}>> getAll{{entity}}() {
+                  List<{{entity}}> {{entity_lower}}s = {{entity_lower}}Service.findAll();
+                  return ResponseEntity.ok({{entity_lower}}s);
+              }
+
+              @GetMapping(\"/{id}\")
+              public ResponseEntity<{{entity}}> get{{entity}}ById(@PathVariable Long id) {
+                  return {{entity_lower}}Service.findById(id)
+                      .map({{entity_lower}} -> ResponseEntity.ok({{entity_lower}}))
+                      .orElse(ResponseEntity.notFound().build());
+              }
+
+              @PostMapping
+              public ResponseEntity<{{entity}}> create{{entity}}(@Valid @RequestBody {{entity}} {{entity_lower}}) {
+                  {{entity}} saved{{entity}} = {{entity_lower}}Service.save({{entity_lower}});
+                  return ResponseEntity.status(HttpStatus.CREATED).body(saved{{entity}});
+              }
+
+              @DeleteMapping(\"/{id}\")
+              public ResponseEntity<Void> delete{{entity}}(@PathVariable Long id) {
+                  {{entity_lower}}Service.deleteById(id);
+                  return ResponseEntity.noContent().build();
+              }
+          }
+          ''',
+
+              'repository': '''package {{package}};
+
+          import org.springframework.data.jpa.repository.JpaRepository;
+          import org.springframework.stereotype.Repository;
+          import java.util.List;
+
+          /**
+           * Repository interface for {{entity}} entity
+           */
+          @Repository
+          public interface {{entity}}Repository extends JpaRepository<{{entity}}, Long> {
+
+              // Add custom query methods here as needed
+
+              /**
+               * Example custom query method
+               */
+              // List<{{entity}}> findByName(String name);
+          }
+          '''
+          }
+
+          # Check PR body for template requests
+          pr_body = '''${{ github.event.pull_request.body }}'''
+
+          generated_files = []
+
+          # Look for template requests
+          import re
+          template_requests = re.findall(r'@template\s+(\w+)\s+(\w+)', pr_body, re.IGNORECASE)
+
+          for template_type, entity in template_requests:
+              if template_type in templates:
+                  # Determine package (try to infer from existing files)
+                  package = 'com.example'
+                  try:
+                      java_files = list(Path('.').rglob('*.java'))
+                      if java_files:
+                          with open(java_files[0], 'r') as f:
+                              content = f.read(500)
+                              package_match = re.search(r'package\s+([\\w.]+)', content)
+                              if package_match:
+                                  package = package_match.group(1)
+                  except:
+                      pass
+
+                  # Generate code
+                  template = Template(templates[template_type])
+                  code = template.render(
+                      package=package,
+                      entity=entity,
+                      entity_lower=entity.lower()
+                  )
+
+                  # Save generated file
+                  filename = f'{entity}{template_type.title()}.java'
+                  filepath = f'generated/{filename}'
+                  os.makedirs('generated', exist_ok=True)
+
+                  with open(filepath, 'w') as f:
+                      f.write(code)
+
+                  generated_files.append({
+                      'type': template_type,
+                      'entity': entity,
+                      'filename': filename,
+                      'code': code
+                  })
+
+          # Save summary
+          with open('template_generation.json', 'w') as f:
+              import json
+              json.dump(generated_files, f, indent=2)
+
+          print(f'Generated {len(generated_files)} template files')
+          "
+
+      - name: Post template-generated code
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            if (fs.existsSync('template_generation.json')) {
+              const generatedFiles = JSON.parse(fs.readFileSync('template_generation.json', 'utf8'));
+
+              if (generatedFiles.length > 0) {
+                let comment = '## 📝 Template-Based Code Generation\n\n';
+                comment += 'I generated the following code using predefined templates:\n\n';
+
+                for (const file of generatedFiles) {
+                  comment += `### ${file.type.toUpperCase()}: ${file.filename}\n\n`;
+                  comment += '```java\n' + file.code + '\n```\n\n';
+                }
+
+                comment += '**Usage Instructions:**\n';
+                comment += '1. Copy the generated code to the appropriate package in your project\n';
+                comment += '2. Update package declarations if needed\n';
+                comment += '3. Add any missing dependencies\n';
+                comment += '4. Customize the generated code for your specific needs\n\n';
+
+                comment += '*Template-generated code provides a starting point. Customize as needed for your use case.*';
+
+                // Post comment
+                await github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: comment
+                });
+              }
+            }

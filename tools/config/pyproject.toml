@@ -1,0 +1,25 @@
+[project]
+name = "tools"
+version = "0.1.0"
+description = "OpenLegislation Python tools for data ingestion and processing"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "psycopg2-binary",
+    "pydantic",
+    "pydantic-settings",
+    "requests",
+    "sqlalchemy",
+    "tenacity",
+    "pandas",
+    "numpy",
+    "torch",
+    "cudf",
+    "cupy",
+    "spacy",
+    "transformers",
+    "nltk",
+    "scikit-learn",
+    "beautifulsoup4",
+    "lxml",
+]
