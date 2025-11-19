@@ -10,7 +10,7 @@ However, the Java codebase focuses more on NY State legislation processing (e.g.
 - **Services**: Business logic layer (e.g., [`IngestionService.java`](src/main/java/gov/nysenate/openleg/service/ingestion/IngestionService.java)) handles fetching (RestTemplate for APIs, Rome for RSS), filtering duplicates, mapping to entities, and persisting via repositories. It's transactional (`@Transactional`) and schedulable (`@Scheduled`).
 - **Database Setup**: 
   - PostgreSQL driver and Hibernate ORM in [`pom.xml`](pom.xml).
-  - Flyway plugin runs migrations (e.g., from `src/main/resources/db/migration/` like [`V20250928.0001__ingestion_optimizations.sql`](src/main/resources/db/migration/V20250928.0001__ingestion_optimizations.sql)) during build/integration tests.
+  - Flyway plugin runs migrations (e.g., from `src/main/resources/sql/migrations/` organized by data model) during build/integration tests.
   - Connection config likely in `application.properties` or `flyway.conf` (not visible; check `src/main/resources/`).
 - **Build/Run**: Maven-based (`mvn clean install` compiles, runs tests, generates JAXB classes from XSDs like USLM schemas in `docs/uslm-bill.xsd`). Deploys as WAR to Tomcat (plugin in [`pom.xml`](pom.xml)).
 - **Key Dependencies for Ingestion**:
@@ -86,7 +86,7 @@ public class FederalBill {
 ```
 - Add more fields based on [Congress.gov API docs](https://api.congress.gov) or GovInfo mappings (see `docs/govinfo-119-mapping.md`).
 - For relationships (e.g., sponsors, actions), add `@OneToMany` to a `FederalMember` entity.
-- Run Flyway migration: Create `V20250929.0001__federal_bills_table.sql` in `src/main/resources/db/migration/` to add the table:
+- Run Flyway migration: Create your migration file in `src/main/resources/sql/migrations/federal/` (e.g., `V20250929.0001__federal_bills_table.sql`) to add the table:
   ```sql
   CREATE TABLE IF NOT EXISTS federal_bills (
       id BIGSERIAL PRIMARY KEY,

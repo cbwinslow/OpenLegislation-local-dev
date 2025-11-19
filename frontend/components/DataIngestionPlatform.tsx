@@ -28,7 +28,7 @@ import {
   BarChart3,
   Bot,
   Brain,
-  Vector,
+  Network,
   Table,
   FileText,
   Rocket,
@@ -435,7 +435,7 @@ export const DataIngestionPlatform: React.FC<DataIngestionPlatformProps> = ({
                       )}
                       {enabled && config.vectorizeData && (
                         <Badge variant="secondary" className="text-xs">
-                          <Vector className="w-3 h-3 mr-1" />
+                          <Network className="w-3 h-3 mr-1" />
                           Vector
                         </Badge>
                       )}
@@ -798,7 +798,7 @@ export const DataIngestionPlatform: React.FC<DataIngestionPlatformProps> = ({
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
-                <Vector className="w-5 h-5 mr-2" />
+                <Network className="w-5 h-5 mr-2" />
                 Data Vectorization Center
               </CardTitle>
             </CardHeader>
@@ -806,7 +806,7 @@ export const DataIngestionPlatform: React.FC<DataIngestionPlatformProps> = ({
               <div className="space-y-4">
                 <div className="grid grid-cols-3 gap-4">
                   <div className="text-center p-4 border rounded-lg">
-                    <Vector className="w-8 h-8 mx-auto mb-2 text-blue-600" />
+                    <Network className="w-8 h-8 mx-auto mb-2 text-blue-600" />
                     <h3 className="font-medium">Text Vectorization</h3>
                     <p className="text-sm text-gray-600">Convert text to embeddings</p>
                     <Button size="sm" className="mt-2 w-full">Vectorize</Button>
@@ -966,7 +966,7 @@ export const DataIngestionPlatform: React.FC<DataIngestionPlatformProps> = ({
                       Start Database
                     </Button>
                     <Button size="sm" variant="outline">
-                      <Vector className="w-4 h-4 mr-2" />
+                      <Network className="w-4 h-4 mr-2" />
                       Start Vector DB
                     </Button>
                     <Button size="sm" variant="outline">
@@ -1224,7 +1224,7 @@ export const DataIngestionPlatform: React.FC<DataIngestionPlatformProps> = ({
                   Database
                 </Button>
                 <Button variant="outline" className="h-20 flex-col">
-                  <Vector className="w-6 h-6 mb-2" />
+                  <Network className="w-6 h-6 mb-2" />
                   Vector DB
                 </Button>
                 <Button className="h-20 flex-col bg-purple-600 hover:bg-purple-700">

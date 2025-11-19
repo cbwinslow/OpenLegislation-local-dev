@@ -2,6 +2,7 @@
 .env
 .env.local
 env.*
+webhook-server/.env
 
 # Python
 __pycache__/
@@ -15,73 +16,79 @@ venv/
 .classpath
 .project
 .idea/
+!.idea/codeStyleSettings.xml
+!.idea/codeStyles/**
+*.iml
+.settings/
+legislation.ipr
+legislation.iws
+
+# Build artifacts
+build/
 target/
+/target/
+*.class
+*.jar
+*.cfg
+flyway.conf
+
+# Logs
+*.log
+log4j2.xml
+log4j2-cli.xml
+test.log4j2.xml
 
 # Node
 node_modules/
 npm-debug.log
 yarn.lock
-
-# OS
-.DS_Store
-thumbs.db
-
-# Misc
-*.log
-/.mvn/
-# Ignore local environment files
-.env
-
-# IDE/editor files
-.vscode/
-*.iml
-.idea/
-
-# Build artifacts
-/target/
-*.cfg
-*.class
-*.idea
-*.iml
-*.jar
-*.log
-*.out
-*.properties
-*.swp
-*.tmp
-*~
-
-build/
-target/
-.classpath
-.idea/
-.project
-.settings/
-
-!.idea/codeStyleSettings.xml
-!.idea/codeStyles/**
-
-flyway.conf
-log4j2.xml
-log4j2-cli.xml
-test.log4j2.xml
-
-legislation.ipr
-legislation.iws
-
 src/main/webapp/.sass-cache/**
 src/main/webapp/META-INF/**
 src/main/webapp/node_modules/**
 src/main/webapp/static/css/**
 src/main/webapp/static/js/dest/**
 src/main/webapp/static/dist
-node_modules/**
 
+# OS
+.DS_Store
+thumbs.db
 
+# Temporary files
+*.out
+*.properties
+*.swp
+*.tmp
+*~
+
+# AI Tools and session files
+.autoclaude/
+.claude_agent_farm_backups/
+.codacy/
+.heartbeats/
+.kilocode/
+.roo/
+.roomodes
+.specstory/
+.vscode/
+DIFF_*.md
+RECOMMENDATIONS_*.md
+PR_SUMMARY.md
+ingestion_log.json
+*.duckdb
+*.db
+
+# Archived/historical data files
+tools/archived_data/
+linear_import_run_*.json
+linear_import_processed*.json
+*_backup_*.json
+
+# Maven
+/.mvn/
+
+# Test files
 src/test/java/gov/nysenate/openleg/SillyTests.java
 
-.env
-
-
-#Ignore vscode AI rules
+# AI rules/instructions that shouldn't be committed
 .github/instructions/codacy.instructions.md
+

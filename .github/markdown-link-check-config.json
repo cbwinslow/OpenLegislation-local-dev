@@ -1,0 +1,23 @@
+{
+  "ignorePatterns": [
+    {
+      "pattern": "^(https?://)?localhost(:[0-9]+)?/.*$"
+    },
+    {
+      "pattern": "^(https?://)?127\\.0\\.0\\.1(:[0-9]+)?/.*$"
+    },
+    {
+      "pattern": "^https?://.*\\.nysenate\\.gov/.*$",
+      "comment": "Internal NY Senate URLs may not be accessible"
+    },
+    {
+      "pattern": "^https?://dev\\.nysenate\\.gov/.*$",
+      "comment": "Development server URLs"
+    }
+  ],
+  "timeout": "20s",
+  "retryOn429": true,
+  "retryCount": 3,
+  "fallbackRetryDelay": "30s",
+  "aliveStatusCodes": [200, 206, 301, 302, 307, 308, 403, 405]
+}

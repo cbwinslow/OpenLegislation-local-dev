@@ -6,20 +6,24 @@ import argparse
 import json
 import logging
 import os
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional
 
-from base_ingestion_process import BaseIngestionProcess
-from settings import settings
+# Add tools to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from .models import (
+from tools.ingestion.core.base_ingestion_process import BaseIngestionProcess
+from tools.config.settings import settings
+
+from models import (
     GovInfoCalendarRecord,
     GovInfoCalendarActiveList,
     GovInfoCalendarEntry,
     GovInfoCalendarSupplemental,
 )
-from .persistence import persist_calendar_record
+from persistence import persist_calendar_record
 from db.session import session_scope
 
 logger = logging.getLogger(__name__)
