@@ -211,11 +211,14 @@ def map_action_api_to_model(action_data: Dict, bill_print_no: str, session_year:
 
 def map_amendment_api_to_model(amendment_data: Dict, bill_print_no: str, session_year: int) -> Dict:
     """Map amendment data from Congress API to BillAmendment model."""
-    version_name = amendment_data.get('number', '') or amendment_data.get('versionName', '')
+    # Use explicit None check - prefer 'number' if it exists, otherwise fall back to 'versionName'
+    version_name = amendment_data.get('number')
+    if version_name is None:
+        version_name = amendment_data.get('versionName', '')
     return {
         'bill_print_no': bill_print_no,
         'bill_session_year': session_year,
-        'bill_amend_version': version_name,
+        'bill_amend_version': version_name or '',
         'sponsor_memo': amendment_data.get('description', ''),
         'full_text': amendment_data.get('text', ''),
         'law_code': amendment_data.get('lawCode', ''),

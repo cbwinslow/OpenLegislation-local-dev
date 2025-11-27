@@ -19,18 +19,17 @@ public class CalendarCheckService implements SpotCheckService<CalendarEntryListI
     private static final SpotCheckRefType REF_TYPE = SpotCheckRefType.LBDC_CALENDAR_ALERT;
 
     public SpotCheckObservation<CalendarEntryListId> check(Calendar content, Calendar reference) {
-        // Use checkAll and return the first observation, or create an empty observation if no mismatches
+        // Use checkAll to get all observations
         List<SpotCheckObservation<CalendarEntryListId>> observations = checkAll(content, reference);
         if (!observations.isEmpty()) {
-            // Return the first observation that contains mismatches, or just the first observation
+            // Return the first observation (prefer one with mismatches if any exist)
             return observations.stream()
                     .filter(obs -> !obs.getMismatches().isEmpty())
                     .findFirst()
                     .orElse(observations.get(0));
         }
-        // Return an empty observation if there are no observations from checkAll
+        // Create an empty observation if checkAll returns no observations
         SpotCheckReferenceId spotcheckRefId = new SpotCheckReferenceId(REF_TYPE, reference.getPublishedDateTime());
-        // Create a default entry list id from the reference calendar's entry list ids
         List<CalendarEntryListId> entryListIds = reference.getCalendarEntryListIds();
         CalendarEntryListId defaultKey = entryListIds.isEmpty()
                 ? new CalendarEntryListId(reference.getId(), CalendarType.FLOOR_CALENDAR, null, null)
