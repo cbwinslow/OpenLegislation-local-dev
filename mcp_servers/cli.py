@@ -18,10 +18,17 @@ def run_congress(args: argparse.Namespace) -> None:
     if args.list:
         print(json.dumps(server.list_endpoints(), indent=2))
         return
-    start_offsets = json.loads(args.start_offsets) if args.start_offsets else None
-    page_sizes = json.loads(args.page_sizes) if args.page_sizes else None
-    counts = server.ingest_endpoints(server.endpoints, start_offsets=start_offsets, page_size_overrides=page_sizes)
-    print(f"Ingested: {summarize_counts(counts)}")
+    start_offsets = json.loads(args.start_offsets) if args.start_offsets else {}
+    page_sizes = json.loads(args.page_sizes) if args.page_sizes else {}
+
+    for endpoint in server.endpoints:
+        for page in server.fetch_paginated(
+            endpoint,
+            start=start_offsets.get(endpoint.name),
+            page_size=page_sizes.get(endpoint.name),
+        ):
+            for record in page.get("results", []):
+                print(json.dumps(record))
 
 
 def run_govinfo(args: argparse.Namespace) -> None:
