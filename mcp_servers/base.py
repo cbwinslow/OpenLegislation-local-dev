@@ -145,12 +145,13 @@ class MCPBulkIngestor:
             }
 
             batch_count = len(results) if isinstance(results, list) else 0
-            current = pagination.advance(current, batch_count if batch_count > 0 else size)
+            if batch_count == 0:
+                break
+
             pages_seen += 1
+            current = pagination.advance(current, batch_count)
 
             if page_cap is not None and pages_seen >= page_cap:
-                break
-            if batch_count == 0:
                 break
             if total_records is not None and pagination.kind == "offset" and current >= total_records:
                 break
