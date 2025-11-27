@@ -30,6 +30,7 @@ def summarize_counts(counts: Dict[str, int]) -> str:
 
 
 
+
     for endpoint in server.endpoints:
         for page in server.fetch_paginated(
             endpoint,
@@ -40,18 +41,12 @@ def summarize_counts(counts: Dict[str, int]) -> str:
                 print(json.dumps(record))
 
 
-# GovInfo commands
+
 def govinfo_list(args: argparse.Namespace) -> None:
     """List GovInfo.gov endpoints and pagination info."""
 
     print(f"Ingested: {summarize_counts(counts)}")
 
-
-# OpenStates commands
-def openstates_list(args: argparse.Namespace) -> None:
-    """List OpenStates API endpoints and pagination info."""
-
-    print(f"Ingested: {summarize_counts(counts)}")
 
 
 def openstates_scrape(args: argparse.Namespace) -> None:
@@ -59,12 +54,6 @@ def openstates_scrape(args: argparse.Namespace) -> None:
     server = OpenStatesServer(api_key=args.api_key)
     result = server.run_scrapers(states=args.states)
 
-
-
-def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="MCP ingestion servers for legislative APIs",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
 
     openstates_scrape_parser.set_defaults(func=openstates_scrape)
 

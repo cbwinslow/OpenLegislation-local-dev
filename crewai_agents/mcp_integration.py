@@ -211,15 +211,13 @@ class MCPIntegration:
 
         # Legislative Data MCP Servers
 
+
             command="python",
-            args=["-m", "mcp_servers.cli", "congress", "list"],
-            env={"CONGRESS_API_KEY": os.getenv("CONGRESS_API_KEY", "")},
+
             tools=[
                 MCPTool(
                     name="congress_list_endpoints",
 
-                    input_schema={"type": "object", "properties": {}},
-                    server_name="congress_list",
                 ),
             ],
         )
@@ -249,7 +247,7 @@ class MCPIntegration:
         govinfo_list_server = MCPServer(
             name="govinfo_list",
             command="python",
-            args=["-m", "mcp_servers.cli", "govinfo", "list"],
+
             env={"GOVINFO_API_KEY": os.getenv("GOVINFO_API_KEY", "")},
             tools=[
                 MCPTool(
@@ -286,7 +284,7 @@ class MCPIntegration:
         openstates_list_server = MCPServer(
             name="openstates_list",
             command="python",
-            args=["-m", "mcp_servers.cli", "openstates", "list"],
+
             env={"OPENSTATES_API_KEY": os.getenv("OPENSTATES_API_KEY", "")},
             tools=[
                 MCPTool(
