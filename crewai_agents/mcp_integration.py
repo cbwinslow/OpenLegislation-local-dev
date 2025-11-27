@@ -211,7 +211,9 @@ class MCPIntegration:
 
         # Legislative Data MCP Servers
         #
-        # These servers use the CLI subcommand structure:
+        # These servers expose tools that map to CLI subcommands. Each tool's description
+        # documents the exact CLI command that should be invoked. The MCP client (call_tool)
+        # dynamically constructs the command based on the tool being called:
         #   - congress_list_endpoints -> `python -m mcp_servers.cli congress list`
         #   - congress_bulk_ingest -> `python -m mcp_servers.cli congress ingest [--start-offsets ...] [--page-sizes ...]`
         #   - govinfo_list_endpoints -> `python -m mcp_servers.cli govinfo list`
@@ -223,7 +225,7 @@ class MCPIntegration:
         congress_server = MCPServer(
             name="congress", 
             command="python",
-            args=["-m", "mcp_servers.cli", "congress", "list"],  # default: list action
+            args=["-m", "mcp_servers.cli", "congress"],  # base command; subcommand added per tool
             env={"CONGRESS_API_KEY": os.getenv("CONGRESS_API_KEY", "")},
             tools=[
                 MCPTool(
@@ -250,7 +252,7 @@ class MCPIntegration:
         govinfo_server = MCPServer(
             name="govinfo",
             command="python",
-            args=["-m", "mcp_servers.cli", "govinfo", "list"],  # default: list action
+            args=["-m", "mcp_servers.cli", "govinfo"],  # base command; subcommand added per tool
             env={"GOVINFO_API_KEY": os.getenv("GOVINFO_API_KEY", "")},
             tools=[
                 MCPTool(
@@ -277,7 +279,7 @@ class MCPIntegration:
         openstates_server = MCPServer(
             name="openstates",
             command="python",
-            args=["-m", "mcp_servers.cli", "openstates", "list"],  # default: list action
+            args=["-m", "mcp_servers.cli", "openstates"],  # base command; subcommand added per tool
             env={"OPENSTATES_API_KEY": os.getenv("OPENSTATES_API_KEY", "")},
             tools=[
                 MCPTool(
