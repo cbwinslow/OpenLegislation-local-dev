@@ -7,7 +7,6 @@ import gov.nysenate.openleg.legislation.calendar.Calendar;
 import gov.nysenate.openleg.legislation.bill.Version;
 import gov.nysenate.openleg.spotchecks.base.SpotCheckService;
 import gov.nysenate.openleg.spotchecks.model.*;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +19,23 @@ public class CalendarCheckService implements SpotCheckService<CalendarEntryListI
     private static final SpotCheckRefType REF_TYPE = SpotCheckRefType.LBDC_CALENDAR_ALERT;
 
     public SpotCheckObservation<CalendarEntryListId> check(Calendar content, Calendar reference) {
-        throw new NotImplementedException(":P");
+        // Use checkAll and return the first observation, or create an empty observation if no mismatches
+        List<SpotCheckObservation<CalendarEntryListId>> observations = checkAll(content, reference);
+        if (!observations.isEmpty()) {
+            // Return the first observation that contains mismatches, or just the first observation
+            return observations.stream()
+                    .filter(obs -> !obs.getMismatches().isEmpty())
+                    .findFirst()
+                    .orElse(observations.get(0));
+        }
+        // Return an empty observation if there are no observations from checkAll
+        SpotCheckReferenceId spotcheckRefId = new SpotCheckReferenceId(REF_TYPE, reference.getPublishedDateTime());
+        // Create a default entry list id from the reference calendar's entry list ids
+        List<CalendarEntryListId> entryListIds = reference.getCalendarEntryListIds();
+        CalendarEntryListId defaultKey = entryListIds.isEmpty()
+                ? new CalendarEntryListId(reference.getId(), CalendarType.FLOOR_CALENDAR, null, null)
+                : entryListIds.get(0);
+        return new SpotCheckObservation<>(spotcheckRefId, defaultKey);
     }
 
     /**

@@ -71,8 +71,20 @@ public class SqlActiveListReferenceDAO extends SqlBaseDao implements ActiveListR
     // TODO
     @Override
     public ActiveListSpotcheckReference getCurrentCalendar(CalendarActiveListId cal, Range<LocalDateTime> dateRange) throws DataAccessException {
-        MapSqlParameterSource params= null;// = getActiveListIdParams(cal, dateRange);
-        return jdbcNamed.queryForObject(SqlActiveListReferenceQuery.SELECT_ACTIVE_LIST.getSql(schema()), params, new ActiveRowMapper());
+        MapSqlParameterSource params = getActiveListIdParams(cal)
+                .addValue("begin", DateUtils.toDate(dateRange.lowerEndpoint()))
+                .addValue("end", DateUtils.toDate(dateRange.upperEndpoint()));
+        // Use SELECT_RANGE_ACTIVE_LIST for date range queries
+        List<ActiveListSpotcheckReference> results = jdbcNamed.query(
+                SqlActiveListReferenceQuery.SELECT_RANGE_ACTIVE_LIST.getSql(schema()), params, new ActiveRowMapper());
+        // Filter results by CalendarActiveListId and return the first match
+        return results.stream()
+                .filter(ref -> ref.getCalendarId().getCalNo() == cal.getCalNo()
+                        && ref.getCalendarId().getYear() == cal.getYear()
+                        && ref.getSequenceNo() == cal.getSequenceNo())
+                .findFirst()
+                .orElseThrow(() -> new org.springframework.dao.EmptyResultDataAccessException(
+                        "No ActiveListSpotcheckReference found for " + cal + " in range " + dateRange, 1));
     }
 
     private static MapSqlParameterSource getEntryParams(int keyId, CalendarEntry entry) {
