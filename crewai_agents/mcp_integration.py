@@ -282,7 +282,7 @@ class MCPIntegration:
                     input_schema={
                         "type": "object",
                         "properties": {
-                            "start_offsets": {"type": "string", "description": "JSON map of starting pages per endpoint"},
+                            "start_pages": {"type": "string", "description": "JSON map of starting pages per endpoint"},
                             "page_sizes": {"type": "string", "description": "JSON map of page sizes per endpoint"},
                         },
                     },
