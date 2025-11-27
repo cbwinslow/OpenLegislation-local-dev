@@ -1,4 +1,18 @@
-"""Command-line interface for MCP ingestion servers."""
+"""Command-line interface for MCP ingestion servers.
+
+This CLI is designed to align with MCP tool schemas defined in mcp_integration.py.
+Each provider (congress, govinfo, openstates) has explicit subcommands:
+
+  - `<provider> list`: List configured endpoints and pagination info
+  - `<provider> ingest`: Bulk ingest data from the provider's API
+
+This structure directly maps to MCP tools like:
+  - congress_list_endpoints -> `python -m mcp_servers.cli congress list`
+  - congress_bulk_ingest -> `python -m mcp_servers.cli congress ingest [options]`
+
+For OpenStates, an additional `scrape` subcommand is available:
+  - openstates_run_scrapers -> `python -m mcp_servers.cli openstates scrape [--states ...]`
+"""
 
 import argparse
 import json
@@ -13,11 +27,18 @@ def summarize_counts(counts: Dict[str, int]) -> str:
     return ", ".join(f"{name}: {count}" for name, count in counts.items())
 
 
-def run_congress(args: argparse.Namespace) -> None:
+# --- Congress subcommands ---
+
+
+def congress_list(args: argparse.Namespace) -> None:
+    """List Congress.gov endpoints and pagination info."""
     server = CongressServer(api_key=args.api_key)
-    if args.list:
-        print(json.dumps(server.list_endpoints(), indent=2))
-        return
+    print(json.dumps(server.list_endpoints(), indent=2))
+
+
+def congress_ingest(args: argparse.Namespace) -> None:
+    """Ingest Congress.gov data with optional start offsets and page sizes."""
+    server = CongressServer(api_key=args.api_key)
     start_offsets = json.loads(args.start_offsets) if args.start_offsets else {}
     page_sizes = json.loads(args.page_sizes) if args.page_sizes else {}
 
@@ -31,56 +52,100 @@ def run_congress(args: argparse.Namespace) -> None:
                 print(json.dumps(record))
 
 
-def run_govinfo(args: argparse.Namespace) -> None:
+# --- GovInfo subcommands ---
+
+
+def govinfo_list(args: argparse.Namespace) -> None:
+    """List GovInfo.gov endpoints and pagination info."""
     server = GovInfoServer(api_key=args.api_key)
-    if args.list:
-        print(json.dumps(server.list_endpoints(), indent=2))
-        return
+    print(json.dumps(server.list_endpoints(), indent=2))
+
+
+def govinfo_ingest(args: argparse.Namespace) -> None:
+    """Ingest GovInfo.gov data with optional start offsets and page sizes."""
+    server = GovInfoServer(api_key=args.api_key)
     start_offsets = json.loads(args.start_offsets) if args.start_offsets else None
     page_sizes = json.loads(args.page_sizes) if args.page_sizes else None
     counts = server.ingest_endpoints(server.endpoints, start_offsets=start_offsets, page_size_overrides=page_sizes)
     print(f"Ingested: {summarize_counts(counts)}")
 
 
-def run_openstates(args: argparse.Namespace) -> None:
+# --- OpenStates subcommands ---
+
+
+def openstates_list(args: argparse.Namespace) -> None:
+    """List OpenStates API endpoints and pagination info."""
     server = OpenStatesServer(api_key=args.api_key)
-    if args.list:
-        print(json.dumps(server.list_endpoints(), indent=2))
-        return
-    if args.scrape:
-        result = server.run_scrapers(states=args.states)
-        print(result.stdout)
-        print(result.stderr)
-        return
+    print(json.dumps(server.list_endpoints(), indent=2))
+
+
+def openstates_ingest(args: argparse.Namespace) -> None:
+    """Ingest OpenStates API data with optional start pages and page sizes."""
+    server = OpenStatesServer(api_key=args.api_key)
     start_pages = json.loads(args.start_offsets) if args.start_offsets else None
     page_sizes = json.loads(args.page_sizes) if args.page_sizes else None
     counts = server.ingest_endpoints(server.endpoints, start_offsets=start_pages, page_size_overrides=page_sizes)
     print(f"Ingested: {summarize_counts(counts)}")
 
 
+def openstates_scrape(args: argparse.Namespace) -> None:
+    """Execute openstates-scrapers for specified states."""
+    server = OpenStatesServer(api_key=args.api_key)
+    result = server.run_scrapers(states=args.states)
+    print(result.stdout)
+    print(result.stderr)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="MCP ingestion servers for legislative APIs")
     subparsers = parser.add_subparsers(dest="provider", required=True)
 
-    def add_shared(subparser: argparse.ArgumentParser) -> None:
-        subparser.add_argument("--api-key", dest="api_key", help="API key for the provider")
-        subparser.add_argument("--list", action="store_true", help="List configured endpoints and exit")
-        subparser.add_argument("--start-offsets", help="JSON map of starting offsets/pages per endpoint")
-        subparser.add_argument("--page-sizes", help="JSON map of page sizes per endpoint")
+    # --- Congress provider ---
+    congress_parser = subparsers.add_parser("congress", help="Interact with Congress.gov API")
+    congress_subparsers = congress_parser.add_subparsers(dest="action", required=True)
 
-    congress_parser = subparsers.add_parser("congress", help="Ingest from Congress.gov")
-    add_shared(congress_parser)
-    congress_parser.set_defaults(func=run_congress)
+    congress_list_parser = congress_subparsers.add_parser("list", help="List configured endpoints")
+    congress_list_parser.add_argument("--api-key", dest="api_key", help="API key for the provider")
+    congress_list_parser.set_defaults(func=congress_list)
 
-    govinfo_parser = subparsers.add_parser("govinfo", help="Ingest from GovInfo.gov")
-    add_shared(govinfo_parser)
-    govinfo_parser.set_defaults(func=run_govinfo)
+    congress_ingest_parser = congress_subparsers.add_parser("ingest", help="Bulk ingest data")
+    congress_ingest_parser.add_argument("--api-key", dest="api_key", help="API key for the provider")
+    congress_ingest_parser.add_argument("--start-offsets", help="JSON map of starting offsets per endpoint")
+    congress_ingest_parser.add_argument("--page-sizes", help="JSON map of page sizes per endpoint")
+    congress_ingest_parser.set_defaults(func=congress_ingest)
 
-    openstates_parser = subparsers.add_parser("openstates", help="Ingest from OpenStates API or scrapers")
-    add_shared(openstates_parser)
-    openstates_parser.add_argument("--scrape", action="store_true", help="Run openstates-scrapers instead of API pulls")
-    openstates_parser.add_argument("--states", nargs="*", help="Limit scraper runs to specific states")
-    openstates_parser.set_defaults(func=run_openstates)
+    # --- GovInfo provider ---
+    govinfo_parser = subparsers.add_parser("govinfo", help="Interact with GovInfo.gov API")
+    govinfo_subparsers = govinfo_parser.add_subparsers(dest="action", required=True)
+
+    govinfo_list_parser = govinfo_subparsers.add_parser("list", help="List configured endpoints")
+    govinfo_list_parser.add_argument("--api-key", dest="api_key", help="API key for the provider")
+    govinfo_list_parser.set_defaults(func=govinfo_list)
+
+    govinfo_ingest_parser = govinfo_subparsers.add_parser("ingest", help="Bulk ingest data")
+    govinfo_ingest_parser.add_argument("--api-key", dest="api_key", help="API key for the provider")
+    govinfo_ingest_parser.add_argument("--start-offsets", help="JSON map of starting offsets per endpoint")
+    govinfo_ingest_parser.add_argument("--page-sizes", help="JSON map of page sizes per endpoint")
+    govinfo_ingest_parser.set_defaults(func=govinfo_ingest)
+
+    # --- OpenStates provider ---
+    openstates_parser = subparsers.add_parser("openstates", help="Interact with OpenStates API or scrapers")
+    openstates_subparsers = openstates_parser.add_subparsers(dest="action", required=True)
+
+    openstates_list_parser = openstates_subparsers.add_parser("list", help="List configured endpoints")
+    openstates_list_parser.add_argument("--api-key", dest="api_key", help="API key for the provider")
+    openstates_list_parser.set_defaults(func=openstates_list)
+
+    openstates_ingest_parser = openstates_subparsers.add_parser("ingest", help="Bulk ingest data")
+    openstates_ingest_parser.add_argument("--api-key", dest="api_key", help="API key for the provider")
+    openstates_ingest_parser.add_argument("--start-offsets", help="JSON map of starting pages per endpoint")
+    openstates_ingest_parser.add_argument("--page-sizes", help="JSON map of page sizes per endpoint")
+    openstates_ingest_parser.set_defaults(func=openstates_ingest)
+
+    openstates_scrape_parser = openstates_subparsers.add_parser("scrape", help="Run openstates-scrapers")
+    openstates_scrape_parser.add_argument("--api-key", dest="api_key", help="API key for the provider")
+    openstates_scrape_parser.add_argument("--states", nargs="*", help="Limit scraper runs to specific states")
+    openstates_scrape_parser.set_defaults(func=openstates_scrape)
 
     return parser
 

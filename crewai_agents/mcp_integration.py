@@ -210,21 +210,31 @@ class MCPIntegration:
         )
 
         # Legislative Data MCP Servers
+        #
+        # These servers use the CLI subcommand structure:
+        #   - congress_list_endpoints -> `python -m mcp_servers.cli congress list`
+        #   - congress_bulk_ingest -> `python -m mcp_servers.cli congress ingest [--start-offsets ...] [--page-sizes ...]`
+        #   - govinfo_list_endpoints -> `python -m mcp_servers.cli govinfo list`
+        #   - govinfo_bulk_ingest -> `python -m mcp_servers.cli govinfo ingest [--start-offsets ...] [--page-sizes ...]`
+        #   - openstates_list_endpoints -> `python -m mcp_servers.cli openstates list`
+        #   - openstates_bulk_ingest -> `python -m mcp_servers.cli openstates ingest [--start-offsets ...] [--page-sizes ...]`
+        #   - openstates_run_scrapers -> `python -m mcp_servers.cli openstates scrape [--states ...]`
+        #
         congress_server = MCPServer(
             name="congress", 
             command="python",
-            args=["-m", "mcp_servers.cli", "congress"],
+            args=["-m", "mcp_servers.cli", "congress", "list"],  # default: list action
             env={"CONGRESS_API_KEY": os.getenv("CONGRESS_API_KEY", "")},
             tools=[
                 MCPTool(
                     name="congress_list_endpoints",
-                    description="List Congress.gov endpoints and pagination info",
+                    description="List Congress.gov endpoints and pagination info. CLI: `python -m mcp_servers.cli congress list`",
                     input_schema={"type": "object", "properties": {}},
                     server_name="congress",
                 ),
                 MCPTool(
                     name="congress_bulk_ingest",
-                    description="Ingest Congress.gov data with optional start offsets and page sizes",
+                    description="Ingest Congress.gov data with optional start offsets and page sizes. CLI: `python -m mcp_servers.cli congress ingest [--start-offsets JSON] [--page-sizes JSON]`",
                     input_schema={
                         "type": "object",
                         "properties": {
@@ -240,18 +250,18 @@ class MCPIntegration:
         govinfo_server = MCPServer(
             name="govinfo",
             command="python",
-            args=["-m", "mcp_servers.cli", "govinfo"],
+            args=["-m", "mcp_servers.cli", "govinfo", "list"],  # default: list action
             env={"GOVINFO_API_KEY": os.getenv("GOVINFO_API_KEY", "")},
             tools=[
                 MCPTool(
                     name="govinfo_list_endpoints",
-                    description="List GovInfo.gov endpoints and pagination info",
+                    description="List GovInfo.gov endpoints and pagination info. CLI: `python -m mcp_servers.cli govinfo list`",
                     input_schema={"type": "object", "properties": {}},
                     server_name="govinfo",
                 ),
                 MCPTool(
                     name="govinfo_bulk_ingest",
-                    description="Ingest GovInfo.gov data with optional start offsets and page sizes",
+                    description="Ingest GovInfo.gov data with optional start offsets and page sizes. CLI: `python -m mcp_servers.cli govinfo ingest [--start-offsets JSON] [--page-sizes JSON]`",
                     input_schema={
                         "type": "object",
                         "properties": {
@@ -267,18 +277,18 @@ class MCPIntegration:
         openstates_server = MCPServer(
             name="openstates",
             command="python",
-            args=["-m", "mcp_servers.cli", "openstates"],
+            args=["-m", "mcp_servers.cli", "openstates", "list"],  # default: list action
             env={"OPENSTATES_API_KEY": os.getenv("OPENSTATES_API_KEY", "")},
             tools=[
                 MCPTool(
                     name="openstates_list_endpoints",
-                    description="List OpenStates API endpoints and pagination info",
+                    description="List OpenStates API endpoints and pagination info. CLI: `python -m mcp_servers.cli openstates list`",
                     input_schema={"type": "object", "properties": {}},
                     server_name="openstates",
                 ),
                 MCPTool(
                     name="openstates_bulk_ingest",
-                    description="Ingest OpenStates API data with optional start pages and page sizes",
+                    description="Ingest OpenStates API data with optional start pages and page sizes. CLI: `python -m mcp_servers.cli openstates ingest [--start-offsets JSON] [--page-sizes JSON]`",
                     input_schema={
                         "type": "object",
                         "properties": {
@@ -290,7 +300,7 @@ class MCPIntegration:
                 ),
                 MCPTool(
                     name="openstates_run_scrapers",
-                    description="Execute openstates-scrapers for specified states",
+                    description="Execute openstates-scrapers for specified states. CLI: `python -m mcp_servers.cli openstates scrape [--states ...]`",
                     input_schema={
                         "type": "object",
                         "properties": {
