@@ -96,7 +96,8 @@ class MCPBulkIngestor:
                 wait = BACKOFF_SECONDS * attempt
                 logger.warning("Request failed (%s), retrying in %.1fs", exc, wait)
                 time.sleep(wait)
-        raise RuntimeError(f"Failed to fetch {url}")
+        # This line should be unreachable; included for defensive completeness.
+        raise RuntimeError(f"Failed to fetch {url}")  # pragma: no cover
 
     @staticmethod
     def _pluck(data: Dict[str, Any], path: Tuple[str, ...]) -> Optional[Any]:
