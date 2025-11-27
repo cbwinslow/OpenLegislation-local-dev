@@ -45,8 +45,7 @@ def congress_list(args: argparse.Namespace) -> None:
 def congress_ingest(args: argparse.Namespace) -> None:
     """Ingest Congress.gov data with optional start offsets and page sizes."""
     server = CongressServer(api_key=args.api_key)
-    start_offsets = _parse_json_arg(args.start_offsets, "--start-offsets") or {}
-    page_sizes = _parse_json_arg(args.page_sizes, "--page-sizes") or {}
+
 
     for endpoint in server.endpoints:
         for page in server.fetch_paginated(
@@ -68,13 +67,7 @@ def govinfo_list(args: argparse.Namespace) -> None:
 def govinfo_ingest(args: argparse.Namespace) -> None:
     """Ingest GovInfo.gov data with optional start offsets and page sizes."""
     server = GovInfoServer(api_key=args.api_key)
-    start_offsets = _parse_json_arg(args.start_offsets, "--start-offsets")
-    page_sizes = _parse_json_arg(args.page_sizes, "--page-sizes")
-    counts = server.ingest_endpoints(
-        server.endpoints,
-        start_offsets=start_offsets,
-        page_size_overrides=page_sizes,
-    )
+
     print(f"Ingested: {summarize_counts(counts)}")
 
 
@@ -82,19 +75,7 @@ def govinfo_ingest(args: argparse.Namespace) -> None:
 def openstates_list(args: argparse.Namespace) -> None:
     """List OpenStates API endpoints and pagination info."""
     server = OpenStatesServer(api_key=args.api_key)
-    print(json.dumps(server.list_endpoints(), indent=2))
 
-
-def openstates_ingest(args: argparse.Namespace) -> None:
-    """Ingest OpenStates API data with optional start pages and page sizes."""
-    server = OpenStatesServer(api_key=args.api_key)
-    start_pages = _parse_json_arg(args.start_offsets, "--start-offsets")
-    page_sizes = _parse_json_arg(args.page_sizes, "--page-sizes")
-    counts = server.ingest_endpoints(
-        server.endpoints,
-        start_offsets=start_pages,
-        page_size_overrides=page_sizes,
-    )
     print(f"Ingested: {summarize_counts(counts)}")
 
 

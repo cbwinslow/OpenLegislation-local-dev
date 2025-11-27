@@ -104,3 +104,7 @@
 ### 22:32 UTC - INFO: ✓ Scripts existence: PASSED
 ### 22:32 UTC - INFO: ✓ Disk space: PASSED
 ### 22:32 UTC - ERROR: Prerequisites check failed - aborting ingestion
+### 2025-11-12 15:00 UTC - API CLI refresh
+- Added reusable paginated ingestor with rate limiting, retries, and concurrency controls.
+- Created dedicated Congress, GovInfo, and Members CLI entrypoints with resumable state files and NDJSON output.
+- Documented usage patterns and helpful flags in new ingestion CLI markdown guides.
