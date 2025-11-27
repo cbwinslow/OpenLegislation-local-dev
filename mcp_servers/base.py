@@ -7,7 +7,9 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import requests
+import logging
 
+logger = logging.getLogger(__name__)
 
 @dataclass
 class PaginationConfig:
