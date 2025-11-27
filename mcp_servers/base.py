@@ -25,7 +25,19 @@ class PaginationConfig:
     max_pages: Optional[int] = None
 
     def advance(self, current: int, last_batch_count: int) -> int:
-        """Return the next offset/page based on the pagination strategy."""
+        """
+        Compute the next pagination index (page number or offset) according to the configured strategy.
+        
+        Args:
+            current (int): Current page index or offset.
+            last_batch_count (int): Number of items returned in the last page; used when the pagination kind is "offset".
+        
+        Returns:
+            int: Next page index if `kind` is "page" (current + 1), otherwise next offset computed as current + last_batch_count.
+        
+        Notes:
+            - `last_batch_count` should be ≥ 0 for meaningful offset advancement.
+        """
         if self.kind == "page":
             return current + 1
         return current + last_batch_count
@@ -54,6 +66,23 @@ class MCPBulkIngestor:
         default_rate_limit_per_sec: float = 3.0,
         session: Optional[requests.Session] = None,
     ) -> None:
+        """
+        Create a bulk ingestor client configured for a target API.
+        
+        Args:
+            base_url (str): Base URL for API requests. Trailing slash will be removed.
+            api_key (Optional[str]): API key to include in requests, if provided.
+            api_key_header (str): Header name to send the API key under.
+            default_rate_limit_per_sec (float): Default allowed request rate in requests per second.
+            session (Optional[requests.Session]): Requests session to use; if None, a new Session is created.
+        
+        Returns:
+            None
+        
+        Side effects:
+            - May create and store a new requests.Session when `session` is None.
+            - Stores the provided configuration on the instance and initializes internal rate-limiting state.
+        """
         self.base_url = base_url.rstrip("/")
         self.api_key = api_key
         self.api_key_header = api_key_header
@@ -62,7 +91,14 @@ class MCPBulkIngestor:
         self._last_request_ts: Optional[float] = None
 
     def _throttle(self) -> None:
-        """Simple sleep-based rate limiting."""
+        """
+        Enforces the configured rate limit by sleeping until the minimum interval since the last request has passed.
+        
+        If no previous request timestamp is recorded, this is a no-op. When invoked and the elapsed time since the last request is less than 1 / rate_limit_per_sec, the method blocks the calling thread for the remaining interval.
+        
+        Side effects:
+            Blocks (sleeps) the current thread when rate limiting is applied.
+        """
         if self._last_request_ts is None:
             return
         elapsed = time.time() - self._last_request_ts
@@ -71,6 +107,14 @@ class MCPBulkIngestor:
             time.sleep(min_interval - elapsed)
 
     def _headers(self) -> Dict[str, str]:
+        """
+        Build HTTP request headers including JSON Accept and an optional API key header.
+        
+        Returns:
+            dict: Mapping of header names to values. Always contains "Accept": "application/json".
+                If the instance has an API key configured, includes a header with the name given by
+                the instance's `api_key_header` and the API key as its value.
+        """
         headers: Dict[str, str] = {"Accept": "application/json"}
         if self.api_key:
             # Basic validation to prevent header injection
@@ -83,7 +127,25 @@ class MCPBulkIngestor:
         return headers
 
     def request(self, path: str, params: Dict[str, Any]) -> Dict[str, Any]:
-        """Perform a GET request with throttling and JSON parsing."""
+        """
+        Send a throttled GET request to the given path and return the parsed JSON response.
+        
+        Args:
+            path (str): API path to append to the instance's base URL.
+            params (Dict[str, Any]): Query parameters to include in the request.
+        
+        Returns:
+            Dict[str, Any]: The response body parsed from JSON.
+        
+        Raises:
+            requests.HTTPError: If the response has a non-2xx status (raised by response.raise_for_status()).
+            ValueError: If the response body cannot be decoded as JSON.
+        
+        Side effects:
+            - Observes the instance rate limit by sleeping as needed before the request.
+            - Updates the instance's last-request timestamp.
+            - Uses a 60-second request timeout.
+        """
         self._throttle()
         url = f"{self.base_url}{path}"
         response = self.session.get(url, headers=self._headers(), params=params, timeout=60)
@@ -93,6 +155,19 @@ class MCPBulkIngestor:
 
     @staticmethod
     def _pluck(data: Dict[str, Any], path: Tuple[str, ...]) -> Optional[Any]:
+        """
+        Traverse a nested mapping and return the value found at the given key path.
+        
+        Args:
+            data (Dict[str, Any]): Root mapping to traverse.
+            path (Tuple[str, ...]): Sequence of keys describing the nested path to follow.
+        
+        Returns:
+            Optional[Any]: The value at the end of the path, or `None` if any key is missing or an intermediate value is not a mapping.
+        
+        Notes:
+            An empty `path` returns `data` unchanged.
+        """
         current: Any = data
         for key in path:
             if not isinstance(current, dict) or key not in current:
@@ -108,7 +183,31 @@ class MCPBulkIngestor:
         max_pages: Optional[int] = None,
         extra_params: Optional[Dict[str, Any]] = None,
     ) -> Iterable[Dict[str, Any]]:
-        """Iterate over pages while honoring pagination semantics and totals."""
+        """
+        Iterate pages from an endpoint according to its pagination rules and yield per-page results and metadata.
+        
+        Args:
+            endpoint (EndpointConfig): Endpoint metadata including path and PaginationConfig.
+            start (Optional[int]): Override starting offset or page index; if omitted uses endpoint.pagination.start.
+            page_size (Optional[int]): Override page size; if omitted uses endpoint.pagination.page_size.
+            max_pages (Optional[int]): Maximum number of pages to fetch; if omitted uses endpoint.pagination.max_pages.
+            extra_params (Optional[Dict[str, Any]]): Additional query parameters merged with endpoint.extra_params.
+        
+        Yields:
+            Dict[str, Any]: A dictionary for each fetched page with keys:
+                - "endpoint": endpoint.name
+                - "params": the query parameters used for the request
+                - "offset": current offset or page index used for the request
+                - "page_size": page size used for the request
+                - "total": total number of records when available (int or None)
+                - "results": the extracted results for the page (list or other JSON value)
+        
+        Raises:
+            requests.HTTPError: If an HTTP request returns a non-success status (propagated from self.request).
+        
+        Side effects:
+            Performs network requests and enforces the client's rate limiting and header behaviour.
+        """
         pagination = endpoint.pagination
         current = pagination.start if start is None else start
         size = pagination.page_size if page_size is None else page_size
@@ -174,7 +273,21 @@ class MCPBulkIngestor:
         page_size_overrides: Optional[Dict[str, int]] = None,
         max_pages: Optional[int] = None,
     ) -> Dict[str, int]:
-        """Ingest multiple endpoints and return counts per endpoint."""
+        """
+        Ingest multiple endpoints and return the total number of items retrieved for each endpoint.
+        
+        Args:
+            endpoints (List[EndpointConfig]): Endpoint configurations to ingest.
+            start_offsets (Optional[Dict[str, int]]): Per-endpoint starting offset or page index to override the endpoint pagination start.
+            page_size_overrides (Optional[Dict[str, int]]): Per-endpoint page size overrides.
+            max_pages (Optional[int]): Optional cap on pages to fetch per endpoint.
+        
+        Returns:
+            Dict[str, int]: Mapping from endpoint name to the total count of items ingested for that endpoint. The total is computed by summing the lengths of `results` lists from pages; non-list `results` values are ignored.
+        
+        Raises:
+            Any exception raised by underlying fetching operations (for example network or HTTP errors) is propagated.
+        """
         start_map = start_offsets or {}
         size_map = page_size_overrides or {}
         counts: Dict[str, int] = {}

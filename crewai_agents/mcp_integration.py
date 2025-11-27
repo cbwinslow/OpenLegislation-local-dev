@@ -97,7 +97,21 @@ class MCPIntegration:
         self._setup_servers()
 
     def _setup_servers(self):
-        """Set up MCP servers"""
+        """
+        Register a set of predefined MCPServer instances and their MCPTool definitions with the integration's client.
+        
+        This method creates configured MCPServer objects (GitHub, filesystem, Brave Search, Congress, GovInfo, OpenStates, and SQLite),
+        each populated with MCPTool descriptors and environment values read from process environment variables (for API keys and tokens),
+        and registers them with self.client so the tools become available to the MCP integration.
+        
+        Side effects:
+            - Calls self.client.register_server(...) for each predefined server, mutating the client's server/tool registry.
+            - Reads environment variables such as GITHUB_TOKEN, BRAVE_API_KEY, CONGRESS_API_KEY, GOVINFO_API_KEY, and OPENSTATES_API_KEY
+              to populate server environment configurations.
+        
+        Raises:
+            None
+        """
         # GitHub MCP Server
         github_server = MCPServer(
             name="github",
@@ -338,7 +352,23 @@ class MCPIntegration:
         self.client.register_server(sqlite_server)
 
     def get_mcp_tools_for_agent(self, agent_role: str) -> List[MCPTool]:
-        """Get relevant MCP tools for a specific agent role"""
+        """
+        Return the MCP tools appropriate for a given agent role.
+        
+        Looks up a predefined role-to-tool mapping and filters the list of all registered MCP tools
+        to those whose names are associated with the provided agent role. If the role is not present
+        in the mapping, an empty list is returned.
+        
+        Args:
+            agent_role (str): The agent role name used to select relevant MCP tools.
+        
+        Returns:
+            List[MCPTool]: A list of MCPTool objects whose `name` appears in the role's tool mapping;
+                           returns an empty list if the role has no mapped tools.
+        
+        Side effects:
+            None.
+        """
         all_tools = self.client.list_tools()
 
         # Map agent roles to relevant tools

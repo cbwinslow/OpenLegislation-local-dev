@@ -7,7 +7,16 @@ from .base import EndpointConfig, MCPBulkIngestor, PaginationConfig
 
 
 def default_congress_endpoints() -> List[EndpointConfig]:
-    """Seed endpoints for common Congress.gov collections."""
+    """
+    Return a list of preconfigured EndpointConfig objects for common Congress.gov collections.
+    
+    Provides EndpointConfig entries for the following collections: bills, amendments, committees, and members. Each entry is configured with offset-based pagination (page parameter "offset", page size parameter "limit") and a default page size of 250; results and total-count response paths are set per-collection.
+    
+    Returns:
+        List[EndpointConfig]: A list containing EndpointConfig instances for
+            "bills", "amendments", "committees", and "members".
+    
+    """
     return [
         EndpointConfig(
             name="bills",
@@ -68,6 +77,17 @@ class CongressServer(MCPBulkIngestor):
     """Bulk ingestor for Congress.gov."""
 
     def __init__(self, api_key: str | None = None) -> None:
+        """
+        Initialize a Congress.gov bulk ingestor configured with default endpoints and rate limits.
+        
+        Args:
+            api_key (str | None): Optional API key to authenticate with the Congress.gov API.
+                If omitted, the constructor will read the key from the CONGRESS_API_KEY environment variable.
+        
+        Side effects:
+            - Configures the base URL, API key header, and default rate limit on the underlying MCPBulkIngestor.
+            - Initializes the default set of Congress.gov endpoints (bills, amendments, committees, members).
+        """
         super().__init__(
             base_url="https://api.congress.gov",
             api_key=api_key or os.getenv("CONGRESS_API_KEY"),
@@ -77,6 +97,17 @@ class CongressServer(MCPBulkIngestor):
         self.endpoints = default_congress_endpoints()
 
     def list_endpoints(self) -> List[Dict[str, str]]:
+        """
+        List available endpoint configurations as simplified dictionaries.
+        
+        Returns:
+            List[Dict[str, str]]: A list where each item describes an endpoint with the keys:
+                - name: endpoint identifier
+                - path: API path for the endpoint
+                - description: human-readable description
+                - page_param: query parameter name used for paging offset
+                - page_size_param: query parameter name used for page size
+        """
         return [
             {
                 "name": endpoint.name,
@@ -89,6 +120,18 @@ class CongressServer(MCPBulkIngestor):
         ]
 
     def ingest_all(self, start_offsets: Dict[str, int] | None = None) -> Dict[str, int]:
+        """
+        Ingest all configured endpoints from their respective Congress.gov collections.
+        
+        Args:
+            start_offsets (Dict[str, int] | None): Optional mapping of endpoint names to starting offset values; when provided ingestion for each named endpoint begins from the given offset, otherwise ingestion starts from the default starting point for that endpoint.
+        
+        Returns:
+            Dict[str, int]: Mapping from endpoint name to the last offset processed for that endpoint.
+        
+        Side effects:
+            Performs network requests and writes ingested data via the ingestor's configured ingestion pipeline.
+        """
         return self.ingest_endpoints(self.endpoints, start_offsets=start_offsets)
 
 
