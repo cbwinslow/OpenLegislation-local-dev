@@ -44,7 +44,13 @@ class EndpointConfig:
 
 
 class MCPBulkIngestor:
-    """Reusable client for paginated API ingestion."""
+    """Reusable client for paginated API ingestion.
+
+    This client is designed for single-threaded, sequential API request
+    processing. Rate limiting uses blocking time.sleep() calls. For
+    concurrent request handling, consider an async implementation with
+    asyncio.sleep() instead.
+    """
 
     def __init__(
         self,
@@ -62,7 +68,13 @@ class MCPBulkIngestor:
         self._last_request_ts: Optional[float] = None
 
     def _throttle(self) -> None:
-        """Simple sleep-based rate limiting."""
+        """Simple sleep-based rate limiting.
+
+        Note: This implementation uses time.sleep() which blocks the current
+        thread. It is designed for single-threaded sequential processing of
+        API requests. For concurrent request scenarios, consider using
+        async/await patterns with asyncio.sleep() instead.
+        """
         if self._last_request_ts is None:
             return
         elapsed = time.time() - self._last_request_ts
