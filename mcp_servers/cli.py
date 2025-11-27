@@ -103,9 +103,9 @@ def openstates_scrape(args: argparse.Namespace) -> None:
     server = OpenStatesServer(api_key=args.api_key)
     result = server.run_scrapers(states=args.states)
     if result.stdout:
-        print(result.stdout)
+        print(result.stdout, end='')
     if result.stderr:
-        print(result.stderr, file=sys.stderr)
+        print(result.stderr, end='', file=sys.stderr)
     if result.returncode != 0:
         sys.exit(result.returncode)
 
