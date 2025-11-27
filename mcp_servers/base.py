@@ -7,7 +7,9 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import requests
+import logging
 
+logger = logging.getLogger(__name__)
 
 @dataclass
 class PaginationConfig:
@@ -71,7 +73,13 @@ class MCPBulkIngestor:
     def _headers(self) -> Dict[str, str]:
         headers: Dict[str, str] = {"Accept": "application/json"}
         if self.api_key:
-            headers[self.api_key_header] = self.api_key
+            # Basic validation to prevent header injection
+            api_key = self.api_key.strip()
+            if not api_key:
+                raise ValueError("API key must not be empty or whitespace")
+            if '\n' in api_key or '\r' in api_key:
+                raise ValueError("API key contains invalid characters (newline or carriage return)")
+            headers[self.api_key_header] = api_key
         return headers
 
     def request(self, path: str, params: Dict[str, Any]) -> Dict[str, Any]:
