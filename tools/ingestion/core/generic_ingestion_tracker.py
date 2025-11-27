@@ -508,6 +508,38 @@ class GenericIngestionTracker:
         self._execute_query(query, (self.table_name, self.source, target_session))
         self._commit()
 
+    def list_sessions(self) -> List[Dict[str, Any]]:
+        """List all ingestion sessions for this table/source"""
+        query = """
+            SELECT 
+                ingestion_session_id,
+                MIN(created_at) as started_at,
+                MAX(updated_at) as last_updated,
+                COUNT(*) as total_records,
+                SUM(CASE WHEN ingestion_status = 'completed' THEN 1 ELSE 0 END) as completed,
+                SUM(CASE WHEN ingestion_status = 'failed' THEN 1 ELSE 0 END) as failed,
+                SUM(CASE WHEN ingestion_status = 'in_progress' THEN 1 ELSE 0 END) as in_progress,
+                SUM(CASE WHEN ingestion_status = 'pending' THEN 1 ELSE 0 END) as pending
+            FROM master.ingestion_status
+            WHERE table_name = %s AND source = %s
+            GROUP BY ingestion_session_id
+            ORDER BY MAX(updated_at) DESC
+        """
+        result = self._execute_query(query, (self.table_name, self.source), fetch=True)
+        sessions = []
+        for row in result:
+            sessions.append({
+                'session_id': row[0],
+                'started_at': row[1].isoformat() if row[1] else None,
+                'last_updated': row[2].isoformat() if row[2] else None,
+                'total_records': row[3],
+                'completed': row[4],
+                'failed': row[5],
+                'in_progress': row[6],
+                'pending': row[7],
+            })
+        return sessions
+
     def cleanup_old_sessions(self, days_old: int = 30):
         """Remove ingestion status records older than specified days"""
         cutoff_date = datetime.now() - timedelta(days=days_old)
@@ -570,5 +602,16 @@ def cleanup_old_ingestion_state(
     try:
         tracker.cleanup_old_sessions(days_old)
         print(f"Cleaned up {table_name} ({source}) entries older than {days_old} days")
+    finally:
+        tracker.close()
+
+
+def list_ingestion_sessions(
+    db_config: Dict[str, Any], table_name: str, source: str
+) -> List[Dict[str, Any]]:
+    """List all ingestion sessions for a table/source"""
+    tracker = GenericIngestionTracker(db_config, table_name, "record_id", source)
+    try:
+        return tracker.list_sessions()
     finally:
         tracker.close()

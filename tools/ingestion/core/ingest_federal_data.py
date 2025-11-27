@@ -37,7 +37,8 @@ from decorators import (
 from database_models import (
     get_session, upsert_bill, upsert_bill_sponsor, upsert_bill_action,
     upsert_committee, upsert_committee_member, store_raw_payload,
-    Bill, BillSponsor, BillAction, Committee, CommitteeMember
+    Bill, BillSponsor, BillAction, Committee, CommitteeMember,
+    BillAmendment, upsert_bill_amendment
 )
 
 load_dotenv()  # Load .env from project root
@@ -208,6 +209,20 @@ def map_action_api_to_model(action_data: Dict, bill_print_no: str, session_year:
         'chamber': action_data.get('chamber', ''),
     }
 
+def map_amendment_api_to_model(amendment_data: Dict, bill_print_no: str, session_year: int) -> Dict:
+    """Map amendment data from Congress API to BillAmendment model."""
+    version_name = amendment_data.get('number', '') or amendment_data.get('versionName', '')
+    return {
+        'bill_print_no': bill_print_no,
+        'bill_session_year': session_year,
+        'bill_amend_version': version_name,
+        'sponsor_memo': amendment_data.get('description', ''),
+        'full_text': amendment_data.get('text', ''),
+        'law_code': amendment_data.get('lawCode', ''),
+        'publish_status': amendment_data.get('status', ''),
+        'same_as': amendment_data.get('sameAs', ''),
+    }
+
 @ingestion_performance(track_records=True, track_api_calls=True)
 @feature_flag("federal_bills_ingestion_enabled", default_enabled=True)
 def ingest_bills_optimized(db_session, callback: IngestionCallback, start_congress: int = 118, batch_size: int = 250):
@@ -258,8 +273,10 @@ def ingest_bills_optimized(db_session, callback: IngestionCallback, start_congre
 
                     # Amendments/Votes if in data
                     if 'amendments' in bill_data:
-                        # Map amendments
-                        pass  # Implement mapping
+                        amendments = bill_data.get('amendments', [])
+                        for amendment in amendments:
+                            amendment_dict = map_amendment_api_to_model(amendment, bill_print_no, congress)
+                            upsert_record(db_session, BillAmendment, amendment_dict, ['bill_print_no', 'bill_session_year', 'bill_amend_version'])
 
                     total_ingested += 1
                     congress_total += 1
