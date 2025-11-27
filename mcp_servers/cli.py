@@ -18,8 +18,12 @@ def run_congress(args: argparse.Namespace) -> None:
     if args.list:
         print(json.dumps(server.list_endpoints(), indent=2))
         return
-    start_offsets = json.loads(args.start_offsets) if args.start_offsets else {}
-    page_sizes = json.loads(args.page_sizes) if args.page_sizes else {}
+    try:
+        start_offsets = json.loads(args.start_offsets) if args.start_offsets else {}
+        page_sizes = json.loads(args.page_sizes) if args.page_sizes else {}
+    except json.JSONDecodeError as e:
+        print(f"Error: Invalid JSON format: {e}")
+        return
 
     for endpoint in server.endpoints:
         for page in server.fetch_paginated(
@@ -36,8 +40,12 @@ def run_govinfo(args: argparse.Namespace) -> None:
     if args.list:
         print(json.dumps(server.list_endpoints(), indent=2))
         return
-    start_offsets = json.loads(args.start_offsets) if args.start_offsets else None
-    page_sizes = json.loads(args.page_sizes) if args.page_sizes else None
+    try:
+        start_offsets = json.loads(args.start_offsets) if args.start_offsets else None
+        page_sizes = json.loads(args.page_sizes) if args.page_sizes else None
+    except json.JSONDecodeError as e:
+        print(f"Error: Invalid JSON format: {e}")
+        return
     counts = server.ingest_endpoints(server.endpoints, start_offsets=start_offsets, page_size_overrides=page_sizes)
     print(f"Ingested: {summarize_counts(counts)}")
 
@@ -52,8 +60,12 @@ def run_openstates(args: argparse.Namespace) -> None:
         print(result.stdout)
         print(result.stderr)
         return
-    start_pages = json.loads(args.start_offsets) if args.start_offsets else None
-    page_sizes = json.loads(args.page_sizes) if args.page_sizes else None
+    try:
+        start_pages = json.loads(args.start_offsets) if args.start_offsets else None
+        page_sizes = json.loads(args.page_sizes) if args.page_sizes else None
+    except json.JSONDecodeError as e:
+        print(f"Error: Invalid JSON format: {e}")
+        return
     counts = server.ingest_endpoints(server.endpoints, start_offsets=start_pages, page_size_overrides=page_sizes)
     print(f"Ingested: {summarize_counts(counts)}")
 
