@@ -31,7 +31,8 @@ from tools.config.settings import settings
 from generic_ingestion_tracker import (
     get_ingestion_status,
     reset_ingestion_status,
-    cleanup_old_ingestion_state
+    cleanup_old_ingestion_state,
+    list_ingestion_sessions
 )
 
 
@@ -233,10 +234,24 @@ class IngestionManager:
             if not info:
                 return []
 
-            # TODO: Implement session listing functionality
-            return []
+            sessions = list_ingestion_sessions(
+                self.db_config, info['table'], info['source']
+            )
+            return sessions
         else:
-            return []
+            # List sessions for all ingestion types
+            all_sessions = []
+            for ing_type, info in self.ingestion_types.items():
+                try:
+                    sessions = list_ingestion_sessions(
+                        self.db_config, info['table'], info['source']
+                    )
+                    for session in sessions:
+                        session['ingestion_type'] = ing_type
+                    all_sessions.extend(sessions)
+                except Exception as e:
+                    print(f"Error listing sessions for {ing_type}: {e}")
+            return all_sessions
 
 
 def print_status(status_data: Dict[str, Any], verbose: bool = False):
