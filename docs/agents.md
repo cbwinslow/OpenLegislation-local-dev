@@ -347,3 +347,8 @@ OpenLegislation utilizes a comprehensive AI agent ecosystem to handle developmen
 - Performance issues → Optimization specialist
 - Data quality problems → Data governance team
 - Security concerns → Security review
+
+## 2025-11-12 Update
+- Added paginated ingestion CLIs (Congress, GovInfo, Members) that share a common rate-limited engine and resumable state files.
+- Default NDJSON outputs live under `tools/ingestion/output/` with state tracking in `tools/ingestion/state/`.
+- Use the accompanying docs in `docs/ingestion-cli/` for quickstart commands and flag references.
