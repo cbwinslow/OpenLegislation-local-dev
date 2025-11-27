@@ -8,7 +8,7 @@ prevention without making live API calls, as recommended in SRS line 14.
 import json
 import time
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 
 
 class TestPaginationConfig:
