@@ -210,21 +210,33 @@ class MCPIntegration:
         )
 
         # Legislative Data MCP Servers
-        congress_server = MCPServer(
-            name="congress", 
+        # Each tool maps to a specific CLI subcommand:
+        #   congress_list_endpoints  -> python -m mcp_servers.cli congress list
+        #   congress_bulk_ingest     -> python -m mcp_servers.cli congress ingest
+        congress_list_server = MCPServer(
+            name="congress_list",
             command="python",
-            args=["-m", "mcp_servers.cli", "congress"],
+            args=["-m", "mcp_servers.cli", "congress", "list"],
             env={"CONGRESS_API_KEY": os.getenv("CONGRESS_API_KEY", "")},
             tools=[
                 MCPTool(
                     name="congress_list_endpoints",
-                    description="List Congress.gov endpoints and pagination info",
+                    description="List Congress.gov endpoints and pagination info (CLI: congress list)",
                     input_schema={"type": "object", "properties": {}},
-                    server_name="congress",
+                    server_name="congress_list",
                 ),
+            ],
+        )
+
+        congress_ingest_server = MCPServer(
+            name="congress_ingest",
+            command="python",
+            args=["-m", "mcp_servers.cli", "congress", "ingest"],
+            env={"CONGRESS_API_KEY": os.getenv("CONGRESS_API_KEY", "")},
+            tools=[
                 MCPTool(
                     name="congress_bulk_ingest",
-                    description="Ingest Congress.gov data with optional start offsets and page sizes",
+                    description="Ingest Congress.gov data with optional start offsets and page sizes (CLI: congress ingest)",
                     input_schema={
                         "type": "object",
                         "properties": {
@@ -232,26 +244,36 @@ class MCPIntegration:
                             "page_sizes": {"type": "string", "description": "JSON map of page sizes per endpoint"},
                         },
                     },
-                    server_name="congress",
+                    server_name="congress_ingest",
                 ),
             ],
         )
 
-        govinfo_server = MCPServer(
-            name="govinfo",
+        # GovInfo servers
+        govinfo_list_server = MCPServer(
+            name="govinfo_list",
             command="python",
-            args=["-m", "mcp_servers.cli", "govinfo"],
+            args=["-m", "mcp_servers.cli", "govinfo", "list"],
             env={"GOVINFO_API_KEY": os.getenv("GOVINFO_API_KEY", "")},
             tools=[
                 MCPTool(
                     name="govinfo_list_endpoints",
-                    description="List GovInfo.gov endpoints and pagination info",
+                    description="List GovInfo.gov endpoints and pagination info (CLI: govinfo list)",
                     input_schema={"type": "object", "properties": {}},
-                    server_name="govinfo",
+                    server_name="govinfo_list",
                 ),
+            ],
+        )
+
+        govinfo_ingest_server = MCPServer(
+            name="govinfo_ingest",
+            command="python",
+            args=["-m", "mcp_servers.cli", "govinfo", "ingest"],
+            env={"GOVINFO_API_KEY": os.getenv("GOVINFO_API_KEY", "")},
+            tools=[
                 MCPTool(
                     name="govinfo_bulk_ingest",
-                    description="Ingest GovInfo.gov data with optional start offsets and page sizes",
+                    description="Ingest GovInfo.gov data with optional start offsets and page sizes (CLI: govinfo ingest)",
                     input_schema={
                         "type": "object",
                         "properties": {
@@ -259,26 +281,36 @@ class MCPIntegration:
                             "page_sizes": {"type": "string", "description": "JSON map of page sizes per endpoint"},
                         },
                     },
-                    server_name="govinfo",
+                    server_name="govinfo_ingest",
                 ),
             ],
         )
 
-        openstates_server = MCPServer(
-            name="openstates",
+        # OpenStates servers
+        openstates_list_server = MCPServer(
+            name="openstates_list",
             command="python",
-            args=["-m", "mcp_servers.cli", "openstates"],
+            args=["-m", "mcp_servers.cli", "openstates", "list"],
             env={"OPENSTATES_API_KEY": os.getenv("OPENSTATES_API_KEY", "")},
             tools=[
                 MCPTool(
                     name="openstates_list_endpoints",
-                    description="List OpenStates API endpoints and pagination info",
+                    description="List OpenStates API endpoints and pagination info (CLI: openstates list)",
                     input_schema={"type": "object", "properties": {}},
-                    server_name="openstates",
+                    server_name="openstates_list",
                 ),
+            ],
+        )
+
+        openstates_ingest_server = MCPServer(
+            name="openstates_ingest",
+            command="python",
+            args=["-m", "mcp_servers.cli", "openstates", "ingest"],
+            env={"OPENSTATES_API_KEY": os.getenv("OPENSTATES_API_KEY", "")},
+            tools=[
                 MCPTool(
                     name="openstates_bulk_ingest",
-                    description="Ingest OpenStates API data with optional start pages and page sizes",
+                    description="Ingest OpenStates API data with optional start pages and page sizes (CLI: openstates ingest)",
                     input_schema={
                         "type": "object",
                         "properties": {
@@ -286,11 +318,20 @@ class MCPIntegration:
                             "page_sizes": {"type": "string", "description": "JSON map of page sizes per endpoint"},
                         },
                     },
-                    server_name="openstates",
+                    server_name="openstates_ingest",
                 ),
+            ],
+        )
+
+        openstates_scrape_server = MCPServer(
+            name="openstates_scrape",
+            command="python",
+            args=["-m", "mcp_servers.cli", "openstates", "scrape"],
+            env={"OPENSTATES_API_KEY": os.getenv("OPENSTATES_API_KEY", "")},
+            tools=[
                 MCPTool(
                     name="openstates_run_scrapers",
-                    description="Execute openstates-scrapers for specified states",
+                    description="Execute openstates-scrapers for specified states (CLI: openstates scrape)",
                     input_schema={
                         "type": "object",
                         "properties": {
@@ -301,7 +342,7 @@ class MCPIntegration:
                             }
                         },
                     },
-                    server_name="openstates",
+                    server_name="openstates_scrape",
                 ),
             ],
         )
@@ -332,9 +373,13 @@ class MCPIntegration:
         self.client.register_server(github_server)
         self.client.register_server(filesystem_server)
         self.client.register_server(brave_search_server)
-        self.client.register_server(congress_server)
-        self.client.register_server(govinfo_server)
-        self.client.register_server(openstates_server)
+        self.client.register_server(congress_list_server)
+        self.client.register_server(congress_ingest_server)
+        self.client.register_server(govinfo_list_server)
+        self.client.register_server(govinfo_ingest_server)
+        self.client.register_server(openstates_list_server)
+        self.client.register_server(openstates_ingest_server)
+        self.client.register_server(openstates_scrape_server)
         self.client.register_server(sqlite_server)
 
     def get_mcp_tools_for_agent(self, agent_role: str) -> List[MCPTool]:
