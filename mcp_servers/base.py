@@ -121,11 +121,14 @@ class MCPBulkIngestor:
             if pagination.results_path:
                 results = self._pluck(payload, pagination.results_path)
             if results is None:
-                for key in endpoint.result_key_fallbacks:
-                    candidate = payload.get(key)
-                    if candidate is not None:
-                        results = candidate
-                        break
+                if isinstance(payload, dict):
+                    for key in endpoint.result_key_fallbacks:
+                        candidate = payload.get(key)
+                        if candidate is not None:
+                            results = candidate
+                            break
+                else:
+                    results = payload
 
             if results is None:
                 results = []
