@@ -2,11 +2,17 @@
 
 from __future__ import annotations
 
+import logging
 import time
 from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import requests
+
+logger = logging.getLogger(__name__)
+
+MAX_RETRIES = 5
+BACKOFF_SECONDS = 2.0
 
 
 @dataclass
@@ -75,13 +81,22 @@ class MCPBulkIngestor:
         return headers
 
     def request(self, path: str, params: Dict[str, Any]) -> Dict[str, Any]:
-        """Perform a GET request with throttling and JSON parsing."""
+        """Perform a GET request with throttling, retries, and JSON parsing."""
         self._throttle()
         url = f"{self.base_url}{path}"
-        response = self.session.get(url, headers=self._headers(), params=params, timeout=60)
-        self._last_request_ts = time.time()
-        response.raise_for_status()
-        return response.json()
+        for attempt in range(1, MAX_RETRIES + 1):
+            try:
+                response = self.session.get(url, headers=self._headers(), params=params, timeout=60)
+                self._last_request_ts = time.time()
+                response.raise_for_status()
+                return response.json()
+            except Exception as exc:
+                if attempt == MAX_RETRIES:
+                    raise
+                wait = BACKOFF_SECONDS * attempt
+                logger.warning("Request failed (%s), retrying in %.1fs", exc, wait)
+                time.sleep(wait)
+        raise RuntimeError(f"Failed to fetch {url}")
 
     @staticmethod
     def _pluck(data: Dict[str, Any], path: Tuple[str, ...]) -> Optional[Any]:
