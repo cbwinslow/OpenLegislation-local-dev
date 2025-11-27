@@ -211,15 +211,13 @@ class MCPIntegration:
 
         # Legislative Data MCP Servers
 
-        congress_server = MCPServer(
-            name="congress",
+
             command="python",
 
             tools=[
                 MCPTool(
                     name="congress_list_endpoints",
 
-                    server_name="congress",
                 ),
             ],
         )
@@ -245,8 +243,9 @@ class MCPIntegration:
             ],
         )
 
-        govinfo_server = MCPServer(
-            name="govinfo",
+        # GovInfo servers
+        govinfo_list_server = MCPServer(
+            name="govinfo_list",
             command="python",
 
             env={"GOVINFO_API_KEY": os.getenv("GOVINFO_API_KEY", "")},
@@ -255,7 +254,7 @@ class MCPIntegration:
                     name="govinfo_list_endpoints",
 
                     input_schema={"type": "object", "properties": {}},
-                    server_name="govinfo",
+                    server_name="govinfo_list",
                 ),
             ],
         )
@@ -281,8 +280,9 @@ class MCPIntegration:
             ],
         )
 
-        openstates_server = MCPServer(
-            name="openstates",
+        # OpenStates servers
+        openstates_list_server = MCPServer(
+            name="openstates_list",
             command="python",
 
             env={"OPENSTATES_API_KEY": os.getenv("OPENSTATES_API_KEY", "")},
@@ -291,7 +291,7 @@ class MCPIntegration:
                     name="openstates_list_endpoints",
 
                     input_schema={"type": "object", "properties": {}},
-                    server_name="openstates",
+                    server_name="openstates_list",
                 ),
             ],
         )
@@ -367,11 +367,7 @@ class MCPIntegration:
         self.client.register_server(github_server)
         self.client.register_server(filesystem_server)
         self.client.register_server(brave_search_server)
-        self.client.register_server(congress_server)
-        self.client.register_server(congress_ingest_server)
-        self.client.register_server(govinfo_server)
-        self.client.register_server(govinfo_ingest_server)
-        self.client.register_server(openstates_server)
+
         self.client.register_server(openstates_ingest_server)
         self.client.register_server(openstates_scrape_server)
         self.client.register_server(sqlite_server)
