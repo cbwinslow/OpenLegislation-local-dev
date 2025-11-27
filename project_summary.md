@@ -63,10 +63,10 @@ Democratize access to legislative information through advanced technology, AI-po
 1. Clone repository and set up environment
 2. Configure PostgreSQL and Elasticsearch
 3. Run `mvn compile flyway:migrate` to build and migrate DB
-4. Start ingestion processes for data sources
+4. Start ingestion processes for data sources, including the MCP ingestion CLI for Congress.gov, GovInfo.gov, and OpenStates
 5. Deploy frontend and backend services
 
-For detailed setup instructions, see `README_DEV.md` and `docs/development.md`.
+For detailed setup instructions, see `README_DEV.md` and `docs/development.md`. For MCP ingestion workflows, see `docs/mcp_servers.md`.
 
 ## Future Vision
 - Enhanced AI capabilities for predictive analytics
@@ -77,5 +77,4 @@ For detailed setup instructions, see `README_DEV.md` and `docs/development.md`.
 
 **Project Status**: Active and growing
 **License**: BSD/GPL Dual License
-**Repository**: https://github.com/nysenate/OpenLegislation</content>
-<parameter name="filePath">/home/cbwinslow/OpenLegislation-local-dev/project_summary.md
+**Repository**: https://github.com/nysenate/OpenLegislation

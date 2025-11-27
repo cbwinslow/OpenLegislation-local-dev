@@ -209,6 +209,103 @@ class MCPIntegration:
             ]
         )
 
+        # Legislative Data MCP Servers
+        congress_server = MCPServer(
+            name="congress", 
+            command="python",
+            args=["-m", "mcp_servers.cli", "congress"],
+            env={"CONGRESS_API_KEY": os.getenv("CONGRESS_API_KEY", "")},
+            tools=[
+                MCPTool(
+                    name="congress_list_endpoints",
+                    description="List Congress.gov endpoints and pagination info",
+                    input_schema={"type": "object", "properties": {}},
+                    server_name="congress",
+                ),
+                MCPTool(
+                    name="congress_bulk_ingest",
+                    description="Ingest Congress.gov data with optional start offsets and page sizes",
+                    input_schema={
+                        "type": "object",
+                        "properties": {
+                            "start_offsets": {"type": "string", "description": "JSON map of offsets per endpoint"},
+                            "page_sizes": {"type": "string", "description": "JSON map of page sizes per endpoint"},
+                        },
+                    },
+                    server_name="congress",
+                ),
+            ],
+        )
+
+        govinfo_server = MCPServer(
+            name="govinfo",
+            command="python",
+            args=["-m", "mcp_servers.cli", "govinfo"],
+            env={"GOVINFO_API_KEY": os.getenv("GOVINFO_API_KEY", "")},
+            tools=[
+                MCPTool(
+                    name="govinfo_list_endpoints",
+                    description="List GovInfo.gov endpoints and pagination info",
+                    input_schema={"type": "object", "properties": {}},
+                    server_name="govinfo",
+                ),
+                MCPTool(
+                    name="govinfo_bulk_ingest",
+                    description="Ingest GovInfo.gov data with optional start offsets and page sizes",
+                    input_schema={
+                        "type": "object",
+                        "properties": {
+                            "start_offsets": {"type": "string", "description": "JSON map of offsets per endpoint"},
+                            "page_sizes": {"type": "string", "description": "JSON map of page sizes per endpoint"},
+                        },
+                    },
+                    server_name="govinfo",
+                ),
+            ],
+        )
+
+        openstates_server = MCPServer(
+            name="openstates",
+            command="python",
+            args=["-m", "mcp_servers.cli", "openstates"],
+            env={"OPENSTATES_API_KEY": os.getenv("OPENSTATES_API_KEY", "")},
+            tools=[
+                MCPTool(
+                    name="openstates_list_endpoints",
+                    description="List OpenStates API endpoints and pagination info",
+                    input_schema={"type": "object", "properties": {}},
+                    server_name="openstates",
+                ),
+                MCPTool(
+                    name="openstates_bulk_ingest",
+                    description="Ingest OpenStates API data with optional start pages and page sizes",
+                    input_schema={
+                        "type": "object",
+                        "properties": {
+                            "start_offsets": {"type": "string", "description": "JSON map of starting offsets per endpoint"},
+                            "page_sizes": {"type": "string", "description": "JSON map of page sizes per endpoint"},
+                        },
+                    },
+                    server_name="openstates",
+                ),
+                MCPTool(
+                    name="openstates_run_scrapers",
+                    description="Execute openstates-scrapers for specified states",
+                    input_schema={
+                        "type": "object",
+                        "properties": {
+                            "states": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                                "description": "State abbreviations to scrape",
+                            }
+                        },
+                    },
+                    server_name="openstates",
+                ),
+            ],
+        )
+
         # SQLite MCP Server
         sqlite_server = MCPServer(
             name="sqlite",
@@ -235,6 +332,9 @@ class MCPIntegration:
         self.client.register_server(github_server)
         self.client.register_server(filesystem_server)
         self.client.register_server(brave_search_server)
+        self.client.register_server(congress_server)
+        self.client.register_server(govinfo_server)
+        self.client.register_server(openstates_server)
         self.client.register_server(sqlite_server)
 
     def get_mcp_tools_for_agent(self, agent_role: str) -> List[MCPTool]:
@@ -249,10 +349,10 @@ class MCPIntegration:
             "Database Security Specialist": ["sqlite_query", "fs_read_file"],
             "Backup and Recovery Specialist": ["fs_list_dir", "fs_search_files"],
 
-            "Legislative Analyst": ["brave_web_search", "github_search_code", "fs_read_file"],
-            "Policy Impact Assessor": ["brave_web_search", "github_read_file"],
-            "Constitutional Law Specialist": ["brave_web_search", "github_search_code"],
-            "Regulatory Compliance Specialist": ["brave_web_search", "fs_read_file"],
+            "Legislative Analyst": ["brave_web_search", "github_search_code", "fs_read_file", "congress_list_endpoints", "govinfo_list_endpoints", "openstates_list_endpoints"],
+            "Policy Impact Assessor": ["brave_web_search", "github_read_file", "congress_bulk_ingest", "govinfo_bulk_ingest", "openstates_bulk_ingest"],
+            "Constitutional Law Specialist": ["brave_web_search", "github_search_code", "congress_list_endpoints"],
+            "Regulatory Compliance Specialist": ["brave_web_search", "fs_read_file", "govinfo_list_endpoints"],
 
             "Political Strategist": ["brave_web_search", "github_search_code"],
             "Public Opinion Analyst": ["brave_web_search", "github_read_file"],
