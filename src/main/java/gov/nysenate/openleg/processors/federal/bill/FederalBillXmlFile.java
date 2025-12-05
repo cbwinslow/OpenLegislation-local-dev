@@ -18,8 +18,10 @@ public class FederalBillXmlFile extends XmlFile {
     private String billType; // e.g., "hr", "s"
     private String billNumber;
 
-
-        Pattern.CASE_INSENSITIVE
+    // Pattern: BILLS-119hr1234ih.xml or federal_bill_119_hr_1234.xml
+    public static final Pattern FILENAME_PATTERN = Pattern.compile(
+            "(?:BILLS-)?(\\d{2,3})([a-zA-Z]{1,4})(\\d+)([a-zA-Z]{0,4})?\\.xml",
+            Pattern.CASE_INSENSITIVE
     );
 
     public FederalBillXmlFile(File file) throws IOException {

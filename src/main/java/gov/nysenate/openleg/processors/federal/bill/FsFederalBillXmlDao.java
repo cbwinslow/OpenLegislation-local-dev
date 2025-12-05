@@ -33,6 +33,9 @@ public class FsFederalBillXmlDao implements SourceFileFsDao<FederalBillXmlFile> 
 
     private static final Logger logger = LoggerFactory.getLogger(FsFederalBillXmlDao.class);
 
+    // Pattern to extract bill type from federal bill filenames (e.g., "hr" from "BILLS-119hr1234ih.xml")
+    private static final Pattern FEDERAL_XML_TYPE = Pattern.compile("\\d{2,3}([a-zA-Z]+)\\d+", Pattern.CASE_INSENSITIVE);
+
     @Autowired
     protected OpenLegEnvironment environment;
 
