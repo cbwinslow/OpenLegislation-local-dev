@@ -26,8 +26,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static gov.nysenate.openleg.legislation.bill.BillTextFormat.PLAIN;
-
 /**
  * Processor for federal bill XML from congress.gov/govinfo.
  * Parses XML to Bill model using DOM parsing.
