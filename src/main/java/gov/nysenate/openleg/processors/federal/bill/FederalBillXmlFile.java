@@ -19,7 +19,7 @@ public class FederalBillXmlFile extends XmlFile {
     private String billNumber;
 
     private static final Pattern FILENAME_PATTERN = Pattern.compile(
-        "(BILLS?|BILLSTATUS?|BILL-SUMMARIES?)-(\\d{3})thCongress(?:-(HR|S|HJ| SJ|HConRes|SConRes|HJRes|SJRes))?(\\d+)?\\.xml",
+        "(BILLS?|BILLSTATUS?|BILL-SUMMARIES?)-(\\d{3})thCongress(?:-(HR|S|HJ|SJ|HConRes|SConRes|HJRes|SJRes))?(\\d+)?\\.xml",
         Pattern.CASE_INSENSITIVE
     );
 
