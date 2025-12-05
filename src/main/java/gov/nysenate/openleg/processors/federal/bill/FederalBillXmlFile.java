@@ -4,7 +4,6 @@ import gov.nysenate.openleg.processors.bill.xml.XmlFile;
 import gov.nysenate.openleg.processors.bill.SourceType;
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,7 +17,8 @@ public class FederalBillXmlFile extends XmlFile {
     private String billType; // e.g., "hr", "s"
     private String billNumber;
 
-
+    public static final Pattern FILENAME_PATTERN = Pattern.compile(
+        "(BILLS?|BILLSTATUS?|BILL-SUMMARIES?)-(\\d{3})thCongress(?:-(HR|S|HJ|SJ|HConRes|SConRes|HJRes|SJRes))?(\\d+)?\\.xml",
         Pattern.CASE_INSENSITIVE
     );
 
