@@ -1,6 +1,5 @@
 package gov.nysenate.openleg.processors.bill;
 
-import gov.nysenate.openleg.legislation.bill.BaseBillId;
 import gov.nysenate.openleg.legislation.bill.BillAction;
 import gov.nysenate.openleg.legislation.bill.BillId;
 import gov.nysenate.openleg.legislation.bill.Version;
@@ -77,7 +76,7 @@ public class BillActionParser
                 // Uppercase the action text to aid with regex matching
                 eventText = eventText.toUpperCase();
                 // Construct and append bill action to list.
-
+                BillAction action = new BillAction(eventDate, eventText, eventChamber, sequenceNo++, billId, "UNKNOWN");
                 billActions.add(action);
             }
             else {
