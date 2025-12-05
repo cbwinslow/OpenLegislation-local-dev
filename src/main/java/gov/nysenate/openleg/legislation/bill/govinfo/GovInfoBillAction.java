@@ -14,25 +14,82 @@ public class GovInfoBillAction {
     private String committeeCode;
     private LocalDate date;
 
-    // Constructors
+    /**
+ * Creates a new GovInfoBillAction with all fields unset.
+ */
     public GovInfoBillAction() {}
 
-    // Getters/Setters
+    /**
+ * The action date as a string.
+ *
+ * @return the action date string, or {@code null} if not set
+ */
     public String getActionDate() { return actionDate; }
-    public void setActionDate(String actionDate) { this.actionDate = actionDate; }
+    /**
+ * Sets the action date string for this GovInfo bill action.
+ *
+ * @param actionDate the action date string as provided by GovInfo
+ */
+public void setActionDate(String actionDate) { this.actionDate = actionDate; }
 
-    public String getText() { return text; }
-    public void setText(String text) { this.text = text; }
+    /**
+ * Retrieves the descriptive text of the action.
+ *
+ * @return the action's descriptive text, or {@code null} if not set
+ */
+public String getText() { return text; }
+    /**
+ * Set the action description text.
+ *
+ * @param text the description of the action
+ */
+public void setText(String text) { this.text = text; }
 
-    public String getActor() { return actor; }
-    public void setActor(String actor) { this.actor = actor; }
+    /**
+ * The actor associated with this action, typically a member name (and optional state) used for linkage.
+ *
+ * @return the actor string, or {@code null} if not specified
+ */
+public String getActor() { return actor; }
+    /**
+ * Set the actor associated with this action, typically identifying the member or entity responsible.
+ *
+ * @param actor a string identifying the actor; may include member name and state for linkage or other descriptive text
+ */
+public void setActor(String actor) { this.actor = actor; }
 
-    public String getCommitteeCode() { return committeeCode; }
-    public void setCommitteeCode(String committeeCode) { this.committeeCode = committeeCode; }
+    /**
+ * The committee code associated with this action.
+ *
+ * @return the committee code, or {@code null} if none is set
+ */
+public String getCommitteeCode() { return committeeCode; }
+    /**
+ * Sets the committee code associated with this action.
+ *
+ * @param committeeCode the committee code (may be null or empty if not applicable)
+ */
+public void setCommitteeCode(String committeeCode) { this.committeeCode = committeeCode; }
 
-    public LocalDate getDate() { return date; }
-    public void setDate(LocalDate date) { this.date = date; }
+    /**
+ * Get the action date as a LocalDate.
+ *
+ * @return the action date as a LocalDate, or {@code null} if not set
+ */
+public LocalDate getDate() { return date; }
+    /**
+ * Sets the action's parsed date.
+ *
+ * @param date the action date as a LocalDate, or null to clear the stored date
+ */
+public void setDate(LocalDate date) { this.date = date; }
 
+    /**
+     * Determine whether another object is equal to this GovInfoBillAction based on its actionDate and text.
+     *
+     * @param o the object to compare with this instance
+     * @return `true` if `o` is a GovInfoBillAction with equal `actionDate` and `text`, `false` otherwise
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -41,6 +98,11 @@ public class GovInfoBillAction {
         return Objects.equals(actionDate, that.actionDate) && Objects.equals(text, that.text);
     }
 
+    /**
+     * Computes a hash code for this action using its identifying fields.
+     *
+     * @return an int hash code derived from the {@code actionDate} and {@code text} fields.
+     */
     @Override
     public int hashCode() {
         return Objects.hash(actionDate, text);

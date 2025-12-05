@@ -36,21 +36,25 @@ public class BillAction implements Serializable, Comparable<BillAction>
     /** The type of the action (e.g., federal, state, etc.) */
     private String type;
 
-    /** --- Constructors --- */
+    /**
+     * Creates a new BillAction with default field values.
+     *
+     * Fields are initialized to defaults: date and billId are null, chamber is null, sequenceNo is 0, text is the empty string, and type is null.
+     */
 
     public BillAction() {
         super();
     }
 
     /**
-     * Fully constructs a new action.
+     * Create a fully initialized BillAction with the specified date, text, chamber, sequence number, bill id, and type.
      *
-     * @param date LocalDate - The date of the action
-     * @param text String - The text of the action
-     * @param chamber Chamber - The chamber this bill action occurred in
-     * @param sequenceNo int - Indicates the ordering of this action
-     * @param billId BillId - The id of the bill the action was performed on
-     * @param type String - The type of the action
+     * @param date      the date of the action
+     * @param text      the text description of the action
+     * @param chamber   the chamber where the action occurred
+     * @param sequenceNo the sequence number indicating the ordering of this action
+     * @param billId    the identifier of the bill this action belongs to
+     * @param type      the type or category of the action
      */
     public BillAction(LocalDate date, String text, Chamber chamber, int sequenceNo, BillId billId, String type) {
         super();
@@ -151,14 +155,29 @@ public class BillAction implements Serializable, Comparable<BillAction>
         return text;
     }
 
+    /**
+     * Set the textual description of this bill action.
+     *
+     * @param text the action text (e.g., "REFERRED TO RULES")
+     */
     public void setText(String text) {
         this.text = text;
     }
 
+    /**
+     * Gets the action's type or category.
+     *
+     * @return the action type or category string
+     */
     public String getType() {
         return type;
     }
 
+    /**
+     * Sets the action's type or category.
+     *
+     * @param type the type or category label for this action (may be null)
+     */
     public void setType(String type) {
         this.type = type;
     }

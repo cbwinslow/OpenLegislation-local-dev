@@ -50,6 +50,13 @@ class ClassBlueprint:
 
     @property
     def qualified_name(self) -> str:
+        """
+        Get the fully qualified name for this element by combining its package and name.
+        
+        Returns:
+            str: The qualified name in the form "package.name" when `package` is non-empty;
+                otherwise just the `name`.
+        """
         return f"{self.package}.{self.name}" if self.package else self.name
 
 
@@ -68,4 +75,11 @@ class EnumBlueprint:
 
     @property
     def qualified_name(self) -> str:
+        """
+        Get the fully qualified name for this element by combining its package and name.
+        
+        Returns:
+            str: The qualified name in the form "package.name" when `package` is non-empty;
+                otherwise just the `name`.
+        """
         return f"{self.package}.{self.name}" if self.package else self.name
