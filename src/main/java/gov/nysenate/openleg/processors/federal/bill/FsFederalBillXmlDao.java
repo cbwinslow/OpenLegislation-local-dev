@@ -39,6 +39,9 @@ public class FsFederalBillXmlDao implements SourceFileFsDao<FederalBillXmlFile> 
     private File incomingSourceDir;
     private File archiveSourceDir;
 
+    /** Use shared pattern from FederalBillXmlFile to avoid duplication. */
+    private static final Pattern FEDERAL_XML_TYPE = Pattern.compile(
+            FederalBillXmlFile.FEDERAL_XML_TYPE_REGEX, Pattern.CASE_INSENSITIVE);
 
     @PostConstruct
     protected void init() {
@@ -54,7 +57,7 @@ public class FsFederalBillXmlDao implements SourceFileFsDao<FederalBillXmlFile> 
     @Override
     public List<FederalBillXmlFile> getIncomingSourceFiles(SortOrder sortByFileName, LimitOffset limitOffset) throws IOException {
         List<File> files = new ArrayList<>(getSortedFiles(incomingSourceDir));
-        files.removeIf(file -> !FederalBillXmlFile.FILENAME_PATTERN.matcher(file.getName()).matches());
+        files.removeIf(file -> !FEDERAL_XML_TYPE.matcher(file.getName()).matches());
         if (sortByFileName == SortOrder.DESC) {
             Collections.reverse(files);
         }
