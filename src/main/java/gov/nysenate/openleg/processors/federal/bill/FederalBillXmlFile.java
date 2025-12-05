@@ -18,7 +18,12 @@ public class FederalBillXmlFile extends XmlFile {
     private String billType; // e.g., "hr", "s"
     private String billNumber;
 
+    /** Regex pattern for federal bill XML filenames - exposed as public constant for use by DAO */
+    public static final String FEDERAL_XML_TYPE_REGEX =
+        "(BILLS?|BILLSTATUS?|BILL-SUMMARIES?)-(\\d{3})thCongress(?:-(HR|S|HJ|SJ|HConRes|SConRes|HJRes|SJRes))?(\\d+)?\\.xml";
 
+    public static final Pattern FILENAME_PATTERN = Pattern.compile(
+        FEDERAL_XML_TYPE_REGEX,
         Pattern.CASE_INSENSITIVE
     );
 

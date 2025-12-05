@@ -1,6 +1,5 @@
 package gov.nysenate.openleg.processors.bill;
 
-import gov.nysenate.openleg.legislation.bill.BaseBillId;
 import gov.nysenate.openleg.legislation.bill.BillAction;
 import gov.nysenate.openleg.legislation.bill.BillId;
 import gov.nysenate.openleg.legislation.bill.Version;
@@ -55,8 +54,8 @@ public class BillActionParser
 
     public static List<BillAction> parseActionsList(BillId billId, String data) throws ParseError {
         List<BillAction> billActions = new ArrayList<>();
-        // Impose a strict order to the actions.
-        int sequenceNo = 0;
+        // Impose a strict order to the actions (1-based sequence numbers).
+        int sequenceNo = 1;
         // Each action should be on its own line
         for (String line : data.split("\n+")) {
             Matcher billEvent = billEventPattern.matcher(line);
@@ -77,7 +76,8 @@ public class BillActionParser
                 // Uppercase the action text to aid with regex matching
                 eventText = eventText.toUpperCase();
                 // Construct and append bill action to list.
-
+                BillId actionBillId = new BillId(BillId.getBaseId(billId), Version.ORIGINAL);
+                BillAction action = new BillAction(eventDate, eventText, eventChamber, sequenceNo++, actionBillId, "UNKNOWN");
                 billActions.add(action);
             }
             else {

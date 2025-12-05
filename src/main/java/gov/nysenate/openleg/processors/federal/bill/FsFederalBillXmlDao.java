@@ -39,6 +39,8 @@ public class FsFederalBillXmlDao implements SourceFileFsDao<FederalBillXmlFile> 
     private File incomingSourceDir;
     private File archiveSourceDir;
 
+    /** Pattern for extracting type from filename - reuses shared regex from FederalBillXmlFile */
+    private static final Pattern FEDERAL_XML_TYPE = Pattern.compile(FederalBillXmlFile.FEDERAL_XML_TYPE_REGEX, Pattern.CASE_INSENSITIVE);
 
     @PostConstruct
     protected void init() {

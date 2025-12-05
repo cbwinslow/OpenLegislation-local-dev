@@ -1,27 +1,25 @@
 package gov.nysenate.openleg.processors.federal.bill;
 
-
 import gov.nysenate.openleg.legislation.SessionYear;
 import gov.nysenate.openleg.legislation.bill.*;
 import gov.nysenate.openleg.legislation.committee.Chamber;
-import gov.nysenate.openleg.legislation.member.Member;
-import gov.nysenate.openleg.legislation.member.Person;
-import gov.nysenate.openleg.legislation.member.PersonName;
-import gov.nysenate.openleg.legislation.member.SessionMember;
 import gov.nysenate.openleg.processors.ParseError;
 import gov.nysenate.openleg.processors.bill.LegDataFragment;
 import gov.nysenate.openleg.processors.bill.LegDataFragmentType;
 import gov.nysenate.openleg.processors.bill.AbstractBillProcessor;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import javax.xml.xpath.XPathExpressionException;
-
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -39,7 +37,10 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    private final DocumentBuilderFactory documentBuilderFactory;
 
+    public FederalBillXmlProcessor() {
+        this.documentBuilderFactory = DocumentBuilderFactory.newInstance();
     }
 
     @Override
@@ -49,39 +50,69 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
 
     @Override
     public void process(LegDataFragment fragment) {
-
+        if (!(fragment.getParentLegDataFile() instanceof FederalBillXmlFile)) {
+            throw new ParseError("Expected FederalBillXmlFile but got " + 
+                fragment.getParentLegDataFile().getClass().getSimpleName());
         }
-        BillText billText = new BillText(textBuilder.toString());
-        amendment.setBillText(billText);
+        FederalBillXmlFile federalFile = (FederalBillXmlFile) fragment.getParentLegDataFile();
+        File xmlFile = federalFile.getFile();
+        try {
+            Document doc = parseXmlDocument(xmlFile);
+            Bill bill = mapToBill(doc, federalFile);
+            // Persistence is handled elsewhere via the processing pipeline.
+            // This processor focuses on XML parsing and Bill model creation.
+            logger.info("Processed federal bill: {}", federalFile.getFileName());
+        } catch (Exception e) {
+            logger.error("Error processing federal bill XML: {}", federalFile.getFileName(), e);
+            throw new ParseError("Failed to process federal bill XML: " + federalFile.getFileName(), e);
+        }
+    }
 
+    /**
+     * Parse the XML file into a DOM Document.
+     */
+    Document parseXmlDocument(File xmlFile) throws ParserConfigurationException, SAXException, IOException {
+        DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
+        return builder.parse(xmlFile);
+    }
 
-
+    /**
+     * Map the DOM Document to a Bill model.
+     */
+    Bill mapToBill(Document doc, FederalBillXmlFile sourceFile) {
+        Element root = doc.getDocumentElement();
+        
+        int congress = sourceFile.getCongress();
+        String billType = sourceFile.getBillType();
+        String billNumber = sourceFile.getBillNumber();
+        
+        // Convert congress number to session year (e.g., 119th Congress = 2025)
+        int sessionYear = congressToSessionYear(congress);
+        SessionYear session = SessionYear.of(sessionYear);
+        
+        // Create the bill ID
+        String printNo = billType + billNumber;
+        BaseBillId baseBillId = new BaseBillId(printNo, session);
+        Bill bill = new Bill(baseBillId);
+        
+        // Parse title
+        String title = getElementText(root, "title");
+        if (title != null && !title.isEmpty()) {
+            bill.setTitle(title);
+        }
+        
+        // Parse summary
+        String summary = getElementText(root, "summary");
+        if (summary != null && !summary.isEmpty()) {
+            bill.setSummary(summary);
+        }
+        
+        // Set federal-specific fields
         bill.setFederalCongress(congress);
         bill.setFederalSource("govinfo");
         
         return bill;
     }
-    
-    private String getElementTextContent(Element parent, String tagName) {
-        NodeList nodeList = parent.getElementsByTagName(tagName);
-        if (nodeList.getLength() > 0) {
-            return nodeList.item(0).getTextContent();
-        }
-        return null;
-    }
-
-    private String getElementText(Element parent, String tagName) {
-        NodeList nodes = parent.getElementsByTagName(tagName);
-        if (nodes.getLength() > 0) {
-            return nodes.item(0).getTextContent();
-        }
-        return null;
-    }
-
-    private int congressToSessionYear(int congress) {
-        return 1789 + (congress - 1) * 2; // Starting year of congress, e.g., 119th = 2025
-    }
-    */
 
     private String getElementText(Element parent, String tagName) {
         NodeList nodes = parent.getElementsByTagName(tagName);
@@ -89,5 +120,10 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
             return nodes.item(0).getTextContent();
         }
         return "";
+    }
+
+    private int congressToSessionYear(int congress) {
+        // 1st Congress started in 1789; each congress is 2 years
+        return 1789 + (congress - 1) * 2;
     }
 }
