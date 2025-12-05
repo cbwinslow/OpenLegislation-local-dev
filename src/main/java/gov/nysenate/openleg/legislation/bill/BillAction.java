@@ -43,6 +43,20 @@ public class BillAction implements Serializable, Comparable<BillAction>
     }
 
     /**
+     * Constructs a new action without explicit type (defaults to null).
+     * This constructor is kept for backward compatibility.
+     *
+     * @param date LocalDate - The date of the action
+     * @param text String - The text of the action
+     * @param chamber Chamber - The chamber this bill action occurred in
+     * @param sequenceNo int - Indicates the ordering of this action
+     * @param billId BillId - The id of the bill the action was performed on
+     */
+    public BillAction(LocalDate date, String text, Chamber chamber, int sequenceNo, BillId billId) {
+        this(date, text, chamber, sequenceNo, billId, null);
+    }
+
+    /**
      * Fully constructs a new action.
      *
      * @param date LocalDate - The date of the action

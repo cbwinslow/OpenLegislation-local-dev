@@ -1,27 +1,22 @@
 package gov.nysenate.openleg.processors.federal.bill;
 
-
 import gov.nysenate.openleg.legislation.SessionYear;
 import gov.nysenate.openleg.legislation.bill.*;
 import gov.nysenate.openleg.legislation.committee.Chamber;
-import gov.nysenate.openleg.legislation.member.Member;
-import gov.nysenate.openleg.legislation.member.Person;
-import gov.nysenate.openleg.legislation.member.PersonName;
-import gov.nysenate.openleg.legislation.member.SessionMember;
 import gov.nysenate.openleg.processors.ParseError;
+import gov.nysenate.openleg.processors.bill.AbstractBillProcessor;
 import gov.nysenate.openleg.processors.bill.LegDataFragment;
 import gov.nysenate.openleg.processors.bill.LegDataFragmentType;
-import gov.nysenate.openleg.processors.bill.AbstractBillProcessor;
-
+import gov.nysenate.openleg.processors.log.DataProcessUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.xpath.XPathExpressionException;
-
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -30,7 +25,8 @@ import java.util.List;
 
 /**
  * Processor for federal bill XML from congress.gov/govinfo.
- * Parses XML to Bill model using DOM parsing.
+ * Parses XML to Bill model using DOM parsing (consistent with other OpenLegislation processors).
+ * Uses the inherited xmlHelper from AbstractDataProcessor for XML parsing.
  */
 @Service
 public class FederalBillXmlProcessor extends AbstractBillProcessor {
@@ -39,8 +35,8 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-
-    }
+    /** Default congress number to use when parsing fails. Current congress as of 2025. */
+    private static final int DEFAULT_CONGRESS_NUMBER = 119;
 
     @Override
     public LegDataFragmentType getSupportedType() {
@@ -49,45 +45,262 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
 
     @Override
     public void process(LegDataFragment fragment) {
-
+        logger.info("Processing federal bill fragment: {}", fragment.getFragmentId());
+        DataProcessUnit unit = createProcessUnit(fragment);
+        try {
+            Document doc = xmlHelper.parse(fragment.getText());
+            Bill bill = mapToBill(doc, fragment);
+            if (bill != null) {
+                billIngestCache.set(bill.getBaseBillId(), bill, fragment);
+            }
+            logger.info("Processed federal bill: {}", fragment.getFragmentId());
+        } catch (IOException | SAXException | XPathExpressionException e) {
+            unit.addException("Federal bill XML parsing error", e);
+            throw new ParseError("Failed to process federal bill XML: " + fragment.getFragmentId(), e);
+        } finally {
+            postDataUnitEvent(unit);
+            checkIngestCache();
         }
-        BillText billText = new BillText(textBuilder.toString());
-        amendment.setBillText(billText);
+    }
 
+    /**
+     * Maps a parsed XML Document to a Bill object using DOM-based XPath queries.
+     */
+    private Bill mapToBill(Document doc, LegDataFragment fragment) throws XPathExpressionException {
+        Node billNode = xmlHelper.getNode("//bill", doc);
+        if (billNode == null) {
+            billNode = doc.getDocumentElement();
+        }
 
+        // Extract congress number - try numeric first, fallback to parsing text
+        int congress = extractCongressNumber(billNode);
+        int sessionYear = congressToSessionYear(congress);
+        SessionYear session = SessionYear.of(sessionYear);
 
-        bill.setFederalCongress(congress);
-        bill.setFederalSource("govinfo");
-        
+        // Extract bill type and number
+        String billType = xmlHelper.getString("//billType", billNode);
+        if (billType == null || billType.isEmpty()) {
+            billType = xmlHelper.getString("@type", billNode);
+        }
+        String billNumber = xmlHelper.getString("//billNumber", billNode);
+        if (billNumber == null || billNumber.isEmpty()) {
+            // Try legis-num element for USLM format
+            String legisNum = xmlHelper.getString("//legis-num", billNode);
+            if (legisNum != null && !legisNum.isEmpty()) {
+                billNumber = extractBillNumberFromLegisNum(legisNum);
+            }
+        }
+
+        if (billNumber == null || billNumber.isEmpty()) {
+            throw new ParseError("Unable to extract bill number from federal XML");
+        }
+
+        // Determine chamber from bill type
+        Chamber chamber = determineChamber(billType);
+
+        // Create base bill ID
+        String printNo = normalizePrintNo(billType, billNumber);
+        BaseBillId baseBillId = new BaseBillId(printNo, session);
+        Bill bill = getOrCreateBaseBill(baseBillId, fragment);
+
+        // Set title
+        String title = xmlHelper.getString("//title[@type='official']", billNode);
+        if (title == null || title.isEmpty()) {
+            title = xmlHelper.getString("//officialTitle", billNode);
+        }
+        if (title != null && !title.isEmpty()) {
+            setTitle(bill, title, fragment);
+        }
+
+        // Set summary if available
+        String summary = xmlHelper.getString("//summary/text", billNode);
+        if (summary != null && !summary.isEmpty()) {
+            setSummary(bill, summary, fragment);
+        }
+
+        // Parse actions
+        parseActionsFromXml(bill, baseBillId.withVersion(Version.ORIGINAL), billNode, fragment);
+
+        // Parse text content
+        parseBillText(bill, billNode, fragment);
+
+        // Ensure bill is published
+        ensureBaseBillIsPublished(bill, fragment, "govinfo");
+
         return bill;
     }
-    
-    private String getElementTextContent(Element parent, String tagName) {
-        NodeList nodeList = parent.getElementsByTagName(tagName);
-        if (nodeList.getLength() > 0) {
-            return nodeList.item(0).getTextContent();
+
+    /**
+     * Extracts congress number from XML, handling both numeric and text formats.
+     */
+    private int extractCongressNumber(Node billNode) throws XPathExpressionException {
+        String congressStr = xmlHelper.getString("//congress", billNode);
+        if (congressStr != null && !congressStr.isEmpty()) {
+            // Try parsing as integer first
+            try {
+                return Integer.parseInt(congressStr.trim());
+            } catch (NumberFormatException e) {
+                // Try extracting number from text like "One Hundred Nineteenth Congress"
+                return parseCongressFromText(congressStr);
+            }
         }
-        return null;
+        // Default to current congress if not found
+        return DEFAULT_CONGRESS_NUMBER;
     }
 
-    private String getElementText(Element parent, String tagName) {
-        NodeList nodes = parent.getElementsByTagName(tagName);
-        if (nodes.getLength() > 0) {
-            return nodes.item(0).getTextContent();
+    /**
+     * Parses congress number from text format (e.g., "One Hundred Nineteenth Congress").
+     * Uses a simple pattern matching approach for common ordinals.
+     */
+    private int parseCongressFromText(String text) {
+        String lowerText = text.toLowerCase();
+        
+        // Try to extract any digits first (most reliable)
+        String digits = text.replaceAll("[^0-9]", "");
+        if (!digits.isEmpty()) {
+            try {
+                return Integer.parseInt(digits);
+            } catch (NumberFormatException e) {
+                // Continue to text parsing
+            }
         }
-        return null;
+        
+        // Text-based parsing for common ordinals (can be extended as needed)
+        if (lowerText.contains("one hundred")) {
+            if (lowerText.contains("nineteenth")) return 119;
+            if (lowerText.contains("eighteenth")) return 118;
+            if (lowerText.contains("seventeenth")) return 117;
+            if (lowerText.contains("sixteenth")) return 116;
+            if (lowerText.contains("fifteenth")) return 115;
+        }
+        
+        logger.warn("Unable to parse congress number from text: {}, using default: {}", text, DEFAULT_CONGRESS_NUMBER);
+        return DEFAULT_CONGRESS_NUMBER;
     }
 
+    /**
+     * Extracts bill number from legis-num format (e.g., "H.R. 1234").
+     */
+    private String extractBillNumberFromLegisNum(String legisNum) {
+        // Remove common prefixes and extract number
+        String cleaned = legisNum.replaceAll("[^0-9]", "");
+        return cleaned.isEmpty() ? null : cleaned;
+    }
+
+    /**
+     * Determines chamber from bill type string.
+     */
+    private Chamber determineChamber(String billType) {
+        if (billType == null) {
+            return Chamber.SENATE;
+        }
+        String type = billType.toUpperCase();
+        if (type.startsWith("H") || type.contains("HOUSE")) {
+            return Chamber.ASSEMBLY; // Use ASSEMBLY for House in OpenLegislation
+        }
+        return Chamber.SENATE;
+    }
+
+    /**
+     * Normalizes bill type and number to OpenLegislation print number format.
+     */
+    private String normalizePrintNo(String billType, String billNumber) {
+        String prefix = "S";
+        if (billType != null) {
+            String type = billType.toUpperCase();
+            if (type.startsWith("H") || type.equals("HR")) {
+                prefix = "A"; // Assembly for House bills
+            }
+        }
+        return prefix + billNumber;
+    }
+
+    /**
+     * Parses bill actions from XML and applies them to the bill.
+     */
+    private void parseActionsFromXml(Bill bill, BillId billId, Node billNode, LegDataFragment fragment)
+            throws XPathExpressionException {
+        NodeList actionNodes = xmlHelper.getNodeList("//actions/action | //actions/item", billNode);
+        if (actionNodes == null || actionNodes.getLength() == 0) {
+            return;
+        }
+
+        List<BillAction> actions = new ArrayList<>();
+        for (int i = 0; i < actionNodes.getLength(); i++) {
+            Node actionNode = actionNodes.item(i);
+            String dateStr = xmlHelper.getString("actionDate | date", actionNode);
+            String text = xmlHelper.getString("text | description", actionNode);
+            String chamberStr = xmlHelper.getString("actionCode | type", actionNode);
+
+            if (dateStr != null && !dateStr.isEmpty() && text != null && !text.isEmpty()) {
+                LocalDate actionDate = parseActionDate(dateStr);
+                Chamber actionChamber = parseChamber(chamberStr);
+                BillAction action = new BillAction(
+                        actionDate,
+                        text.trim(),
+                        actionChamber,
+                        i + 1,
+                        billId,
+                        "govinfo"
+                );
+                actions.add(action);
+            }
+        }
+
+        if (!actions.isEmpty()) {
+            bill.setActions(actions);
+        }
+    }
+
+    /**
+     * Parses bill text content and applies it to the bill amendment.
+     */
+    private void parseBillText(Bill bill, Node billNode, LegDataFragment fragment)
+            throws XPathExpressionException {
+        String textContent = xmlHelper.getString("//text | //body", billNode);
+        if (textContent != null && !textContent.isEmpty()) {
+            BillAmendment amendment = bill.getAmendment(Version.ORIGINAL);
+            BillText billText = new BillText(textContent);
+            amendment.setBillText(billText);
+        }
+    }
+
+    /**
+     * Parses action date from string format.
+     */
+    private LocalDate parseActionDate(String dateStr) {
+        try {
+            return LocalDate.parse(dateStr.trim(), DATE_FORMAT);
+        } catch (Exception e) {
+            // Try alternative formats
+            try {
+                return LocalDate.parse(dateStr.trim(), DateTimeFormatter.ISO_LOCAL_DATE);
+            } catch (Exception e2) {
+                logger.warn("Unable to parse action date: {}", dateStr);
+                return LocalDate.now();
+            }
+        }
+    }
+
+    /**
+     * Parses chamber from string.
+     */
+    private Chamber parseChamber(String chamberStr) {
+        if (chamberStr == null) {
+            return Chamber.SENATE;
+        }
+        String upper = chamberStr.toUpperCase();
+        if (upper.contains("HOUSE") || upper.startsWith("H")) {
+            return Chamber.ASSEMBLY;
+        }
+        return Chamber.SENATE;
+    }
+
+    /**
+     * Converts congress number to session year.
+     * Congress 1 started in 1789. Each congress lasts 2 years.
+     */
     private int congressToSessionYear(int congress) {
-        return 1789 + (congress - 1) * 2; // Starting year of congress, e.g., 119th = 2025
-    }
-    */
-
-    private String getElementText(Element parent, String tagName) {
-        NodeList nodes = parent.getElementsByTagName(tagName);
-        if (nodes.getLength() > 0) {
-            return nodes.item(0).getTextContent();
-        }
-        return "";
+        return 1789 + (congress - 1) * 2;
     }
 }
