@@ -6,6 +6,7 @@ import gov.nysenate.openleg.processors.bill.LegDataFragmentType;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -22,12 +23,12 @@ public class FederalBillXmlProcessorTest {
     @Mock
     private XmlHelper xmlHelper;
 
+    @InjectMocks
     private FederalBillXmlProcessor processor;
 
     @Before
     public void setup() {
         MockitoAnnotations.openMocks(this);
-        processor = new FederalBillXmlProcessor(xmlHelper);
     }
 
     @Test

@@ -1,6 +1,5 @@
 package gov.nysenate.openleg.processors.federal.bill;
 
-import gov.nysenate.openleg.common.util.XmlHelper;
 import gov.nysenate.openleg.legislation.SessionYear;
 import gov.nysenate.openleg.legislation.bill.*;
 import gov.nysenate.openleg.legislation.committee.Chamber;
@@ -11,7 +10,6 @@ import gov.nysenate.openleg.processors.bill.LegDataFragmentType;
 import gov.nysenate.openleg.processors.log.DataProcessUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -28,6 +26,7 @@ import java.util.List;
 /**
  * Processor for federal bill XML from congress.gov/govinfo.
  * Parses XML to Bill model using DOM parsing (consistent with other OpenLegislation processors).
+ * Uses the inherited xmlHelper from AbstractDataProcessor for XML parsing.
  */
 @Service
 public class FederalBillXmlProcessor extends AbstractBillProcessor {
@@ -36,10 +35,8 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    @Autowired
-    public FederalBillXmlProcessor(XmlHelper xmlHelper) {
-        this.xmlHelper = xmlHelper;
-    }
+    /** Default congress number to use when parsing fails. Current congress as of 2025. */
+    private static final int DEFAULT_CONGRESS_NUMBER = 119;
 
     @Override
     public LegDataFragmentType getSupportedType() {
@@ -148,33 +145,37 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
             }
         }
         // Default to current congress if not found
-        return 118;
+        return DEFAULT_CONGRESS_NUMBER;
     }
 
     /**
      * Parses congress number from text format (e.g., "One Hundred Nineteenth Congress").
+     * Uses a simple pattern matching approach for common ordinals.
      */
     private int parseCongressFromText(String text) {
-        // Simple extraction - look for ordinal number pattern
-        if (text.toLowerCase().contains("nineteenth")) {
-            if (text.toLowerCase().contains("one hundred")) {
-                return 119;
-            }
-        } else if (text.toLowerCase().contains("eighteenth")) {
-            if (text.toLowerCase().contains("one hundred")) {
-                return 118;
-            }
-        }
-        // Fallback: try to find any number in the string
+        String lowerText = text.toLowerCase();
+        
+        // Try to extract any digits first (most reliable)
         String digits = text.replaceAll("[^0-9]", "");
         if (!digits.isEmpty()) {
             try {
                 return Integer.parseInt(digits);
             } catch (NumberFormatException e) {
-                // Ignore
+                // Continue to text parsing
             }
         }
-        return 118; // Default fallback
+        
+        // Text-based parsing for common ordinals (can be extended as needed)
+        if (lowerText.contains("one hundred")) {
+            if (lowerText.contains("nineteenth")) return 119;
+            if (lowerText.contains("eighteenth")) return 118;
+            if (lowerText.contains("seventeenth")) return 117;
+            if (lowerText.contains("sixteenth")) return 116;
+            if (lowerText.contains("fifteenth")) return 115;
+        }
+        
+        logger.warn("Unable to parse congress number from text: {}, using default: {}", text, DEFAULT_CONGRESS_NUMBER);
+        return DEFAULT_CONGRESS_NUMBER;
     }
 
     /**
