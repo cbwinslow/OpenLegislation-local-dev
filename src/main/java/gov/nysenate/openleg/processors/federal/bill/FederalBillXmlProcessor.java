@@ -13,6 +13,7 @@ import gov.nysenate.openleg.processors.bill.LegDataFragmentType;
 import gov.nysenate.openleg.processors.bill.AbstractBillProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -32,11 +33,15 @@ import java.util.List;
  * Processor for federal bill XML from congress.gov/govinfo.
  * Parses XML to Bill model using DOM parsing.
  */
+@Service
 public class FederalBillXmlProcessor extends AbstractBillProcessor {
 
     private static final Logger logger = LoggerFactory.getLogger(FederalBillXmlProcessor.class);
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+    /** Placeholder ID for federal members/persons not yet in the database */
+    private static final int PLACEHOLDER_ID = 0;
 
     private final DocumentBuilder documentBuilder;
 
@@ -101,11 +106,12 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
             Element sponsorElement = (Element) sponsorNodes.item(0);
             String name = getElementText(sponsorElement, "full-name");
             if (name != null) {
-                // Create placeholder Person and Member with proper PersonName constructor
+                // Create placeholder Person and Member 
+                // PersonName: (fullName, prefix, firstName, middleName, lastName, suffix)
                 PersonName personName = new PersonName(name, "", name, "", "", "");
-                Person person = new Person(0, personName, null, null);
-                Member member = new Member(person, 0, chamber, false);
-                SessionMember sessionMember = new SessionMember(0, member, "FEDERAL_SPONSOR", session, null, false);
+                Person person = new Person(PLACEHOLDER_ID, personName, null, null);
+                Member member = new Member(person, PLACEHOLDER_ID, chamber, false);
+                SessionMember sessionMember = new SessionMember(PLACEHOLDER_ID, member, "FEDERAL_SPONSOR", session, null, false);
                 BillSponsor sponsor = new BillSponsor(sessionMember);
                 bill.setSponsor(sponsor);
             }
