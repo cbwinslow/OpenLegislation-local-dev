@@ -39,6 +39,8 @@ public class FsFederalBillXmlDao implements SourceFileFsDao<FederalBillXmlFile> 
     private File incomingSourceDir;
     private File archiveSourceDir;
 
+    // Use shared pattern from FederalBillXmlFile
+    private static final Pattern FEDERAL_XML_TYPE = FederalBillXmlFile.FILENAME_PATTERN;
 
     @PostConstruct
     protected void init() {
