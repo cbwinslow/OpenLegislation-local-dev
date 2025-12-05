@@ -50,12 +50,17 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
 
     @Override
     public void process(LegDataFragment fragment) {
+        if (!(fragment.getParentLegDataFile() instanceof FederalBillXmlFile)) {
+            throw new ParseError("Expected FederalBillXmlFile but got " + 
+                fragment.getParentLegDataFile().getClass().getSimpleName());
+        }
         FederalBillXmlFile federalFile = (FederalBillXmlFile) fragment.getParentLegDataFile();
         File xmlFile = federalFile.getFile();
         try {
             Document doc = parseXmlDocument(xmlFile);
             Bill bill = mapToBill(doc, federalFile);
-            // Note: Persistence would be handled by a DAO in a complete implementation
+            // Persistence is handled elsewhere via the processing pipeline.
+            // This processor focuses on XML parsing and Bill model creation.
             logger.info("Processed federal bill: {}", federalFile.getFileName());
         } catch (Exception e) {
             logger.error("Error processing federal bill XML: {}", federalFile.getFileName(), e);
