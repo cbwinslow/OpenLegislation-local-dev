@@ -58,7 +58,7 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
             }
 
             // Convert congress to session year
-            int sessionYear = congressToSessionYear(congress);
+            int sessionYear = Bill.congressToSessionYear(congress);
             SessionYear session = SessionYear.of(sessionYear);
 
             // Build bill ID
@@ -86,8 +86,8 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
             }
 
             // Set federal-specific metadata
-            // Note: These methods may not exist in the base Bill class
-            // If they don't exist, they should be added or these lines removed
+            bill.setFederalCongress(congress);
+            bill.setFederalSource("govinfo");
             
             bill.setModifiedDateTime(fragment.getPublishedDateTime());
             billIngestCache.set(bill.getBaseBillId(), bill, fragment);
@@ -156,13 +156,5 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
         } catch (NumberFormatException e) {
             return defaultValue;
         }
-    }
-
-    /**
-     * Convert congress number to session year.
-     * The 1st Congress began in 1789.
-     */
-    private int congressToSessionYear(int congress) {
-        return 1789 + (congress - 1) * 2;
     }
 }
