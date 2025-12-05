@@ -31,6 +31,15 @@ public class IngestionIntegrationIT extends BaseXmlProcessorTest {
     private static final String TEST_STAGING_DIR = "target/test-staging";
     private static final String TEST_XML_DIR = TEST_STAGING_DIR + "/xmls";
 
+    /**
+     * Integration test that verifies end-to-end ingestion of a bill XML file into the system.
+     *
+     * Writes a sample bill XML to the test staging directory, triggers the XML processing pipeline,
+     * waits for processing to complete, and asserts that the ingested bill exists and has the
+     * expected print number, session year, and a non-null title.
+     *
+     * @throws IOException if creating or cleaning up the test staging files fails
+     */
     @Test
     public void testBillIngestionPipeline() throws IOException {
         // Test complete bill ingestion from XML to database
@@ -66,6 +75,14 @@ public class IngestionIntegrationIT extends BaseXmlProcessorTest {
         }
     }
 
+    /**
+     * Integration test that verifies a sample member XML file is accepted and processed by the ingestion pipeline.
+     *
+     * Creates a test staging area, writes a sample member XML to the staging directory, invokes the XML processor,
+     * and waits briefly to ensure processing completes without throwing unhandled exceptions.
+     *
+     * @throws IOException if creating the staging directory or writing the test XML file fails
+     */
     @Test
     public void testMemberDataIngestion() throws IOException {
         // Test member data ingestion
@@ -138,6 +155,14 @@ public class IngestionIntegrationIT extends BaseXmlProcessorTest {
         }
     }
 
+    /**
+     * Verifies that a committee XML placed in the staging directory is processed by the ingestion pipeline.
+     *
+     * The test creates the staging area, writes a sample committee XML file, waits briefly for processing to occur,
+     * and cleans up the staging directory.
+     *
+     * @throws IOException if creating the staging directory or writing the test XML file fails
+     */
     @Test
     public void testCommitteeIngestion() throws IOException {
         // Test committee data ingestion
@@ -182,6 +207,14 @@ public class IngestionIntegrationIT extends BaseXmlProcessorTest {
         }
     }
 
+    /**
+     * Verifies the ingestion pipeline can process multiple XML files placed in the staging directory.
+     *
+     * Writes bill, member, and calendar XML files to the test staging directory, waits for processing to complete,
+     * and asserts that the sample bill has been ingested.
+     *
+     * @throws IOException if the test staging directory cannot be prepared or test files cannot be written
+     */
     @Test
     public void testBulkDataIngestion() throws IOException {
         // Test bulk ingestion of multiple data types
@@ -214,6 +247,14 @@ public class IngestionIntegrationIT extends BaseXmlProcessorTest {
         }
     }
 
+    /**
+     * Verifies that the ingestion pipeline continues processing when presented with malformed XML.
+     *
+     * Writes a deliberately malformed XML file into the test staging directory and allows the pipeline
+     * time to process it, asserting implicitly that no uncaught exceptions crash the test run.
+     *
+     * @throws IOException if creating the staging directory or writing the test file fails
+     */
     @Test
     public void testIngestionErrorHandling() throws IOException {
         // Test error handling during ingestion
@@ -241,6 +282,11 @@ public class IngestionIntegrationIT extends BaseXmlProcessorTest {
         }
     }
 
+    /**
+     * Verifies that a bill and its associated fragment are ingested and the resulting bill is available.
+     *
+     * Asserts that the combined bill record can be retrieved after processing the base bill and its fragment.
+     */
     @Test
     public void testDataFragmentProcessing() throws IOException {
         // Test processing of data fragments
@@ -274,6 +320,16 @@ public class IngestionIntegrationIT extends BaseXmlProcessorTest {
         }
     }
 
+    /**
+     * Measures end-to-end ingestion time for ten sample bill XML files and fails if ingestion takes
+     * 30 seconds or longer.
+     *
+     * This test creates a staging area, writes ten distinct bill XML files, waits for processing to
+     * complete, and asserts the observed duration is less than 30,000 milliseconds. The staging
+     * directory is cleaned up after the test.
+     *
+     * @throws IOException if creating the staging directory or writing test files fails
+     */
     @Test
     public void testIngestionPerformance() throws IOException {
         // Test ingestion performance with multiple files
@@ -309,6 +365,17 @@ public class IngestionIntegrationIT extends BaseXmlProcessorTest {
         }
     }
 
+    /**
+     * Integration test that verifies the federal bill ingestion pipeline processes a federal bill XML
+     * and persists the expected bill data.
+     *
+     * <p>Copies a sample federal bill XML into the test staging area, triggers processing for the
+     * filename-routed federal processor, and asserts the ingested bill exists with the expected title,
+     * sponsor count, action count, and bill text.</p>
+     *
+     * @throws IOException if reading or writing the test XML file fails
+     * @throws InterruptedException if the test's wait for processing is interrupted
+     */
     @Test
     public void testFederalBillIngestionPipeline() throws IOException, InterruptedException {
         createTestStagingDirectory();
@@ -341,7 +408,11 @@ public class IngestionIntegrationIT extends BaseXmlProcessorTest {
         }
     }
 
-    // Helper methods
+    /**
+     * Ensures the test staging and XML staging directories exist by creating them if necessary.
+     *
+     * @throws IOException if the staging directories cannot be created or accessed
+     */
 
     private void createTestStagingDirectory() throws IOException {
         Path stagingPath = Paths.get(TEST_STAGING_DIR);
@@ -350,6 +421,12 @@ public class IngestionIntegrationIT extends BaseXmlProcessorTest {
         Files.createDirectories(xmlPath);
     }
 
+    /**
+     * Removes the test staging directory and its contents if it exists.
+     *
+     * Attempts to recursively delete files and the staging directory at TEST_STAGING_DIR;
+     * on failure, prints a warning to standard error and suppresses the exception.
+     */
     private void cleanupTestStagingDirectory() {
         try {
             Path stagingPath = Paths.get(TEST_STAGING_DIR);
@@ -364,6 +441,11 @@ public class IngestionIntegrationIT extends BaseXmlProcessorTest {
         }
     }
 
+    /**
+     * Creates a sample bill XML payload used by integration tests.
+     *
+     * @return the sample bill XML for bill number L00001 (program year 2017) containing title, summary, sponsor, cosponsors, sameas, previousversions, and text elements
+     */
     private String createSampleBillXml() {
         return "<?xml version='1.0' encoding='UTF-8'?>\n" +
                "<bill billno='L00001' sponsor='SMITH' program='2017' action='replace'>\n" +
@@ -377,6 +459,12 @@ public class IngestionIntegrationIT extends BaseXmlProcessorTest {
                "</bill>";
     }
 
+    /**
+     * Creates a sample member XML payload used for ingestion tests.
+     *
+     * @return a string containing a minimal member XML with memberno "1", fullname "John Doe",
+     *         firstname "John", lastname "Doe", chamber "SENATE", and district "1"
+     */
     private String createSampleMemberXml() {
         return "<?xml version='1.0' encoding='UTF-8'?>\n" +
                "<member memberno='1' action='replace'>\n" +
@@ -388,6 +476,11 @@ public class IngestionIntegrationIT extends BaseXmlProcessorTest {
                "</member>";
     }
 
+    /**
+     * Creates a minimal sample calendar XML payload used by integration tests.
+     *
+     * @return a String containing a calendar XML with attributes `no='1'`, `type='active'`, `action='replace'` and empty `supplemental` and `entries` elements
+     */
     private String createSampleCalendarXml() {
         return "<?xml version='1.0' encoding='UTF-8'?>\n" +
                "<calendar no='1' type='active' action='replace'>\n" +
@@ -396,6 +489,11 @@ public class IngestionIntegrationIT extends BaseXmlProcessorTest {
                "</calendar>";
     }
 
+    /**
+     * Create a minimal sample agenda XML used by integration tests.
+     *
+     * @return an XML string for an agenda with no="1", action="replace", committee "Finance", and an empty <items> element.
+     */
     private String createSampleAgendaXml() {
         return "<?xml version='1.0' encoding='UTF-8'?>\n" +
                "<agenda no='1' action='replace'>\n" +
@@ -404,6 +502,12 @@ public class IngestionIntegrationIT extends BaseXmlProcessorTest {
                "</agenda>";
     }
 
+    /**
+     * Creates a sample committee XML payload used for ingestion tests.
+     *
+     * @return a String containing a committee XML document with name "Finance", action "replace",
+     *         a chair element "John Doe", and an empty members element.
+     */
     private String createSampleCommitteeXml() {
         return "<?xml version='1.0' encoding='UTF-8'?>\n" +
                "<committee name='Finance' action='replace'>\n" +
@@ -412,6 +516,11 @@ public class IngestionIntegrationIT extends BaseXmlProcessorTest {
                "</committee>";
     }
 
+    /**
+     * Create a minimal sample transcript XML used by integration tests.
+     *
+     * @return A string containing a transcript XML with session "2017", date "2017-01-01", action "replace", and a single <text> element.
+     */
     private String createSampleTranscriptXml() {
         return "<?xml version='1.0' encoding='UTF-8'?>\n" +
                "<transcript session='2017' date='2017-01-01' action='replace'>\n" +
@@ -419,6 +528,11 @@ public class IngestionIntegrationIT extends BaseXmlProcessorTest {
                "</transcript>";
     }
 
+    /**
+     * Create a sample bill XML containing a text fragment for testing.
+     *
+     * @return a string of XML representing a bill (billno "L00002", sponsor "SMITH", program "2017") that includes a `<fragment type="text">` element with sample text.
+     */
     private String createSampleBillFragmentXml() {
         return "<?xml version='1.0' encoding='UTF-8'?>\n" +
                "<bill billno='L00002' sponsor='SMITH' program='2017' action='replace'>\n" +

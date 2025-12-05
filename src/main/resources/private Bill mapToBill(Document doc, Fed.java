@@ -1,3 +1,11 @@
+/**
+ * Constructs a Bill from the provided XML document and source file metadata.
+ *
+ * @param doc         XML Document containing a single `<bill>` element with child elements
+ *                    used to populate identifiers, title, sponsors, actions, and text.
+ * @param sourceFile  Source file metadata used to set the bill's publish date/time.
+ * @return            a Bill populated with base identifiers, title, sponsors, actions, plain-text sections, and publish date/time.
+ */
 private Bill mapToBill(Document doc, FederalBillXmlFile sourceFile) {
     Element billElem = (Element) doc.getElementsByTagName("bill").item(0);
 

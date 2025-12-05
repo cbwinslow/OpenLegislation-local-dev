@@ -31,6 +31,14 @@ public class DatabaseIntegrationIT extends BaseTests {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    /**
+     * Verifies a JDBC connection can be obtained and that basic database metadata is accessible.
+     *
+     * Asserts that the obtained Connection is not null and open, and that DatabaseMetaData
+     * and the database product name are available.
+     *
+     * @throws SQLException if acquiring the connection or accessing metadata fails
+     */
     @Test
     public void testDatabaseConnection() throws SQLException {
         // Test basic database connectivity
@@ -47,6 +55,13 @@ public class DatabaseIntegrationIT extends BaseTests {
         }
     }
 
+    /**
+     * Verifies that all expected tables are present in the connected database.
+     *
+     * Checks the database metadata for each required table and fails the test if any table is missing.
+     *
+     * @throws SQLException if a database access error occurs while obtaining metadata or querying table information
+     */
     @Test
     public void testRequiredTablesExist() throws SQLException {
         // Test that all required tables exist in the database
@@ -68,6 +83,14 @@ public class DatabaseIntegrationIT extends BaseTests {
         }
     }
 
+    /**
+     * Verifies essential schema constraints by asserting presence of primary keys and foreign key relationships.
+     *
+     * Checks that primary keys exist on bill.bill_id, bill_amendment.bill_amend_id, and member.member_id,
+     * and that foreign keys from bill_amendment.bill_id and bill_action.bill_id reference bill.bill_id.
+     *
+     * @throws SQLException if a database access error occurs while retrieving metadata
+     */
     @Test
     public void testSchemaConstraints() throws SQLException {
         // Test that database constraints are properly defined
@@ -83,6 +106,12 @@ public class DatabaseIntegrationIT extends BaseTests {
         }
     }
 
+    /**
+     * Verifies that essential NOT NULL constraints are enforced on critical tables.
+     *
+     * Tests NOT NULL constraints on the bill table (session_year, base_print_no) and
+     * the member table (chamber).
+     */
     @Test
     public void testDataIntegrityChecks() {
         // Test data integrity constraints
@@ -96,6 +125,12 @@ public class DatabaseIntegrationIT extends BaseTests {
         assertDataIntegrity("member", "chamber", "Chamber cannot be null");
     }
 
+    /**
+     * Verifies that Flyway migrations are present and that at least one migration related to "govinfo" has been applied.
+     *
+     * Queries the Flyway schema history to ensure migrations exist and asserts that a migration description containing
+     * "govinfo" is present.
+     */
     @Test
     public void testDatabaseMigrationsApplied() {
         // Test that all required database migrations have been applied
@@ -114,6 +149,13 @@ public class DatabaseIntegrationIT extends BaseTests {
         System.out.println("Applied migrations: " + migrations.size());
     }
 
+    /**
+     * Verifies presence of critical database indexes in the public schema.
+     *
+     * Asserts that the database has at least one index and that the specific
+     * indexes `bill_session_year_idx`, `bill_base_print_no_idx` on table `bill`
+     * and `member_chamber_idx` on table `member` are present.
+     */
     @Test
     public void testIndexPerformance() {
         // Test that required indexes exist and are being used
@@ -131,6 +173,11 @@ public class DatabaseIntegrationIT extends BaseTests {
         System.out.println("Total indexes: " + indexes.size());
     }
 
+    /**
+     * Verifies the database can handle multiple simultaneous connections and concurrent queries.
+     *
+     * @throws SQLException if obtaining or closing database connections fails
+     */
     @Test
     public void testConcurrentConnections() throws SQLException {
         // Test ability to handle multiple concurrent connections
@@ -171,6 +218,12 @@ public class DatabaseIntegrationIT extends BaseTests {
         }
     }
 
+    /**
+     * Verifies that changes made inside a JDBC transaction are visible within the transaction and are undone after a rollback.
+     *
+     * This test inserts a row inside an explicit transaction, asserts that the row can be queried while the transaction is open,
+     * performs a rollback, and then asserts that the inserted row is no longer present.
+     */
     @Test
     public void testTransactionIsolation() {
         // Test transaction isolation levels
@@ -194,6 +247,14 @@ public class DatabaseIntegrationIT extends BaseTests {
         assertEquals("Test data should be rolled back", Integer.valueOf(0), count);
     }
 
+    /**
+     * Verifies basic backup readiness by sampling key rows from the bill table.
+     *
+     * <p>This test confirms that essential bill data can be read for backup purposes
+     * by querying a small sample. It serves as a placeholder for a full backup and
+     * restore verification (e.g., using pg_dump/pg_restore) which would create and
+     * validate actual backup files.
+     */
     @Test
     public void testDatabaseBackupAndRestore() {
         // Test database backup and restore functionality
@@ -210,7 +271,14 @@ public class DatabaseIntegrationIT extends BaseTests {
         System.out.println("Backup verification: Found " + billData.size() + " bill records");
     }
 
-    // Helper methods
+    /**
+     * Asserts that the specified primary key column exists on the given table.
+     *
+     * @param conn the JDBC connection to inspect
+     * @param tableName the name of the table to check (case-insensitive)
+     * @param pkColumn the primary key column name expected on the table (case-insensitive)
+     * @throws SQLException if a database access error occurs while retrieving metadata
+     */
 
     private void assertPrimaryKeyExists(Connection conn, String tableName, String pkColumn) throws SQLException {
         DatabaseMetaData metaData = conn.getMetaData();
@@ -226,6 +294,16 @@ public class DatabaseIntegrationIT extends BaseTests {
         }
     }
 
+    /**
+     * Verifies that a foreign key exists from the specified foreign key column to the specified primary key column.
+     *
+     * @param conn JDBC connection used to read database metadata
+     * @param fkTable name of the table containing the foreign key
+     * @param fkColumn name of the foreign key column on fkTable
+     * @param pkTable name of the referenced primary key table
+     * @param pkColumn name of the referenced primary key column on pkTable
+     * @throws SQLException if a database access error occurs while reading metadata
+     */
     private void assertForeignKeyExists(Connection conn, String fkTable, String fkColumn,
                                       String pkTable, String pkColumn) throws SQLException {
         DatabaseMetaData metaData = conn.getMetaData();
@@ -248,6 +326,16 @@ public class DatabaseIntegrationIT extends BaseTests {
         }
     }
 
+    /**
+     * Verifies that a specified column enforces a NOT NULL constraint by attempting to insert a NULL value.
+     *
+     * Attempts to insert a NULL into the given column and asserts that the operation fails with a constraint
+     * violation. Uses the provided errorMessage to clarify the assertion failure if the insert unexpectedly succeeds.
+     *
+     * @param tableName    the name of the table to test
+     * @param notNullColumn the column that is expected to be NOT NULL
+     * @param errorMessage a descriptive message to include if the NULL insert unexpectedly succeeds
+     */
     private void assertDataIntegrity(String tableName, String notNullColumn, String errorMessage) {
         // Test NOT NULL constraints by attempting invalid inserts
         try {
@@ -260,6 +348,13 @@ public class DatabaseIntegrationIT extends BaseTests {
         }
     }
 
+    /**
+     * Asserts that a specific index exists on the given table using the provided index metadata.
+     *
+     * @param indexes   list of index metadata maps (each expected to contain keys "tablename" and "indexname")
+     * @param tableName name of the table to check for the index
+     * @param indexName name of the index to verify exists on the table
+     */
     private void assertIndexExists(List<Map<String, Object>> indexes, String tableName, String indexName) {
         boolean indexFound = indexes.stream()
             .anyMatch(idx -> tableName.equals(idx.get("tablename")) &&

@@ -51,7 +51,19 @@ public class BillActionParser
     /** The expected format for actions recorded in the bill events [4] block. e.g. 02/04/13 Event Text Here */
     protected static final Pattern billEventPattern = Pattern.compile("([0-9]{2}/[0-9]{2}/[0-9]{2}) (.*)");
 
-    /** --- Methods --- */
+    /**
+     * Parses a newline-separated plain-text list of bill actions into a list of BillAction objects.
+     *
+     * Each input line must begin with a date in the format MM/dd/yy followed by the action text.
+     * The action's chamber is determined by inspecting the alphabetic characters of the text:
+     * if those characters are all uppercase the chamber is SENATE, otherwise ASSEMBLY. The action
+     * text is converted to uppercase when creating BillAction entries.
+     *
+     * @param billId the BillId to associate with each parsed BillAction
+     * @param data   newline-separated action lines, each in the form "MM/dd/yy <action description>"
+     * @return       a list of parsed BillAction objects corresponding to the input lines
+     * @throws ParseError if a line does not match the expected pattern or a date cannot be parsed
+     */
 
     public static List<BillAction> parseActionsList(BillId billId, String data) throws ParseError {
         List<BillAction> billActions = new ArrayList<>();
@@ -87,6 +99,14 @@ public class BillActionParser
         return billActions;
     }
 
+    /**
+     * Parses bill actions from an XML node into a list of BillAction objects with strict sequence ordering.
+     *
+     * @param billId the identifier of the bill associated with the actions
+     * @param data the XML node containing action entries
+     * @return a list of BillAction objects parsed from the XML data
+     * @throws ParseError if XML parsing fails or the action data is malformed
+     */
     public static List<BillAction> parseActionsListXML(BillId billId, Node data) throws ParseError {
         List<BillAction> billActions = new ArrayList<>();
         // Impose a strict order to the actions.

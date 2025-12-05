@@ -42,12 +42,22 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
 
     }
 
+    /**
+     * Indicates this processor handles bill data fragments.
+     *
+     * @return the supported fragment type, LegDataFragmentType.BILL
+     */
     @Override
     public LegDataFragmentType getSupportedType() {
         return LegDataFragmentType.BILL;
     }
 
-    @Override
+    /**
+         * Processes a federal bill data fragment by parsing its XML and producing the corresponding Bill model.
+         *
+         * @param fragment the LegDataFragment containing the federal bill XML to be parsed and converted
+         */
+        @Override
     public void process(LegDataFragment fragment) {
 
         }
@@ -62,6 +72,13 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
         return bill;
     }
     
+    /**
+     * Retrieve the text content of the first descendant element with the specified tag name.
+     *
+     * @param parent the element to search within
+     * @param tagName the tag name to match
+     * @return the text content of the first matching element, or {@code null} if no match is found
+     */
     private String getElementTextContent(Element parent, String tagName) {
         NodeList nodeList = parent.getElementsByTagName(tagName);
         if (nodeList.getLength() > 0) {
@@ -70,6 +87,13 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
         return null;
     }
 
+    /**
+     * Retrieve the text content of the first child element with the given tag name.
+     *
+     * @param parent  the parent Element to search within
+     * @param tagName the child element tag name to find
+     * @return the text content of the first matching child element, or {@code null} if none is found
+     */
     private String getElementText(Element parent, String tagName) {
         NodeList nodes = parent.getElementsByTagName(tagName);
         if (nodes.getLength() > 0) {
@@ -78,11 +102,24 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
         return null;
     }
 
+    /**
+     * Convert a U.S. Congress ordinal to the calendar year when its first session begins.
+     *
+     * @param congress the ordinal number of the U.S. Congress (e.g., 119)
+     * @return the starting year of that Congress's first session (e.g., 119 -> 2025)
+     */
     private int congressToSessionYear(int congress) {
         return 1789 + (congress - 1) * 2; // Starting year of congress, e.g., 119th = 2025
     }
     */
 
+    /**
+     * Retrieves the text content of the first child element with the specified tag name.
+     *
+     * @param parent  the element to search within
+     * @param tagName the name of the child element whose text content is returned
+     * @return the text content of the first matching child element, or an empty string if no such element exists
+     */
     private String getElementText(Element parent, String tagName) {
         NodeList nodes = parent.getElementsByTagName(tagName);
         if (nodes.getLength() > 0) {

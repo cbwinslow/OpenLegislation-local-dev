@@ -34,11 +34,24 @@ import java.util.List;
 public class GovInfoBillProcessor extends AbstractBillProcessor {
     private static final Logger logger = LoggerFactory.getLogger(GovInfoBillProcessor.class);
 
+    /**
+     * Specify which LegDataFragmentType this processor handles.
+     *
+     * @return the supported fragment type: {@link LegDataFragmentType#BILL}
+     */
     @Override
     public LegDataFragmentType getSupportedType() {
         return LegDataFragmentType.BILL;
     }
 
+    /**
+     * Processes a GovInfo bill data fragment by parsing its XML into a Bill and placing the result into the ingest cache.
+     *
+     * The method also posts a data unit event and triggers ingest cache checks as part of the processing lifecycle.
+     *
+     * @param legDataFragment the bill data fragment containing GovInfo XML to parse
+     * @throws ParseError if the GovInfo XML cannot be parsed or another error occurs during processing
+     */
     @Override
     public void process(LegDataFragment legDataFragment) {
         DataProcessUnit unit = createProcessUnit(legDataFragment);
@@ -62,7 +75,16 @@ public class GovInfoBillProcessor extends AbstractBillProcessor {
     }
 
     /**
-     * Parse GovInfo XML into a Bill object using existing Bill model and helper methods.
+     * Parse a GovInfo bill XML document and construct or update a corresponding Bill model.
+     *
+     * This reads identifying fields (congress, bill number/type), maps the GovInfo bill identifier
+     * to the local BillId, sets title and summary when present, and parses actions, cosponsors,
+     * and text versions before ensuring the base bill is marked published with source "govinfo".
+     *
+     * @param xmlText  the raw GovInfo bill XML content
+     * @param fragment the originating LegDataFragment used for provenance and cache tracking
+     * @return the constructed or updated Bill populated with parsed metadata and related entities
+     * @throws Exception if XML parsing or mapping fails (for example, invalid XML or unparseable bill id)
      */
     private Bill parseGovInfoBillXml(String xmlText, LegDataFragment fragment) throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -138,8 +160,14 @@ public class GovInfoBillProcessor extends AbstractBillProcessor {
     }
 
     /**
-     * Convert GovInfo bill number format to OpenLegislation BillId.
-     * GovInfo: "H.R.1" → OpenLegislation: "H1" (simplified mapping)
+     * Create an OpenLegislation BillId from a GovInfo bill number and congress.
+     *
+     * Parses GovInfo identifiers like "H.R.1" or "S.123" and converts them into the processor's BillId format (for example, "H.R.1" with congress 118 -> BillId("H1", 118)).
+     *
+     * @param govInfoBillNumber the bill identifier from GovInfo (expected formats include "H.R.1", "S.123", etc.)
+     * @param congress the numeric congress session to associate with the BillId
+     * @return the corresponding BillId in OpenLegislation format
+     * @throws ParseError if the govInfoBillNumber cannot be parsed into the expected components
      */
     private BillId createBillIdFromGovInfo(String govInfoBillNumber, int congress) {
         // Parse GovInfo format like "H.R.1" or "S.123"
@@ -157,7 +185,14 @@ public class GovInfoBillProcessor extends AbstractBillProcessor {
     }
 
     /**
-     * Parse actions from GovInfo XML format.
+     * Parses action entries from a GovInfo actions XML element, converts them into BillAction
+     * objects, attaches them to the bill, and updates the bill's derived status.
+     *
+     * @param bill the bill to populate with parsed actions
+     * @param version the amendment version the parsed actions apply to
+     * @param actionsElement the XML element containing one or more `<action>` child elements
+     * @param fragment the source data fragment providing context for the parse
+     * @throws ParseError if an error occurs while parsing action data
      */
     private void parseActionsFromGovInfo(Bill bill, Version version, Element actionsElement, LegDataFragment fragment) throws ParseError {
         NodeList actionNodes = actionsElement.getElementsByTagName("action");
@@ -197,7 +232,17 @@ public class GovInfoBillProcessor extends AbstractBillProcessor {
     }
 
     /**
-     * Parse cosponsors from GovInfo XML.
+     * Extracts cosponsor entries from a GovInfo "cosponsors" XML element and assigns any found
+     * cosponsors to the bill's active amendment, updating the bill's modified timestamp.
+     *
+     * This method reads child "cosponsor" elements, attempts to obtain each cosponsor's `name`,
+     * and collects corresponding SessionMember instances. Member resolution is not performed for
+     * federal data (names are logged but not matched to concrete members).
+     *
+     * @param bill the bill to update
+     * @param cosponsorsElement the XML element containing one or more "cosponsor" child elements
+     * @param fragment the source data fragment associated with this parsing operation (used to
+     *                 set the bill's modified date/time when cosponsors are applied)
      */
     private void parseCosponsorsFromGovInfo(Bill bill, Element cosponsorsElement, LegDataFragment fragment) {
         NodeList cosponsorNodes = cosponsorsElement.getElementsByTagName("cosponsor");
@@ -222,7 +267,16 @@ public class GovInfoBillProcessor extends AbstractBillProcessor {
     }
 
     /**
-     * Parse text versions from GovInfo XML.
+     * Extracts the first available XML-formatted text version from GovInfo and sets it as the amendment's bill text.
+     *
+     * Iterates textVersion elements under the provided textVersionsElement, and when a textVersion with
+     * non-null content and format "xml" is found, stores that content in a BillText on the bill's amendment
+     * for the given version and updates the bill's modified date/time.
+     *
+     * @param bill the Bill to update
+     * @param version the Version of the amendment to which the text should be applied
+     * @param textVersionsElement the parent XML element containing one or more <textVersion> child elements
+     * @param fragment the source LegDataFragment used to mark modification metadata
      */
     private void parseTextVersionsFromGovInfo(Bill bill, Version version, Element textVersionsElement, LegDataFragment fragment) {
         NodeList textNodes = textVersionsElement.getElementsByTagName("textVersion");
@@ -243,7 +297,13 @@ public class GovInfoBillProcessor extends AbstractBillProcessor {
         }
     }
 
-    // Helper methods
+    /**
+     * Retrieve the text content of the first child element with the given tag name.
+     *
+     * @param parent the parent XML element to search
+     * @param tagName the child tag name to look for
+     * @return the text content of the first matching child element, or {@code null} if none is found
+     */
     private String getTextContent(Element parent, String tagName) {
         NodeList nodes = parent.getElementsByTagName(tagName);
         if (nodes.getLength() > 0) {
@@ -252,6 +312,13 @@ public class GovInfoBillProcessor extends AbstractBillProcessor {
         return null;
     }
 
+    /**
+     * Retrieve the first child element with the given tag name.
+     *
+     * @param parent  the parent Element to search within
+     * @param tagName the tag name to find
+     * @return the first matching child Element, or `null` if no such element exists
+     */
     private Element getFirstElement(Element parent, String tagName) {
         NodeList nodes = parent.getElementsByTagName(tagName);
         if (nodes.getLength() > 0) {
@@ -260,6 +327,16 @@ public class GovInfoBillProcessor extends AbstractBillProcessor {
         return null;
     }
 
+    /**
+     * Parse a date/time string from govinfo into a LocalDateTime.
+     *
+     * Accepts an ISO date-time (e.g. "2020-01-01T12:34:56") or an ISO local date (e.g. "2020-01-01").
+     * If the input is an ISO local date, the returned time will be the start of that day.
+     * If the input is null or cannot be parsed, returns the current date and time.
+     *
+     * @param dateStr the date or date-time string to parse; may be null
+     * @return the parsed LocalDateTime, the start of day for ISO local dates, or the current LocalDateTime if parsing fails
+     */
     private LocalDateTime parseDateTime(String dateStr) {
         if (dateStr == null) return LocalDateTime.now();
         try {
@@ -274,6 +351,12 @@ public class GovInfoBillProcessor extends AbstractBillProcessor {
         }
     }
 
+    /**
+     * Maps a chamber label string to the corresponding Chamber enum.
+     *
+     * @param chamberStr a chamber name or label (case-insensitive), e.g. "House" or "Senate"; may be null
+     * @return `Chamber.ASSEMBLY` if `chamberStr` contains "house" (case-insensitive), `Chamber.SENATE` if it contains "senate" or is null, otherwise `Chamber.SENATE`
+     */
     private Chamber parseChamber(String chamberStr) {
         if (chamberStr == null) return Chamber.SENATE;
         if (chamberStr.toLowerCase().contains("house")) return Chamber.ASSEMBLY; // Map House to Assembly
@@ -281,11 +364,19 @@ public class GovInfoBillProcessor extends AbstractBillProcessor {
         return Chamber.SENATE; // Default
     }
 
+    /**
+     * No-op override that defers ingest cache handling to the superclass implementation.
+     */
     @Override
     public void checkIngestCache() {
         // Delegate to parent implementation
     }
 
+    /**
+     * Post-processing hook invoked after GovInfo bill processing.
+     *
+     * <p>This implementation performs no additional actions.</p>
+     */
     @Override
     public void postProcess() {
         // Nothing specific for GovInfo

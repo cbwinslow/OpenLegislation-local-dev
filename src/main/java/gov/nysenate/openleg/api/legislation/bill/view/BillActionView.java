@@ -38,6 +38,13 @@ public class BillActionView implements ViewObject {
                 .orElse(null);
     }
 
+    /**
+     * Convert this view representation into a domain BillAction instance.
+     *
+     * Parses the view's date and chamber strings into their domain types. If the view's billId is missing or cannot be parsed, the resulting BillAction will have a null billId.
+     *
+     * @return the constructed BillAction with the view's text and parsed date and chamber, a sequence number of 0, the parsed billId (or `null`), and a status of "UNKNOWN"
+     */
     @JsonIgnore
     public BillAction toBillAction() {
         LocalDate date = Optional.ofNullable(this.date)
@@ -52,6 +59,11 @@ public class BillActionView implements ViewObject {
         return new BillAction( date, text, chamber, 0, billId, "UNKNOWN");
     }
 
+    /**
+     * Bill identifier view for the associated bill.
+     *
+     * @return the BillIdView of the associated bill, or {@code null} if not set
+     */
     public BillIdView getBillId() {
         return billId;
     }

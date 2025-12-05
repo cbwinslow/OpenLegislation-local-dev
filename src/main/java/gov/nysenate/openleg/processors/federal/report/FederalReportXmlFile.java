@@ -25,6 +25,16 @@ public class FederalReportXmlFile extends XmlFile {
     private final String reportType; // e.g., HRPT, SRPT
     private final String reportNumber;
 
+    /**
+     * Creates a FederalReportXmlFile by parsing the congress number, report type, and report number from the file's name.
+     *
+     * The filename must match the pattern "CRPT-<congress>th-<TYPE>PT<NUMBER>.xml"; on success the parsed values are stored
+     * in the instance fields `congress`, `reportType`, and `reportNumber`.
+     *
+     * @param file the XML file representing a federal report
+     * @throws IOException if an I/O error occurs while initializing the underlying XmlFile
+     * @throws IllegalArgumentException if the filename does not match the expected federal report format
+     */
     public FederalReportXmlFile(File file) throws IOException {
         super(file);
         Matcher matcher = REPORT_PATTERN.matcher(getFileName());
@@ -37,24 +47,54 @@ public class FederalReportXmlFile extends XmlFile {
         }
     }
 
+    /**
+     * Returns the congressional session number extracted from the file name.
+     *
+     * @return the congress number parsed from the filename
+     */
     public int getCongress() {
         return congress;
     }
 
+    /**
+     * Provide the report type extracted from the filename.
+     *
+     * @return the report type extracted from the filename (e.g., HRPT, SRPT)
+     */
     public String getReportType() {
         return reportType;
     }
 
+    /**
+     * Retrieves the report number extracted from the filename.
+     *
+     * @return the report number string parsed from the filename
+     */
     public String getReportNumber() {
         return reportNumber;
     }
 
+    /**
+     * Determine the published date and time for this federal report.
+     *
+     * Parses the date/time from the filename or the XML header; if neither is present,
+     * falls back to the file's last modified time.
+     *
+     * @return the published {@link java.time.LocalDateTime} for the report, or the file's
+     *         last modified time when a published date is not available
+     */
     @Override
     public LocalDateTime getPublishedDateTime() {
         // Parse from filename or XML header; fallback to file modified time
         return super.getPublishedDateTime();
     }
 
+    /**
+     * Produce a compact string representation of this FederalReportXmlFile including congress, report type,
+     * report number, and file name.
+     *
+     * @return a string containing the congress, report type, report number, and file name for debugging/logging
+     */
     @Override
     public String toString() {
         return "FederalReportXmlFile{" +
