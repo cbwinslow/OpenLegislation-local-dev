@@ -35,14 +35,25 @@ public class FederalBillXmlProcessor extends AbstractLegDataProcessor {
     private static final Logger logger = LoggerFactory.getLogger(FederalBillXmlProcessor.class);
 
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final String DEFAULT_BILL_TYPE = "HR";
+    private static final String DEFAULT_BILL_NUMBER = "0";
 
     @Autowired
     public FederalBillXmlProcessor(XmlHelper xmlHelper) {
         this.xmlHelper = xmlHelper;
     }
 
+    /**
+     * Default constructor for testing. Initializes xmlHelper to allow basic unit tests.
+     * Note: Tests requiring full XML parsing should use the Autowired constructor.
+     */
     public FederalBillXmlProcessor() {
-        // Default constructor for testing
+        try {
+            this.xmlHelper = new XmlHelper();
+        } catch (Exception e) {
+            // Allow tests that don't need xmlHelper to proceed
+            logger.debug("XmlHelper initialization failed in default constructor", e);
+        }
     }
 
     @Override
@@ -156,7 +167,7 @@ public class FederalBillXmlProcessor extends AbstractLegDataProcessor {
         if (type == null || type.isEmpty()) {
             type = xmlHelper.getString("@type", billNode);
         }
-        return type != null ? type.trim().toUpperCase() : "HR";
+        return type != null ? type.trim().toUpperCase() : DEFAULT_BILL_TYPE;
     }
 
     private String parseBillNumber(Node billNode, Document doc) throws XPathExpressionException {
@@ -167,7 +178,7 @@ public class FederalBillXmlProcessor extends AbstractLegDataProcessor {
         if (number == null || number.isEmpty()) {
             number = xmlHelper.getString("@number", billNode);
         }
-        return number != null ? number.trim() : "0";
+        return number != null ? number.trim() : DEFAULT_BILL_NUMBER;
     }
 
     private String parseTitle(Node billNode, Document doc) throws XPathExpressionException {
