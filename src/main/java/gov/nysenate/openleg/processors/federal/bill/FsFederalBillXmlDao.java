@@ -39,6 +39,10 @@ public class FsFederalBillXmlDao implements SourceFileFsDao<FederalBillXmlFile> 
     private File incomingSourceDir;
     private File archiveSourceDir;
 
+    private static final Pattern FEDERAL_XML_TYPE = Pattern.compile(
+        "(BILLS?|BILLSTATUS?|BILL-SUMMARIES?)-\\d+thCongress.*\\.xml",
+        Pattern.CASE_INSENSITIVE
+    );
 
     @PostConstruct
     protected void init() {
