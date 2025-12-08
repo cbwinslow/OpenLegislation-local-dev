@@ -27,7 +27,6 @@
         <configuration>
           <source>17</source>
           <target>17</target>
-          <release>17</release>
           <!-- avoid possible encoding issues -->
           <encoding>utf-8</encoding>
         </configuration>
@@ -344,12 +343,6 @@
       <groupId>com.sun.xml.bind</groupId>
       <artifactId>jaxb-impl</artifactId>
       <version>${javax.xml.bind.version}</version>
-    </dependency>
-    <dependency>
-
-      <groupId>jakarta.xml.bind</groupId>
-      <artifactId>jakarta.xml.bind-api</artifactId>
-      <version>3.0.1</version>
     </dependency>
 
     <dependency>

@@ -2,15 +2,16 @@
 -- Extends existing master schema to support congress.gov data
 -- Adds data_source column to distinguish state vs federal data
 
--- Add data_source column to existing bill table
-ALTER TABLE master.bill ADD COLUMN IF NOT EXISTS data_source TEXT DEFAULT 'state' CHECK (data_source IN ('state', 'federal'));
-ALTER TABLE master.bill ADD COLUMN IF NOT EXISTS congress INTEGER;
-ALTER TABLE master.bill ADD COLUMN IF NOT EXISTS bill_type TEXT;
-ALTER TABLE master.bill ADD COLUMN IF NOT EXISTS package_number TEXT;
-ALTER TABLE master.bill ADD COLUMN IF NOT EXISTS short_title TEXT;
-ALTER TABLE master.bill ADD COLUMN IF NOT EXISTS sponsor_party TEXT;
-ALTER TABLE master.bill ADD COLUMN IF NOT EXISTS sponsor_state TEXT;
-ALTER TABLE master.bill ADD COLUMN IF NOT EXISTS sponsor_district TEXT;
+-- Add data_source and federal columns to existing bill table
+ALTER TABLE master.bill 
+    ADD COLUMN IF NOT EXISTS data_source TEXT DEFAULT 'state' CHECK (data_source IN ('state', 'federal')),
+    ADD COLUMN IF NOT EXISTS congress INTEGER,
+    ADD COLUMN IF NOT EXISTS bill_type TEXT,
+    ADD COLUMN IF NOT EXISTS package_number TEXT,
+    ADD COLUMN IF NOT EXISTS short_title TEXT,
+    ADD COLUMN IF NOT EXISTS sponsor_party TEXT,
+    ADD COLUMN IF NOT EXISTS sponsor_state TEXT,
+    ADD COLUMN IF NOT EXISTS sponsor_district TEXT;
 
 -- Add data_source to bill_amendment table
 ALTER TABLE master.bill_amendment ADD COLUMN IF NOT EXISTS data_source TEXT DEFAULT 'state' CHECK (data_source IN ('state', 'federal'));

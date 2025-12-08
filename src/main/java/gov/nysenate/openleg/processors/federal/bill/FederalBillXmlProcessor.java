@@ -122,7 +122,7 @@ public class FederalBillXmlProcessor extends AbstractBillProcessor {
                         LocalDate date = LocalDate.parse(dateStr, DATE_FORMAT);
                         Chamber chamber = chamberStr.startsWith("H") ? Chamber.ASSEMBLY : Chamber.SENATE;
                         BillId billId = new BillId(baseBillId, Version.ORIGINAL);
-                        BillAction action = new BillAction(date, text, chamber, i + 1, billId, "");
+                        BillAction action = new BillAction(date, text, chamber, i + 1, billId, "UNKNOWN");
                         actions.add(action);
                     } catch (Exception e) {
                         logger.warn("Could not parse action: {}", text, e);

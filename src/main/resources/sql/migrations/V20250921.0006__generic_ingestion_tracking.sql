@@ -30,7 +30,8 @@ CREATE INDEX IF NOT EXISTS idx_ingestion_status_priority ON master.ingestion_sta
 CREATE INDEX IF NOT EXISTS idx_ingestion_status_updated ON master.ingestion_status(updated_at);
 
 -- Add trigger for change logging
-CREATE TRIGGER IF NOT EXISTS log_ingestion_updates_to_change_log BEFORE INSERT OR DELETE OR UPDATE ON master.ingestion_status FOR EACH ROW EXECUTE PROCEDURE master.log_member_updates();
+DROP TRIGGER IF EXISTS log_ingestion_updates_to_change_log ON master.ingestion_status;
+CREATE TRIGGER log_ingestion_updates_to_change_log BEFORE INSERT OR DELETE OR UPDATE ON master.ingestion_status FOR EACH ROW EXECUTE PROCEDURE master.log_member_updates();
 
 -- Comments for documentation
 COMMENT ON TABLE master.ingestion_status IS 'Generic ingestion status tracking for any table or data source';

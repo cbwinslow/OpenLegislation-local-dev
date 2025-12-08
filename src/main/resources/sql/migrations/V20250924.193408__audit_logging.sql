@@ -5,7 +5,7 @@
 CREATE TABLE IF NOT EXISTS master.audit_log (
     id BIGSERIAL PRIMARY KEY,
     table_name TEXT NOT NULL,
-    record_id JSONB NOT NULL,  -- e.g., {"bill_print_no": "H1", "bill_session_year": 119}
+    record_id JSONB NOT NULL,  -- e.g., {"bill_print_no": "S123", "bill_session_year": 2023} for state bills, or {"bill_print_no": "HR1", "bill_session_year": 2023} (congress start year) for federal bills
     operation TEXT NOT NULL CHECK (operation IN ('INSERT', 'UPDATE', 'DELETE')),
     old_row JSONB,
     new_row JSONB NOT NULL,
