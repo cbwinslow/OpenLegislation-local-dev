@@ -57,6 +57,7 @@ All updated actions are backward compatible:
 - **Changes**: Updated Python versions support, improved caching
 - **Breaking**: None - maintains same API
 - **Benefits**: Support for Python 3.12+, faster setup times
+- **Note**: PR #17 requested v6, but v5 is the latest stable release available as of 2025-12-17. No v6 release exists yet.
 
 #### `actions/setup-node@v6`
 - **Changes**: Node.js 22.x support, improved caching
@@ -77,7 +78,7 @@ This update directly addresses the following Dependabot PRs:
 - **#165**: `ci(deps): bump dependabot/fetch-metadata from 1 to 2` - ✅ Resolved
 - **#92**: `ci(deps): bump actions/setup-node from 4 to 6` - ✅ Resolved
 - **#25**: `ci(deps): bump actions/setup-java from 4 to 5` - ✅ Resolved
-- **#17**: `ci(deps): bump actions/setup-python from 4 to 6` - ✅ Resolved (upgraded to v5)
+- **#17**: `ci(deps): bump actions/setup-python from 4 to 6` - ✅ Resolved (upgraded to v5, the latest stable release as of 2025-12-17)
 
 ### PR Count Reduction
 

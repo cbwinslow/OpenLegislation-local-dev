@@ -63,7 +63,7 @@ These high-priority Dependabot PRs can now be closed as their changes are incorp
 1. **#165** - `ci(deps): bump dependabot/fetch-metadata from 1 to 2` ✅
 2. **#92** - `ci(deps): bump actions/setup-node from 4 to 6` ✅
 3. **#25** - `ci(deps): bump actions/setup-java from 4 to 5` ✅
-4. **#17** - `ci(deps): bump actions/setup-python from 4 to 6` ✅ (upgraded to v5)
+4. **#17** - `ci(deps): bump actions/setup-python from 4 to 6` ✅ (v5 is latest stable; no v6 exists yet)
 
 **PR Count Reduction**: 46 → 42 (-4 PRs)
 
