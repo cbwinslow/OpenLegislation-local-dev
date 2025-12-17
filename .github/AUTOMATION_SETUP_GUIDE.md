@@ -85,6 +85,34 @@ docker-compose up -d
   - Milestone linking
   - Status comments
 
+### 📊 PR Management Dashboard (`pr-management-dashboard.yml`)
+- **Triggers**: Weekly schedule (Mondays 9 AM UTC) + manual
+- **Features**:
+  - Categorizes all open PRs (high-priority, approved, needs review, etc.)
+  - Tracks stale PRs (7+ days inactive)
+  - Monitors Dependabot PRs
+  - Generates comprehensive dashboard issue
+  - Auto-closes PRs inactive for 30+ days
+
+### 🤖 Bot PR Management (`bot-pr-management.yml`)
+- **Triggers**: PR events + daily schedule
+- **Features**:
+  - Auto-labels PRs by bot type (Dependabot, Copilot, etc.)
+  - Size labeling (XS, S, M, L, XL)
+  - Detects duplicate PRs
+  - Auto-merges safe Dependabot updates (minor/patch)
+  - Flags major version updates for review
+  - Coordinates multiple bots working on same issues
+
+### 🔄 Auto-merge Dependabot (`auto-merge-dependabot.yml`)
+- **Triggers**: Dependabot PR events
+- **Features**:
+  - Auto-approves minor and patch updates
+  - Waits for CI checks to pass
+  - Enables auto-merge for safe updates
+  - Comments on major updates with warnings
+  - Labels by update type (major/minor/patch)
+
 ## 🪝 Webhook Server Configuration
 
 ### Environment Variables
@@ -201,6 +229,17 @@ restrictions: []
 3. **Codecov** - Code coverage reporting
 4. **SonarCloud** - Code quality analysis
 5. **Snyk** - Vulnerability scanning
+
+### Current Action Versions (Updated 2025-12-17)
+
+All workflows use the latest stable versions:
+
+- `actions/setup-python@v5` - Python setup with 3.12+ support
+- `actions/setup-node@v6` - Node.js setup with v22 support
+- `actions/setup-java@v5` - Java setup with JDK 21 support
+- `dependabot/fetch-metadata@v2` - Enhanced Dependabot integration
+
+For version update history, see `docs/pr-dashboard-updates.md`.
 
 ### Setup Commands
 
