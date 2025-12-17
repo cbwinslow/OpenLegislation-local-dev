@@ -16,12 +16,13 @@ All GitHub Actions have been updated to their latest stable versions to address 
 
 #### Action Version Updates
 
-| Action | Old Version | New Version | Files Updated |
-|--------|-------------|-------------|---------------|
-| `dependabot/fetch-metadata` | v1 | v2 | 1 (auto-merge-dependabot.yml) |
-| `actions/setup-python` | v4 | v5 | 3 (federal-data-ingestion.yml, code-formatting.yml, pre-commit.yml) |
-| `actions/setup-node` | v4 | v6 | 3 (copilot-enhanced-review.yml, automated-code-review.yml, marketplace-integrations.yml) |
-| `actions/setup-java` | v4 | v5 | 10 (multiple workflow files) |
+| Action | Old Version | New Version | Files / Instances |
+|--------|-------------|-------------|-------------------|
+| `dependabot/fetch-metadata` | v1 | v2 | 1 file / 2 instances (auto-merge-dependabot.yml) |
+| `actions/setup-python` | v4 | v5 | 3 files / 3 instances (federal-data-ingestion.yml, code-formatting.yml, pre-commit.yml) |
+| `actions/setup-node` | v4 | v6 | 3 files / 6 instances (copilot-enhanced-review.yml, automated-code-review.yml, marketplace-integrations.yml×4) |
+| `actions/setup-java` | v4 | v5 | 10 files / 14 instances (multiple workflow files) |
+| **TOTAL** | | | **13 files / 25 instances** |
 
 ### 2. Workflow Files Modified
 
@@ -29,13 +30,13 @@ All GitHub Actions have been updated to their latest stable versions to address 
 
 1. `.github/workflows/ai-code-analysis.yml` - setup-java@v5
 2. `.github/workflows/ai-test-generation.yml` - setup-java@v5
-3. `.github/workflows/auto-merge-dependabot.yml` - fetch-metadata@v2
+3. `.github/workflows/auto-merge-dependabot.yml` - fetch-metadata@v2 (2 instances)
 4. `.github/workflows/automated-code-review.yml` - setup-java@v5, setup-node@v6
 5. `.github/workflows/ci-cd.yml` - setup-java@v5 (3 instances)
 6. `.github/workflows/code-formatting.yml` - setup-java@v5, setup-python@v5
 7. `.github/workflows/copilot-enhanced-review.yml` - setup-node@v6
 8. `.github/workflows/federal-data-ingestion.yml` - setup-java@v5, setup-python@v5
-9. `.github/workflows/marketplace-integrations.yml` - setup-java@v5, setup-node@v6 (4 instances)
+9. `.github/workflows/marketplace-integrations.yml` - setup-java@v5 (1 instance), setup-node@v6 (4 instances)
 10. `.github/workflows/maven-ci-cd.yml` - setup-java@v5
 11. `.github/workflows/pre-commit.yml` - setup-python@v5
 12. `.github/workflows/security-scan.yml` - setup-java@v5 (2 instances)
