@@ -1,7 +1,7 @@
 requests==2.32.3
 sqlalchemy==2.0.36
 tenacity==9.0.0
-beautifulsoup4==4.12.3
+beautifulsoup4==4.14.3
 lxml==5.2.1
 psycopg2-binary==2.9.9  # For future DB interactions
 pandas==2.2.2
